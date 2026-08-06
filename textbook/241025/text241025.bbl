@@ -1,0 +1,13 @@
+\begin{thebibliography}{1}
+
+\bibitem{DBLP:books/aw/AhoLSU2013}
+Alfred~V. Aho, Monica Lam, Ravi Sethi, and Jeffrey~D. Ullman.
+\newblock {\em Compilers: Principles, Techniques, and Tools, 2nd Edition}.
+\newblock Pearson Education Limited, 2013.
+
+\bibitem{DBLP:books/cu/Appel2002}
+Andrew~W. Appel and Jens Palsberg.
+\newblock {\em Modern Compiler Implementation in Java, 2nd edition}.
+\newblock Cambridge University Press, 2002.
+
+\end{thebibliography}

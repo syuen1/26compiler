@@ -1,0 +1,321 @@
+\documentclass[a4j,dvipdfmx]{jbook}
+% \usepackage{wrapfig}
+% \usepackage{tikz}
+% \usetikzlibrary{shapes,calc}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{fancyvrb}
+% \usepackage{tabularx}
+% %\graphicspath{{figs241004/}}
+% \usepackage{here}
+% \usepackage{graphicx}
+% %\include{mymacros}
+\include{../mypackage.tex}
+% \newcounter{coffee}
+% \newcounter{bean}
+\include{../mymacros.tex}
+\setcounter{chapter}{1}
+\begin{document}
+\chapter{コンパイラの概要}
+
+\section{コンパイラの構造}
+
+コンパイラはプログラマーが記述する原始プログラムを{\bf フェーズ}(phase)と
+呼ばれるいくつかの段階を経て計算機が直接実行可能な0,1の系列である機械語で記述された
+目的プログラムへ変換する．目的プログラムは{\bf バイナリコード}とも呼ばれる．
+
+コンパイラの標準的な構造を図\ref{compiler_structure}に示す．
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[scale=0.85]{figures/compilerstruct-crop.pdf}
+  \caption{コンパイラの構造}\label{compiler_structure}
+\end{figure}
+
+\paragraph{{\bf 字句解析}(lexical analysis)}
+{\bf 字句解析}は，アルファベットの系列としての原始プログラムを入力として，
+プログラミング言語で定められる単語に切り分ける．プログラミング言語の多くは
+基本的な記述として，１バイトの文字コードを用いる．一般的にはASCIIコード
+(ANSI X3.4-1986)を用いる．プログラミング言語ごとに定められた
+予約語(keyword)，識別子(identifier)，定数(constant)，
+文字列リテラル(string literal)，区切り記号(delimiter)などを{\bf トークン}として
+認識し，原始プログラムをトークン列に変換する．トークンは有限オートマトン
+によって定義される．
+
+\paragraph{{\bf 構文解析}(parsing)}
+{\bf 構文解析}は，字句解析の結果出力をプログラミング言語を定義する文脈自由に従って
+プログラムの基本的意味を表現する{\bf 解析木}(parse tree)を構成する．解析木は
+構文木(syntax tree)ともいう．解析木は，プログラムが構文的に持つ情報を表現する．
+
+\paragraph{{\bf 中間コード生成}(intermediate code generation)}
+構文木はプログラミング言語が記述するプログラムの意味を表し，構文木をトラバースする
+ことによってプログラムが記述する操作を抽出することができる．計算機ハードウェアに依存しない
+制御構造とデータフローを中間コード言語のプログラムで表す．中間コードとして，
+スタックマシンの命令であるバイトコードや３番地コードが用いられる．中間コードは
+機械語の目的コードを生成するための前段階であり，{\bf フロントエンド}(front end)
+と呼ばれる．
+  
+\paragraph{{\bf コード最適化}(code optimization)}
+解析木から生成される中間コードはプログラムの持つ意味を直接的に表す．
+しかし，重複した操作が繰り返し実行されるなどの冗長な操作を含む．計算の意味を
+保存しながらより効率的なコードを生成することを{\bf コード最適化}(code optimization)
+という．コード最適化は，計算の意味を保存することが要求される．コード最適化は
+計算の意味を保たれる範囲でより効率的なコードを発見的に生成する．このため，
+最適化されたコードが必ずしも最も効率的であることは保証されない．最も効率的な
+コードを得ることは計算理論の結果から不可能であることが示される．
+  
+\paragraph{{\bf 目的コード生成}(object code generation)}
+目的コード生成では，最適化された中間コード言語のプログラムを機械語のプログラムに
+変換する．このフェーズでは，中間コードが表す制御フローとデータフローに従って
+目的コードを実行する計算機の資源を効率的に利用する機械語コードを生成する．
+計算機ハードウェアでは，演算を実施するためのデータの主記憶からの転送をできるだけ
+少なくする必要がある．演算のためのレジスタの数はプロうグラムで利用できるメモリの
+数は非常に少ないため，プログラムを解析することで効率駅にレジスタを利用する機械語
+プログラムを生成する必要がある．プログラムの操作に対してハードウェアで用意されている
+効率的な命令を選択する必要がある．
+
+\subsection{コンパイラにおけるパス}
+原始プログラムに含まれる表現を一度だけ読んで処理を行う部分を{\bf １パス}(pass)という．
+コンパイラにおけるいくつかのフェーズは一つのパスにまとめることができ，例えば，
+字句解析と構文解析は一つのフェーズにまとめることができる．目的コードを原始プログラムを
+一度だけ読んで生成するコンパイラのことを１パスコンパイラ(one-pass compiler)という．
+実際的なコンパイラは多パスであるものがほとんどである．
+
+\section{字句解析の概要}
+
+字句解析は原始プログラムの文字列をプログラムとして意味のある単語にまとめて
+トークンの系列として出力する．プログラミング言語で用いられるトークンの種類
+は以下のようなものがある．
+
+\begin{list}{$\bullet$}{\setlength{\leftmargin}{10pt}}
+  \item {\bf 予約語(keyword)}: プログラミング言語によって特別な意味を持つ単語．
+  条件分岐を構成する，\texttt{if}, \texttt{then}, \texttt{else}や，繰返し構造を
+  構成する \texttt{while}, \texttt{do}などのほかに，変数に対する組み込みのデータ型を
+  表す\texttt{int}, \texttt{char}がある．これらの語はプログラミング言語が決まった
+  意味で用いるために特に区別して認識する．
+  \item {\bf 識別子(identifier)}: プログラムで用いる変数名，関数名などに用いる文字系列である．
+  通常，英数字と一部の記号の系列で構成される．
+  \item {\bf 定数(constant)}: 先頭の符号と数字および小数点で構成される数(例：\texttt{-123.4})や浮動小数点表現
+  (例：\texttt{3.14E1})．一つの文字\texttt{'A'}も定数として認識する． 
+  \item {\bf 文字列リテラル(string literal)}: ダブル引用\texttt{"}で囲った文字の並び．\texttt{"Hello World"}のように
+  空白も含めることも可能．
+  \item {\bf 区切り子(delimiter)}:プログラムの構文要素を区切る記号．セミコロン \texttt{;} は逐次に実行する
+  命令の区切りを表す．このほか，並びの区切りを表すカンマ \texttt{,} や括弧 \texttt{()},
+  \texttt{\{\}}, \texttt{[]}がある．数式，論理式において数字や記号を区切る記号 
+  \texttt{+}, \texttt{-}, \texttt{\&\&}, \texttt{=}, \texttt{>=}がある．
+\end{list}
+
+トークンは，正規表現を用いて定義することができる．このため，字句解析を行うため
+には，トークンを受理する有限オートマトンを構成して，有限オートマトンの
+受理系列をトークンとして出力する．
+
+\section{構文解析の概要}
+
+一般にプログラミング言語は文脈自由言語として定義される．このため，プログラミング
+言語を与える文脈自由文法$G$が存在し，原始プログラムをトークン列に変換した
+語$w$が$G$の生成する言語に属するかどうか$w\in L(G)$を判定する．
+
+$w\in L(G)$のとき，原始プログラムはプログラミング言語としては誤りがない．
+このとき，$G$の開始記号$S$から$w$に至る導出が存在し，文脈自由言語の特徴から
+導出の過程は木構造で表すことができる．この木構造は，プログラムの基本的な意味を
+表現する．例えば，以下のように文脈自由文法$G$を与える．
+
+\[G=\langle\{\texttt{+},n\},\{S,E\},\left\{\begin{array}{l}
+  S\rightarrow E\\E\rightarrow E\texttt{+}E\\E\rightarrow n\end{array}\right\},S\rangle\]
+
+このとき，$n\texttt{+}n\texttt{+}n\in L(G)$である．これは，$S\Rightarrow E\texttt{+}E
+\Rightarrow n\texttt{+}E\Rightarrow n\texttt{+}E\texttt{+}E\Rightarrow
+n\texttt{+}n\texttt{+}E\Rightarrow n\texttt{+}n\texttt{+}n$という導出系列が
+存在するためである．ここで$n$は自然数に対するトークンであり，
+実際には1,12,30などの数字を字句解析した結果である．
+
+この導出に対する解析木は図\ref{parsetree}(a)のようになる．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+\begin{tikzpicture}
+  \node (N0) at (0,0) {$S$}; \node (N1) at (-1,-1) {$n$};
+  \node (N2) at (0,-1) {$\texttt{+}$}; \node (N3) at (1,-1) {$E$};
+  \node (N4) at (0,-2) {$n$}; \node (N5) at (1,-2) {$\texttt{+}$}; \node (N6) at (2,-2) {$n$};
+  \path[->] (N0) edge (N1) (N0) edge (N2) (N0) edge (N3) (N3) edge (N4) (N3) edge (N5)
+  (N3) edge (N6); 
+\end{tikzpicture}
+& \qquad &
+\begin{tikzpicture}
+  \node (M0) at (0,0) {$S$}; \node (M1) at (-1,-1) {$E$};
+  \node (M2) at (0,-1) {$\texttt{+}$}; \node (M3) at (1,-1) {$n$};
+  \node (M4) at (-2,-2) {$n$}; \node (M5) at (-1,-2) {$\texttt{+}$};
+  \node (M6) at (0,-2) {$n$};
+  \path[->] (M0) edge (M1) (M0)edge (M2) (M0) edge (M3)
+            (M1) edge (M4) (M1) edge (M5) (M1) edge (M6);
+\end{tikzpicture}\\
+(a) 解析木１ & & (b) 解析木２
+\end{tabular}
+\caption{導出に対する解析木}\label{parsetree}
+\end{figure}
+$n\texttt{+}n\texttt{+}n$には，別の導出
+$S\Rightarrow E+E\Rightarrow E\texttt{+}n\Rightarrow E\texttt{+}E\texttt{+}n
+\Rightarrow E\texttt{+}n\texttt{+}n\Rightarrow n\texttt{+}n\texttt{+}n$
+も存在する．この導出に対応する解析木は(b)のようになる．
+この導出は$E\texttt{+}E$において，右の$E$を$n$に置き換えてから，
+左の$E$を$E+E$に置き換えている．(a)では$E+E$の左の$E$を$n$に置き換えてから，
+右の$E$を$E+E$に置き換えている．(a)の解釈では，$\texttt{+}$を加算とすると，
+右の２つの$n$を足してから左の$n$を加算する．(b)の解釈では，左の２つの$n$を
+足してから右の$n$を加算する．
+
+$w\notin L(G)$であれば，$w$は文法エラーを含む．通常の言語処理系の構文解析では，
+単にエラーであることを通知するだけでなく，部分的な構文木を作成して，エラーを
+起こしている理由をプログラムに提示する．例えば，$n\texttt{+}\texttt{+}n\notin
+L(G)$である．最初の$\texttt{+}$に対して木を構成しようとすると
+$E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができないため，
+エラーが生じ，$\texttt{+}$の右辺が間違っているといったエラーメッセージが
+出力される．
+
+コンパイラ構成の観点からプログラミング言語の構文解析に対してはより実用的な要求がある．
+解析木はプログラムの意味に対応するため，曖昧でない文法が必要になる．曖昧な文法で
+定義する場合は，どの解析木を導出の結果とするかについてあらかじめ決めておく必要がある．
+上の文法$G$はあいまいで$n\texttt{+}n\texttt{+}n$に対して図\ref{parsetree}の２つの
+解析木が存在する．加算演算は結合的であるので，どちらの木であっても答えは変わらない．
+しかし，$\texttt{+}$を$\texttt{-}$に置き換えて減算とすると，減算は結合的でないので
+答えが定まらない．このため，通常は解析木(b)のように解釈することが決められている．
+\texttt{3-2-1}は通常0と評価される．解析木(a)のように解釈すると2と評価される．
+
+文脈自由文法$G$に対して，$w\in G$は決定可能な問題であり，入力の長さに対して$\mathcal{O}(n^3)$
+で決定することができるアルゴリズムが知られている．コンパイラの構成上，より早い構文解析が
+必要であり，より高速な構文解析アルゴリズムに合わせてプログラミング言語を定義する
+文脈自由文法を決定する．決定的に構文解析するための文法のクラスが定義される．
+
+\section{中間コード生成の概要}
+
+中間コードは原始プログラムが持つ基本的な振舞いを抽象的に表現する．中間コードは
+原始プログラムの手順を表す実行制御フローとデータに対する演算とメモリの更新を表す
+データフローを表す．中間言語として，{\bf 逆ポーランド記法}(postfix Polish notation
+あるいは reverse Polish notation)，{\bf 抽象構文木}(abstract syntax tree), 
+{\bf ３番地コード}(three-address code)，バイトコードなどが用いられる．
+
+中間言語が表す振舞いは，プログラムが表す計算手順を標準的な命令単位で並べたもの
+であり，計算機ハードウェアから独立している．中間言語に一旦変換することで，
+目的プログラムが持つ本質的な動作意味を単純に表現することができる．このことから
+異なるアーキテクチャの目的コードは中間コードを変換して生成することができ，
+移植性が高くなる．
+
+中間言語プログラムでは，変数は{\bf 記号表}を作成して実際に割り当てるメモリ番地に
+変換する．中間言語プログラムの実行環境では，{\bf 駆動レコード}とよばれるスタック
+によって，変数の値を格納する番地を決定する．逆ポーランド記法やバイトコードでは
+データスタックによってメモリの格納番地を決定する．
+
+このフェーズでは変数の格納番地の決定を行うとともに，データ型など解析木に対して
+より詳細な制約をチェックする{\bf 意味解析}を行う．例えば，$\texttt{x+y}$という式に
+対して，$x$と$y$が同じ型であるかどうか，違う型であっても加算演算が可能かどうか
+といった{\bf 型チェック}を行う．
+
+\section{コード最適化の概要}
+
+{\bf コード最適化}(code optimization)は計算の意味を変化させない範囲で
+より短くて高速な命令系列を
+導くことである．コード最適化は中間言語プログラムに対して行われるものと
+目的プログラムに対して行われるものがある．コード最適化は命令を制御が
+分割したり合流したりしない{\bf 基本ブロック}に対して行う{\bf 局所最適化}
+(local optimization)(あるいは{\bf 覗き穴最適化}(peep hole optimization)と
+も呼ばれる)，基本ブロックより広い範囲で行う{\bf 大域最適化}がある．
+その他，数値計算などにおいて最も効果が高い繰り返しループに着目して
+行う{\bf ループ最適化}がある．一つの手続き範囲(intra-procedure)で
+行う最適化，さらに，手続きをまたいで行う(inter-procedure)最適化がある．
+最適化は範囲が広がるほど，意味を変えずに効率化することが難しくなる．
+最適化によって，原始プログラムと目的プログラムの対応をとることが
+難しくなるので，原始プログラムをデバッグする場合は，最適化を
+行わない場合が多い．
+
+例えば，図\ref{il-ex}(a)の中間言語プログラムの断片に対して，
+同じ計算が繰り返されるているため，(b)のように最適化することができる．
+(a), (b)は変数に同じ値を与えると各変数に同じ値を返すので，
+計算の意味を保存する．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \includegraphics{figures/prog-il-1-crop.pdf}
+    & \hspace*{5zw} &
+    \includegraphics{figures/prog-il-2-crop.pdf}\\[10pt]
+    (a) 最適化前 & & (b) 最適化後
+  \end{tabular}
+  \caption{簡単な最適化の例}\label{il-ex}
+\end{figure}
+
+大域的な最適化においては{\bf データフロー解析}あるいは{\bf 静的単一代入形式}
+などの方法が用いられる．
+
+\section{目的コード生成の概要}
+
+中間言語コードから実際に実行対象となる計算機ハードウェアが直接実行できる機械語を生成する．
+目的コード生成では中間言語プログラムの操作をハードウェアの適切な命令に置き換えることと
+中間コードのメモリをデータ演算を行う際に使用するレジスタに対応させる．ここでは，
+レジスタの値をできるだけ変更せず，メモリとレジスタの転送を少なくする{\bf レジスタ割り当て}を
+行う必要がある．
+
+３番地コードの並び
+
+\begin{center}
+\begin{tabular}{l}
+\verb|t1=i2-i3|\\
+\verb|t2=i1+t1|
+\end{tabular}
+\end{center}
+
+を機械語に対応するアセンブリコードに
+そのまま変換すると以下のようになる．
+
+\begin{center}
+  \begin{tabular}{l}
+    $\left .\begin{array}{ll}
+      \texttt{Load}  & \texttt{i2}\\
+      \texttt{Sub}   & \texttt{i3}\\
+      \texttt{Store} & \texttt{t1}
+    \end{array}\right\}
+    {\color{blue}\texttt{t1=i2-i3}}$\\
+    $\left .\begin{array}{ll}
+      \texttt{Load} & \texttt{i1}\\
+      \texttt{Add} & \texttt{t1}\\
+      \texttt{Store} & \texttt{t2}
+    \end{array}\right\}
+    {\color{blue}\texttt{t2=i2+t1}}$\\
+  \end{tabular}
+\end{center}
+
+ここで，２つめの３番地コードを\verb|t2=t1+i1|とおきかえてもよい．すると，最初の
+命令で計算した\verb|t1|をすぐにメモリに格納する必要はなく，以下のように
+命令を一つ省略できる．
+
+\begin{center}
+  \begin{tabular}{l}
+    $\begin{array}{ll}
+      \texttt{Load}  & \texttt{i2}\\
+      \texttt{Sub}   & \texttt{i3}\\
+      \texttt{Store} & \texttt{t1}\\
+      \texttt{Add} & \texttt{i1}\\
+      \texttt{Store} & \texttt{t2}
+    \end{array}$\\
+  \end{tabular}
+\end{center}
+
+さらに\verb|t1|がこのあと参照されないことがわかればさらに命令を省略できる．
+
+\begin{center}
+    $\begin{array}{ll}
+      \texttt{Load}  & \texttt{i2}\\
+      \texttt{Sub}   & \texttt{i3}\\
+      \texttt{Add} & \texttt{i1}\\
+      \texttt{Store} & \texttt{t2}
+    \end{array}$
+\end{center}
+
+変数の参照と更新に着目すれば，ハードウェアで使用するレジスタの値とメモリとの
+転送命令\verb|Load|, \verb|Store|を減らして高速化することが可能である．
+与えられたプログラムに対してレジスタ割り当てを最適にする問題は，
+有限の組み合わせに対してプログラムを解析することで可解である．しかし，
+そのアルゴリズムの時間計算量はNP完全であることが知られているため，
+レジスタ割り当てによって実行時間を短縮できる効果よりも割当の組み合わせを
+計算する時間の方が長くなってしまうことが考えられる．このため，
+実際のコンパイラではより計算量の小さな近似アルゴリズムが用いられる．
+\end{document}

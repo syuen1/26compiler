@@ -1,0 +1,20 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\newcommand{\ttsc}{\texttt{;}}
+\newcommand{\ttcol}{\texttt{:}}
+\newcommand{\tteq}{\texttt{=}}
+\newcommand{\ttasgn}{\ttcol\tteq}
+\begin{document}
+\begin{tabular}{|l|l|}\hline
+生成規則 & 型規則\\\hline
+$P\rightarrow D\ \ttsc\ E$ & \\
+$D\rightarrow D\ \ttsc\ D$ & \\
+$D\rightarrow i\ \ttcol\ T$ & $i.\mathsf{type}\ttasgn T.\mathsf{type}$ (記号表に登録)\\
+$T\rightarrow \texttt{char}$ & $T.\mathsf{type}\ttasgn\textsf{char}$\\
+$T\rightarrow \texttt{int}$ & $T.\mathsf{type}\ttasgn\textsf{integer}$\\
+$T\rightarrow \texttt{\&}T_1$ & $T.\mathsf{type}\ttasgn\textsf{pointer}(T_1.\textsf{type})$\\
+$T\rightarrow \texttt{arr[}n\texttt{]}$ of $T$ & $T.\mathsf{type}\ttasgn
+\mathsf{array}(1..n.\mathsf{value},T_1.\mathsf{type})$\\
+\hline
+\end{tabular}
+\end{document}

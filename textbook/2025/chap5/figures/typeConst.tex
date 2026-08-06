@@ -1,0 +1,26 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\newcommand{\ttsc}{\texttt{;}}
+\newcommand{\ttcol}{\texttt{:}}
+\newcommand{\tteq}{\texttt{=}}
+\newcommand{\ttasgn}{\ttcol\tteq}
+\newcommand{\ttpl}{\texttt{+}}
+\newcommand{\ttbrkl}{\texttt{[}}
+\newcommand{\ttbrkr}{\texttt{]}}
+\begin{document}
+\begin{tabular}{|l|l|}\hline
+生成規則 & 型制約規則\\\hline
+$E\rightarrow c$ & $E.\mathsf{type}\ttasgn\mathsf{char}$\\
+$E\rightarrow n$ & $E.\mathsf{type}\ttasgn\mathsf{integer}$\\
+$E\rightarrow i$ & $E.\mathsf{type}\ttasgn i.\mathsf{type}$ (記号表を検索する)\\
+$E\rightarrow E_1\ttpl E_2$ & $E.\mathsf{type}\ttasgn\ \mathbf{if}\ 
+E_1.\mathsf{type}=\mathsf{integer}\ \mathbf{and}\ E_2.\mathsf{type}=\mathsf{integer}
+\ \mathbf{then}\ \mathsf{integer}\ \mathbf{else}\ \mathsf{type\_error}$\\
+$E\rightarrow \texttt{*}E_1$ & $E.\mathsf{type}\ttasgn\ \mathbf{if}\ E_1.\mathsf{type}=\mathsf{pointer}(t)
+\ \mathbf{then}\ t\ \mathbf{else}\ \mathsf{type\_error}$\\
+$E\rightarrow E_1\ttbrkl E_2\ttbrkr$ & $E.\mathsf{type}\ttasgn\
+\mathbf{if}\ E_1.\mathsf{type}=\mathsf{array}(s,t)\ \mathbf{and}\ E_2.\mathsf{type}=\mathsf{integer}
+\ \mathbf{else}\ \mathsf{type\_error}$\\
+$S\rightarrow i\mathtt{:=} E$ & $i.\mathsf{type}\!=E.\mathsf{type}$\\\hline
+\end{tabular}
+\end{document}

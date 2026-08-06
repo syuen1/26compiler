@@ -1,0 +1,23 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+\node (N0) at (0,0) {$E$};
+\node (N1) at (-1.5,-1) {$E$};
+\node (N2) at (1,-1) {$E$};
+\node (N3) at (-2.25,-2) {$E$};
+\node (N4) at (-0.75,-2) {$E$};
+\node (N5) at (-2.25,-3) {$eqt$};
+\node (N6) at (-1.5,-3) {$\mathtt{or}$};
+\node (N7) at (-0.75,-3) {$eqt$};
+\node (N8) at (0,-3) {$\mathtt{and}$};
+\node (N9) at (1,-3) {$eqt$};
+
+\path[->] (N0) edge (N1) (N0) edge (N2);
+\path[->] (N1) edge (N3) (N1) edge (N4);
+\path[->] (N3) edge (N5) (N1) edge (N6) (N4) edge (N7);
+\path[->] (N0) edge (N8) (N2) edge (N9);
+\end{tikzpicture}
+\end{document}

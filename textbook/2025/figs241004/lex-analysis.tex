@@ -1,0 +1,40 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node[draw,rectangle,inner sep=10pt] (A0) at (0,0) {\parbox{5zw}{\small 空白文字の読み飛ばし}};
+  \node[draw,rectangle,inner sep=10pt] (A1) at (3,3) {$A_{kw}$};
+  \node[draw,rectangle,inner sep=10pt] (A2) at (3,1.5) {$A_{id}$};
+  \node[draw,rectangle,inner sep=10pt] (A3) at (3,0) {$A_{cnst}$};
+  \node[draw,rectangle,inner sep=10pt] (A4) at (3,-1.5) {$A_{str}$};
+  \node[draw,rectangle,inner sep=10pt] (A5) at (3,-3) {$A_{del}$};
+
+  \node[draw,circle,minimum size=5pt] (END) at (-3.75,-1.5) {\scriptsize 終了};
+  \node[draw,rectangle,inner sep=5pt] (ACC) at (4.5,5) {\parbox{4zw}
+  {\color{red}\bf\small 受理\newline (種類,語)}};
+
+  \draw (-4.5,0) -- (-3.75,0.5) -- (-3,0) -- (-3.75,-0.5) -- (-4.5,0);
+  \node at (-3.75,0) {\scriptsize 終わり?}; 
+
+  \draw (-7,-0.75) -- (-7,0.5) -- (-5.5,0.5) -- (-5.5,-0.85);
+  \path (-7,-0.75) [out=-30,in=210] edge (-6.25,-0.75);
+  \path (-6.25,-0.75) [out=30,in=150] edge (-5.5,-0.85);
+  \node at (-6.25,0) {\small\parbox{4zw}{原始プログラム}};
+
+  \draw[draw,thick] (-2,4) rectangle (5,-4);
+  \node at (-1,4.2) {\bf 字句解析器};
+
+  \path[->] (-5.5,0) edge (-4.5,0);
+  \path[->] (-3,0) edge (A0);
+  \path[->] (A0) edge (A1) (A0) edge (A2) (A0) edge (A3) (A0) edge (A4) (A0) edge (A5);
+  \path[-] (5,0) edge (5.5,0) (5.5,0) edge (5.5,-4.25) (5.5,-4.25) edge (-5,-4.25);
+  \path[->] (-5,-4.25) edge (-5,-0);
+  \path[->] (-3.75,-0.5) edge [right] node {Yes} (END);
+  \node at (-2.5,0.2) {No};
+  
+  \path[-,color=red,thick] (A1) edge (4.5,3) (A2) edge (4.5,1.5) (A3) edge (4.5,0) (A4) edge (4.5,-1.5) (A5) edge (4.5,-3);
+  \path[->,color=red,thick] (4.5,-3) edge (ACC);
+\end{tikzpicture}
+\end{document}

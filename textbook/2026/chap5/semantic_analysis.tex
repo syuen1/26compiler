@@ -1,0 +1,394 @@
+\documentclass[a4j,dvipdfmx]{jbook}
+\include{../mypackage}
+\include{../mymacros}
+\usepackage{here}
+
+\setcounter{chapter}{4}
+\begin{document}
+\chapter{意味解析}
+
+構文解析で得られた構文木はプログラムの構造を形式的に表現している．
+構文木のノードにはプログラムの意味に関わる情報が含まれている．例えば，
+\verb|x+y*x|という式の構文木は以下のようになる．
+\begin{center}
+\begin{tikzpicture}
+\node (root) at (0,0) {$E$};
+\node (N1) at (-1.5,-1) {$E$};
+\node (N11) at (-1.5,-2) {$T$};
+\node (N111) at (-1.5,-3) {$F$};
+\node[circle,draw] (T1) at (-1.5,-4) {\texttt{x}};N
+\node (N2) at (1.5,-1) {$T$};
+\node (N21) at (0.5,-2) {$T$};
+\node (N22) at (2.5,-2) {$F$};
+\node (N211) at (0.5,-3) {$F$};
+\node[circle,draw] (T2) at (-0.5,-4) {\texttt{+}};
+\node[circle,draw] (T3) at (0.5,-4) {\texttt{y}};
+\node[circle,draw] (T4) at (1.5,-4) {\texttt{*}};
+\node[circle,draw] (T5) at (2.5,-4) {\texttt{x}};
+\path[->] (root) edge (N1) (root) edge (N2)
+        (N1) edge (N11) (N111) edge (T1)
+        (N11) edge (N111) (root) edge (T2)
+        (N2) edge (N21) (N2) edge (N22)
+        (N21) edge (N211) (N211) edge (T3)
+        (N2) edge (T4) (N22) edge (T5);
+\end{tikzpicture}
+\end{center}
+
+ここで，終端記号は文法上では，トークンとして扱われていたが，実際には，変数，演算子など
+プログラム実行上の意味を持つ．さらに，トークンが同じ変数である場合（例えば，\texttt{x}
+)は，同じ式の中では割り当てられた同じ値を持つ．一般に\texttt{+}は加算，\texttt{*}は乗算
+を表す．プログラミング言語の多くは値に「型」という概念を持つ．
+これは，計算を実行するときにどれだけ記憶領域を確保すればよいかを示すとともに，式や
+プログラムの操作の記述に不整合がないかを実行前にチェックするために用いられる．
+プログラムが定める意味に従った構文の整合性を確認することを{\bf 意味解析}と呼ぶ．
+
+\section{記号表}
+
+記号表は構文木のノードが表す記号が持つ意味的情報を格納する．構文木において，終端記号としての
+トークンは記号情報を持つ．字句解析によって得られたトークンは，識別子(identifier)，演算子
+(operator)，区切り記号(delimiter)などの種類を持つ．それぞれのトークンに応じてプログラム中で
+の意味が与えられる．記号表は構文に現れる記号の情報を格納する．したがって，記号表の構成は
+プログラミング言語の定義に依存する．
+
+多くのプログラミング言語では，同じ識別子を異なった文脈で使用することができる．
+プログラミング言語においてはスコープルールが定義されている．最も基本的なスコープルールは
+局所と大域に対するルールであり，局所記号は一定のブロック内のみに有効な記号であり，
+大域記号はプログラム中のすべての場所に有効な記号である．スコープルールとしては
+まず局所に有効な記号が存在するかどうかを調べて，局所になければ大域記号を参照する
+という規則である．
+
+\begin{figure}[H]
+\begin{center}
+    \begin{minipage}{0.4\linewidth}
+\begin{Verbatim}[frame=single,numbers=left,numberblanklines=false]
+int x;
+int y;
+int f(int y) {
+    x = 2;
+    return x+y;
+}
+
+int main() {
+    int x;
+    x = 1;
+    y = 3;
+    x = f(x);
+    printf("%d,%d\n",x,y);
+}
+\end{Verbatim}
+\end{minipage}
+\end{center}
+\caption{局所変数と大域変数の例}\label{list:scoperule}
+\end{figure}
+
+例えば上記のプログラムにおいて，3行目から6行目において$\texttt{y}$は引数からの
+局所変数であり，7行目から13行目において，$\texttt{x}$も局所変数となる．その他の
+\texttt{x}および\texttt{y}は大域変数として参照される．したがって，このプログラムが
+C言語と同様に\texttt{main}から実行されるとすると，9行目は，8行目で宣言した局所
+変数への代入であり，10行目は2行目で宣言された\texttt{y}を参照する．関数の引数は
+1であり，この結果として，関数fは3を返す．よって13行目の結果として，3,3が表示される．
+
+コンパイラが実行コードを生成する場合，また，インタプリタがプログラムを実行する際には，
+適切なメモリ領域を参照する必要がある．大域変数はプログラムの実行前に，局所変数は
+関数の呼出しごとにメモリ領域を確保してその番地が決定する．記号表は変数（記号）と
+メモリ番地の対応を管理する．
+
+コンパイラが図\ref{list:scoperule}からコード生成を行う場合，２行目において
+大域変数\texttt{x}，\texttt{y}を割り当て，３行目で関数記号\texttt{f}，
+局所変数\texttt{y}を割り当てる．４，５行目の\texttt{x}は１行目で割り当てた
+大域変数\texttt{x}を参照し，５行目の\texttt{y}は３行目で割り当てた局所変数\texttt{y}を
+参照する．6行目で\texttt{y}の参照を破棄する．７行目で関数記号\texttt{main}を割り当て，
+８行目で局所変数\texttt{x}を割り当てる．９行目の\texttt{x}は８行目で割り当てた局所変数\texttt{x}を参照し，
+10行目の\texttt{y}は２行目で割り当てた大域変数\texttt{y}を参照する．
+11行目で局所変数\texttt{x}に関数\texttt{f}を呼び出し，その結果を局所変数\texttt{x}に
+代入する．12行目における\texttt{x}は局所変数，\texttt{y}は大域変数を参照する．
+このような参照を可能にするために，変数記号から記号表のどのエントリを参照するかを決める必要がある．図\ref{list:scoperule}において，\texttt{x}と\texttt{y}はともに大域変数の場合と
+局所変数の場合がある．各変数は宣言された時点で記号表に登録され，
+局所変数は，有効なブロックの中でのみ有効であり，有効なブロックから
+出ると参照されることがないので，記号表から削除する．大域変数はプログラムの最初から
+最後まで有効なので記号表から削除されることはない．
+
+構文の構造に従って参照を決めるスコープルールを
+{\bf 静的スコープ}，呼び出しによって直前の局所変数を参照するスコープルールを
+{\bf 動的スコープ}と呼ぶ．上にあげた参照ルールは静的スコープであり，
+図\ref{list:scoperule}が静的スコープを持つとすると
+最も最後に追加された記号を参照することによって正しい参照を実現することができる．
+静的スコープは，構文解析の段階で決定されるため，コンパイル時に
+参照を決定することができる．一方で，動的スコープは，プログラムの実行時に
+参照を決定するため，実行時に参照を決定する必要がある．プログラミング言語としては
+静的スコープがよく用いられるが，動的スコープを持つ言語も存在する．
+例えば，Lisp言語は動的スコープを持つ．
+
+
+プログラミング言語によっては，関数やメソッドのスコープルールが決められている場合が
+ある．例えば，Java言語において，privateなメソッドはそのクラス内でのも参照できる
+メソッド(操作)であり，オブジェクト指向言語においてよく用いられる．オブジェクト指向
+言語では，クラスから生成されるインスタンスに固有の局所変数を用いてオブジェクトの
+独立性を保つことが多く，スコープを指定するディレクティブが多く用意されていることが
+多い．
+
+\subsection{記号表の実現}
+
+記号表は，構文要素の記号をもとにスコープルールを守りながら，その構文要素が持つ
+意味的な情報を管理するデータ構造である．例えば，図\ref{list:scoperule}
+のプログラムでは，９行目のコンパイルにおいては以下のような属性をもつ表構造と
+して実現される．
+
+\begin{center}
+\begin{tabularx}{.8\linewidth}{c|s|s|s|b|s|s|X|X|}\cline{2-9}
+& \multicolumn{1}{c|}{名前} & \multicolumn{1}{c|}{種類} & 
+\multicolumn{1}{c|}{値} & \multicolumn{1}{c|}{スコープ} & 
+\multicolumn{1}{c|}{番地} & \multicolumn{1}{c|}{型} & 
+\multicolumn{1}{c|}{引数個数} & \multicolumn{1}{c|}{引数型}\\\cline{2-9}
+\scriptsize{1} & \texttt{x} & var &     & 大域(G) &  0  & \texttt{int}  &   &   \\\cline{2-9}
+\scriptsize{2} & \texttt{y} & var &     & 大域(G) &  1  & \texttt{int}  &   &   \\\cline{2-9}
+\scriptsize{3} & \texttt{f} & func &    & 大域(G) &  100  & \texttt{int}  &  1& 0 \\\cline{2-9}
+\scriptsize{4} & \texttt{x} & var &     & 局所(L) &  0  & \texttt{int}  &   &   \\\cline{2-9}
+\end{tabularx}
+\end{center}
+
+値フィールドは，定数記号の宣言時に用いられることを想定している．
+
+記号表はコンパイルの過程でスコープルールに従って，記号の登録，参照および削除を行う．
+ブロックによる文脈が変化する場合，ブロック内で局所変数が宣言された場合は記号表に追加し，
+ブロックから脱出する場合は局所変数を記号表から削除する．このため，記号表は柔軟に登録，
+削除ができ，高速に参照できるデータ構造である必要がある．
+記号データを一列に並べた線形リストは，参照は線形時間時間で可能であるが，スコープルールを
+実現するためのデータの追加，削除も線形で可能であるが，データ量が大きくなると実際の操作時間
+は増大する．バランス木などの木構造によって整列した場合は参照は$\log$時間で可能になり，
+高速にアクセス可能であるが，追加・削除における木構造の操作に時間がかかる．
+この目的のため，次に述べるハッシュによるインデックス付けの手法がよく用いられる．
+
+\subsubsection{ハッシュ}
+
+ハッシュは線形に並べたデータをインデックス（目次）ごとに並べるようにして，
+データ構造の途中から探索する方法である．追加・削除も途中から行うことができる
+ため，より効率的な管理が可能となる．ハッシュが有効に働くためには，各目次の
+項目から作られるリストができるだけ均一になるようにする必要がある．
+このため，格納する記号データの集合$D$に対して，$d\in D$から計算される値
+$f(d)$ができるだけ$D$を均等に分類する関数によってインデックスを作成する．
+このような関数を{\bf ハッシュ関数}とよぶ．コンパイルを始める時点で$D$は
+既知ではないので，$D$の要素が一様に分布するというような仮定のもとに$f$を
+選択する．ハッシュ関数によってうまくデータが分散されれば，アクセスは高速に
+なり，追加・削除に要する時間も削減できる．ハッシュが大きく偏る場合は，線形
+にならべた場合と同じになる．
+
+ハッシュ関数として以下のような関数を考える．
+\[
+f(a_1\cdots a_n)=\left\{\begin{array}{l}
+    \sum^n_1\mathsf{ord}(a_i)\cdot 63^{n-1}
+\end{array}\right\}\mathsf{mod}\ N+1
+\]
+ここで，識別子のトークンの文字列は，$\texttt{\_}$(アンダースコア), $\texttt{a},\ldots,\texttt{z}$,
+$\texttt{A},\ldots,\texttt{Z}$,$\texttt{0},\ldots,\texttt{9}$の系列であり，それぞれ1から63までの
+整数が割り当てられているとする．$\mathsf{ord}$はその値を返す関数である．この計算は除算法と呼ばれる方法であり，
+$N$の値として素数を選ぶのが適当である．$N$が$2^k$とすると$f$の値が下位の文字のみによって定まって
+しまう．
+
+$N=1009$とすると，文字列$\texttt{main}$は以下の値を持つ．
+
+\[f(\texttt{main})=(14\times 63^3+2\times 63^2+10\times 63+15)\mathsf{mod}\ 1009+1=949\]
+
+記号$\sigma$に対する記号表のデータは$f(\sigma)$でアクセスするようにするが，ハッシュ関数では
+$f(\sigma_1)=f(\sigma_2)$となる異なった記号$\sigma_1$,$\sigma_2$が存在するため，
+$\sigma_1$の情報と$\sigma_2$の情報をリストにしてアクセスする．
+
+ハッシュを用いたインデックスづけでは，ハッシュ表に同じハッシュ値をもつ記号に対するリストの先頭を
+格納する．ハッシュ値$i$に対するリストのことをバケット$i$と呼ぶ．ハッシュ表に格納される要素の
+数がハッシュ表のサイズの定数倍で抑えられるとき，ハッシュ表全体に一様にランダムに値がばらまかれる
+と仮定すると，検索，登録，削除の各要素は定数時間で行うことができる．逆に，一つのバケットに
+格納された場合は線形リストと同じで要素の数に対する線形時間となる．このため，ハッシュ関数として
+できるだけ分布が偏らない関数を用いる．
+
+図\ref{list:scoperule}のコンパイルにおける記号表の構成例を以下に示す．
+
+\begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
+    \item 1行目のコンパイル:\\
+    \texttt{int\ x}の宣言によって\texttt{x}を割り当てる(図\ref{line1})．
+    \item 2行目のコンパイル:\\
+    \texttt{int\ y}の宣言によって\texttt{y}を割り当てる(図\ref{line2})．
+    \item 3行目のコンパイル:\\
+    関数\texttt{f}の宣言と仮引数\texttt{int\ y}を割り当てる(図\ref{line3})．
+    \item 7行目のコンパイル:\\
+    6行目で仮引数\texttt{y}を削除して関数\texttt{main}の宣言を追加する(図\ref{line7})．
+\end{list}
+
+% \begin{tabularx}{\textwidth}{XcX}
+%     \includegraphics[width=0.45\textwidth]{figures/hash-table1-crop.pdf}
+%     & & 
+%     \includegraphics[width=0.45\textwidth]{figures/hash-table2-crop.pdf}\\
+%     \includegraphics[width=0.45\textwidth]{figures/hash-table3-crop.pdf}
+%     & & 
+%     \includegraphics[width=0.45\textwidth]{figures/hash-table4-crop.pdf}\\
+% \end{tabularx}
+\begin{figure}[H]
+\centering
+  \subfloat[][1行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table1-crop.pdf}\label{line1}}\quad
+  \subfloat[][2行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table2-crop.pdf}\label{line2}}\\
+  \subfloat[][3行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table3-crop.pdf}\label{line3}}\quad
+  \subfloat[][7行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table4-crop.pdf}\label{line7}} 
+  \caption{コンパイルの過程における記号表の構成}\label{fig:symboltable_construction}
+\end{figure}
+
+上記のようにハッシュ表には外部に格納された情報情報へのリンクを格納する方法を
+特に{\bf 外部ハッシュ}と呼ぶことがある．これに対してハッシュ表内部に情報を格納する方法は
+{\bf 内部ハッシュ}と呼ばれる．一般には，情報の柔軟性の高い外部ハッシュが用いられること
+が普通である．
+
+
+
+\section{型チェック}
+
+型チェックは，プログラム中のデータが整合した型を持つかどうかを検査する．
+コンパイル時に型チェックを行う{\bf 静的型チェック}と実行時に型チェックを行う
+{\bf 動的型チェック}がある．
+静的型チェックはプログラムを実行する前にプログラムの矛盾を検出し，効率的な
+実行コードを生成することが可能である．動的型チェックはより柔軟な記述を許す
+ことができるが，型が実行時に決まるために実行時のメカニズムが複雑になる．
+
+型チェックの手法はプログラミング言語の型付けのポリシーによる．コード生成の
+観点からは，型はできるだけ単純な型を持つことが望ましい．しかし，より柔軟性の
+高い記述のために，多相型や型のオーバーロードのような手法を用いて自然な
+記述を可能にすることが一般によく行われる．
+
+再帰的な型定義を持つ場合は効率的にコンパイルするためには２パスで型チェック
+を行う必要であることもある．変数の型，関数，メソッドの返り値と引数の型が
+同じ識別子ですべて同じであるかを構文解析時にチェックすることで，プログラムの
+不整合を事前に検出する．
+
+静的な型チェックとして，例えば，
+加算式$e_1+e_2$をコンパイルするとき，$e_1$，$e_2$の型によって内部狂言が異なる
+ため，生成する命令が異なる．
+両辺が整数型の場合は，整数の加算命令を発行し，
+片方が整数で，他方が実数である場合は，整数を実数の型に変換する命令を発行してから
+実数の加算命令を発行する．MLのように型によって異なる演算記号をもち，型変換を
+行わずにエラーとする言語もある．また，文字列などのように加算することが
+できない型である場合は，エラーを発行したり，結合など別の操作のための
+コードを発行する．
+
+以下ではコンパイラ時に型の整合性を検査する静的型チェックを中心に説明する．
+
+\subsection{型定義と型チェックアルゴリズム}
+
+簡単な型チェック法を次の生成規則で定義される言語を考える．
+
+\begin{center}
+\begin{minipage}{.4\linewidth}
+\begin{align*}
+    P & \rightarrow D\ ;\ S\\
+    D & \rightarrow D\ ;\ D\ |\ \mathbf{id}:\ T\\
+    T & \rightarrow \texttt{char}\ |\ \texttt{int}\ |\ \texttt{\&}T\ |\ \texttt{arr[}n\texttt{]\ of\ } T\\
+    E & \rightarrow c\ |\ n\ |\ \mathbf{id}\ |\ E\ \texttt{+}\ E\ |\ \texttt{*}E\ |\ E\texttt{[}E\texttt{]}\\
+    S & \rightarrow \mathbf{id}\ttassgn E\ |\ S\,\ttsc\,S
+\end{align*}
+\end{minipage}
+\end{center}
+
+プログラムは，変数の型宣言部$D$とプログラム本体$E$からなる．$E$はここでは
+簡単のため加算と配列参照のみからなる式としている．$i:\texttt{\&}T$は，
+変数$i$が型$T$を持つデータ領域へのポインタであることを示す．
+$\texttt{*}i$は$i$が型$T$を持つデータ領域へのポインタであるとき，
+$i$の指す型$T$を持つデータ領域を表す．型に関する制約は，加算$\texttt{+}$
+は整数に対してのみ可能であり，$E\ttbrkl E'\ttbrkr$においては，$E$の型は
+配列型(arr[n]\ of\ T)であり，$E'$の型は整数型(integer)である．このとき
+$E\ttbrkl E'\ttbrkr$の型は$T$である．図\ref{fig:typeDef}に宣言に
+おける型定義の規則，図\ref{fig:typeConst}に型制約規則を示す．
+
+\begin{figure}[H]\centering
+    \includegraphics{figures/typeDef-crop.pdf}
+    \caption{型定義の規則}\label{fig:typeDef}
+\end{figure}
+
+\begin{figure}[H]\centering
+    \includegraphics[width=\linewidth]{figures/typeConst-crop.pdf}
+    \caption{型制約規則}\label{fig:typeConst}
+\end{figure}
+
+$c$は文字トークン，$n$は整数定数のトークンを表す．
+
+\begin{center}
+\begin{minipage}{0.4\linewidth}
+\begin{Verbatim}[frame=single]
+char x;
+int y;
+&int z;
+arr[10] of char a;
+arr[5] of arr[5] of int m;
+\end{Verbatim}
+\end{minipage}
+\end{center}
+
+ここで，$T.\mathsf{type}$は型識別子$T$が表す型であり，通常，
+$T$の表現そのものである．$i.\mathsf{type}$は識別子$i$が持つ
+型情報であり，記号表に記録される．$n.\mathsf{value}$は，数トークン
+$n$が表す値であり，$n$の表現そのもの($0,1,\cdots$など)である．型制約の
+ない場合，上記のように宣言されているとき，
+$\texttt{y:=*z},\texttt{a[y]}$は型づけとして正しい(well-typed)．
+$\texttt{x:=1},\texttt{x+y}$，$\texttt{x+1}$，$\texttt{m[x]}$
+は型エラーである．
+
+型制約は構文解析に沿って検査可能である．下向き構文解析の場合は，
+規則の最後で上のレベルに戻る際に一致をチェックする．上向き構文解析の
+場合は還元の際に属性として検査することができる．
+
+\subsection{多相型と型のオーバーロード}
+
+直観的な値に対する型の概念は，その値に対してどういった操作を適用できるかということで
+決定される．例えば，整数に対しては，四則演算を適用できる値の集まりであると特徴づけ
+られる．これに対して，文字列については，文字を表す記号列に対して，連接や接頭語，
+接尾語などを取り出す操作をもつ値であり，整数型とは異なる．
+
+\subsubsection{多相型}
+
+多相型(polymorphic type)は，操作が共通した型を表す．リストや配列は，同じ型を
+持つ値から構成されるデータ型である．リストに対しては，要素の型にかかわらず連接，
+空チェックなど共通の操作が定義できる．$\texttt{List}(X)$のように記述し，
+変数$X$に要素データの型を代入し，$\texttt{List}\tuple{\texttt{Int}}$，
+$\texttt{List}\tuple{\texttt{Char}}$
+のように記述することによって同じ操作を持つデータ型を記載する．このことによって
+操作を要素ごとに重複して記載する必要がない．
+
+多相型を持つプログラミング言語の記述として，Java，
+AdaやModula-3における{\em generic}型，C++におけるテンプレート，MLにおける
+タイプスキームなどがある．
+
+\subsubsection{部分型}
+
+型Aに対する操作が型Bに対しても適用できるとき，型Bは型Aの部分型であるとよばれる．
+部分型はもとの型を拡張することによって定義される．多相型$T\tuple{X}$を構成する
+場合，型$B$が型$A$の部分型であるとき，$T\tuple{A}$が矛盾のない型であるとき，
+$T\tuple{B}$も矛盾のない型として定義される必要がある．
+
+\subsubsection{オーバーロード}
+
+\begin{wrapfigure}[8]{l}{0.3\linewidth}
+\vspace*{-10pt}    
+\begin{minipage}{.3\linewidth}
+\begin{center}
+\begin{Verbatim}[numbers=left]
+int x;
+float y;
+double z;
+x=1; y=1.1; z=1.575E3;
+x=x+1;
+z=y+z;
+z=z+x;
+\end{Verbatim}
+\end{center}
+\end{minipage}
+\end{wrapfigure}
+
+オーバーロードは同じ種類の操作（通常同じ記号で表す）を引数の型によって切り替える
+機能である．多くの言語は四則演算において，オーバーロード機能を持つ．\\
+左のような加算は型の異なる数に対して加算を実行する．5,6,7行目の演算は
+すべて加算であるが，変数\verb|x|,\verb|y|,\verb|z|の内部表現はすべて異なるので
+コンパイラが発行する命令は異なる．計算機の実行上では，5,6,7行目は異なる
+命令を発行する必要がある．オーバーロードがない場合，同じ加算であっても型が異なる
+場合は異なる演算記号を用いる必要がある．オーバーロードがない関数型言語ocamlでは
+整数の加算は\texttt{+}，浮動小数点の加算は\texttt{+.}を用いる．
+
+%\subsection{エラー処理}
+
+
+
+\end{document}

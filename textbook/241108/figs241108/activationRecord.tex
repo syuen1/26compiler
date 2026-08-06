@@ -1,0 +1,23 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}S
+\begin{tikzpicture}S
+\draw[thick] (0,0) -- (5,0) -- (5,-3.5) -- (0,-3.5) -- (0,0);
+\node at (2.5,-0.25) {実引数領域};
+\draw[style=dashed](0,-0.5) -- (5,-0.5);
+\node at (2.5,-0.75) {返り値}; =
+\draw[style=dashed] (0,-1) -- (5,-1);
+\node at (2.5,-1.25) {前の駆動レコードへのリンク};
+\draw[style=dashed](0,-1.5) -- (5,-1.5);
+\node at (2.5,-1.75) {外部アクセスリンク};
+\draw[style=dashed] (0,-2) -- (5,-2);
+\node at (2.5,-2.25) {戻り番地};
+\draw (0,-2.5) -- (5,-2.5);
+\node at (2.5,-2.75) {局所変数領域};
+\draw[style=dashed] (0,-3) -- (5,-3);
+\node at (2.5,-3.25) {一時計算領域};
+\node at (2.5,-3.85) {$\Downarrow$ スタックトップ};
+\end{tikzpicture}
+\end{document}

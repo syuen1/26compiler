@@ -1,0 +1,34 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes,patterns,snakes}
+\begin{document}
+\begin{tikzpicture}
+  \node (Root) at (0,0) {S};
+  \node (VP0) at (-1,-1) {C};
+  \node (VP1) at (-3,-2) {B};
+  \node (VP2) at (-1,-2) {A};
+
+  \draw ($(VP1)+(0,-0.2)$) -- ($(VP1)+(-1,-0.8)$) -- ($(VP1)+(1,-0.8)$) -- ($(VP1)+(0,-0.2)$);
+  \draw ($(VP0)+(0,-0.2)$) -- ($(VP0)+(-2,-0.8)$) -- ($(VP0)+(1,-0.8)$) -- ($(VP0)+(0,-0.2)$);
+  \draw ($(VP2)+(0,-0.2)$) -- ($(VP2)+(-0.5,-0.8)$) -- ($(VP2)+(1,-0.8)$) -- ($(VP2)+(0,-0.2)$);
+
+  \node at ($(VP1)+(0,-1)$) {$\beta$};
+
+  \node at ($(VP2)+(-0.2,-1)$) {$\alpha_1$};
+  \node at ($(VP2)+(0.6,-1)$) {$\alpha_2$};
+  \node at ($(VP2)+(0.2,-1)$) {$\bullet$};
+
+  \draw (-4,-3.2) rectangle +(10,-0.3);
+  \draw (-0.8,-3.2) -- +(0,-0.3);
+  \draw (0,-3.2) -- +(0,-0.3);
+  \node at (2.8,-3.35) {$w$};
+
+  \draw[style=dashed] (0,-3) -- (0,-3.2);
+
+  \path[-,style=dashed] (Root) edge (-1,-0.8) (Root) edge (6,-3.2);
+  \draw[thick,decoration={brace,mirror,raise=1mm},decorate] (-4,-3.5) -- (-0.8,-3.5);
+  \node at (-2.4,-4) {可延頭部};
+  
+\end{tikzpicture}
+\end{document}

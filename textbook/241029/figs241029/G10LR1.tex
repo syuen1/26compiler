@@ -1,0 +1,80 @@
+\documentclass[dvipdfmx]{jarticle}
+\hoffset=-30mm
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\newcommand{\eof}{\texttt{\#}}
+\newcommand{\tteq}{\texttt{=}}
+\newcommand{\ttpl}{\texttt{+}}
+\begin{document}
+\begin{tikzpicture}
+  \node[draw,rectangle,label={165:$I_0$}] (I0) at (0,0) {$\begin{array}{lll}
+    [S'\rightarrow\bullet S\eof,\varepsilon] & [S\rightarrow\bullet E\tteq E,\eof] & [S\rightarrow\bullet i,\eof]\\\relax
+    [E\rightarrow\bullet E\ttpl T,\tteq] & [E\rightarrow\bullet T,\tteq] & [T\rightarrow\bullet i,\tteq]\\\relax
+    [E\rightarrow\bullet E\ttpl T,\ttpl] & [E\rightarrow\bullet T,\ttpl] & [T\rightarrow\bullet i,\ttpl]
+  \end{array}$};
+  \node[draw,rectangle,label={170:$I_1$}] (I1) at (-6,-2.5) {$[S'\rightarrow S\bullet\eof,\varepsilon]$};
+  \node[draw,rectangle,label={120:$I_2$}] (I2) at (-2.5,-3) {$\begin{array}{l}
+    [S\rightarrow E\bullet\tteq E,\eof]\\\relax
+    [E\rightarrow E\bullet\ttpl T,\tteq]\\\relax
+    [E\rightarrow E\bullet\ttpl T,\ttpl]
+  \end{array}$};
+  \node[draw,rectangle,label={175:$I_3$}] (I3) at (1,-3) {$\begin{array}{l}
+    [E\rightarrow T\bullet,\tteq]\\\relax
+    [E\rightarrow T\bullet,\ttpl]\end{array}$};
+  \node[draw,rectangle,label={60:$I_4$}] (I4) at (4,-3){$\begin{array}{l}
+    [S\rightarrow i\bullet,\eof]\\\relax
+    [T\rightarrow i\bullet,\tteq]\\\relax
+    [T\rightarrow i\bullet,\ttpl]\end{array}$};
+  \node[draw,rectangle,label={150:$I_5$}] (I5) at (-5,-6) {$\begin{array}{ll}
+    [E\rightarrow E\tteq\bullet E,\eof] & \\\relax
+    [E\rightarrow\bullet E\ttpl T,\eof] & [E\rightarrow\bullet E\ttpl T,\ttpl]\\\relax
+    [E\rightarrow\bullet T,\eof] & [E\rightarrow\bullet T,\ttpl]\\\relax
+    [E\rightarrow\bullet i,\eof] & [E\rightarrow\bullet i,\ttpl]
+  \end{array}$};
+  \node[draw,rectangle,label={60:$I_6$}] (I6) at (4,-6){$\begin{array}{l}
+    [E\rightarrow E\ttpl\bullet T,\tteq]\\\relax
+    [E\rightarrow E\ttpl\bullet T,\ttpl]\\\relax
+    [T\rightarrow \bullet i,\tteq]\\\relax
+    [T\rightarrow \bullet i,\ttpl]\end{array}$};
+  \node[draw,rectangle,label={120:$I_7$}] (I7) at (0,-6) {$\begin{array}{l}
+    [S\rightarrow E\tteq E\bullet,\eof]\\\relax
+    [E\rightarrow E\bullet\ttpl T,\tteq]\\\relax
+    [E\rightarrow E\bullet\ttpl T,\ttpl]
+    \end{array}$};
+  \node[draw,rectangle,label={10:$I_8$}] (I8) at (1,-9){$\begin{array}{l}
+    [E\rightarrow E\ttpl T\bullet,\tteq]\\\relax
+    [E\rightarrow E\ttpl T\bullet,\ttpl]\end{array}$};
+  \node[draw,rectangle,label={60:$I_9$}] (I9) at (5,-9){$\begin{array}{l}
+    [T\rightarrow i\bullet,\tteq]\\\relax
+    [T\rightarrow i\bullet,\ttpl]\end{array}$};
+  \node[draw,rectangle,label={165:$I_{10}$}] (I10) at (-5,-9) {$\begin{array}{ll}
+    [E\rightarrow E\ttpl\bullet T,\eof] & [E\rightarrow E\ttpl\bullet T,\ttpl]\\\relax
+    [T\rightarrow\bullet i,\eof] & [T\rightarrow\bullet i,\ttpl]
+  \end{array}$};
+  \node[draw,rectangle,label={170:$I_{11}$}] (I11) at (-5,-11) {$\begin{array}{ll}
+    [E\rightarrow E\ttpl T\bullet,\eof] & [E\rightarrow E\ttpl T\bullet,\ttpl]
+  \end{array}$};
+  \node[draw,rectangle,label={30:$I_{12}$}] (I12) at (3,-11) {$\begin{array}{ll}
+    [T\rightarrow i\bullet,\eof] & [T\rightarrow i\bullet,\ttpl]
+  \end{array}$};
+  \node[draw,rectangle,label={30:$I_{13}$}] (I13) at (-5.5,-12.5) {$\begin{array}{ll}
+    [E\rightarrow T\bullet,\eof] & [E\rightarrow T\bullet,\ttpl]
+  \end{array}$};
+
+  \path[->] (I0) edge [above] node {$S$} (I1);
+  \path[->] (I0) edge [right] node {$E$} (I2);
+  \path[->] (I0) edge [right] node {$T$} (I3);
+  \path[->] (I0) edge [right] node {$i$} (I4);
+  \path[->] (I2) edge [left] node {$\tteq$} (I5);
+  \path[->] (I2) edge [above,pos=0.25] node {$\ttpl$} (I6);
+  \path[->] (I5) edge [above] node {$E$} (I7);
+  \path[->] (I6) edge [above] node {$T$} (I8);
+  \path[->] (I6) edge [left] node {$i$} (I9);
+  \path[->] (I5.west) [out=210,in=120] edge [right] node {$T$} (I13.west);
+  \path[->] (I7) edge [left,pos=0.1,bend left] node {$\ttpl$} (I10);
+  \path[->] (I10) edge [left] node {$T$} (I11);
+  \path[->] (I10) [out=340,in=180] edge [below] node {$i$} (I12.west);
+  \path[->] (I5) [out=330,in=150] edge [below,pos=0.15] node {$i$} (I12.west);
+\end{tikzpicture}
+\end{document}

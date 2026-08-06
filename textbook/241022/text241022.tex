@@ -1,0 +1,1506 @@
+\documentclass[dvipdfmx,a4j]{jbook}
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{here}
+\usepackage{tikz}
+\setcounter{chapter}{3}
+\setcounter{page}{20}
+%\usepackage{algorithmicx}
+%\usepackage{algpseudocodex}
+\newcounter{coffee}
+\newcounter{bean}
+\input{mymacros}
+\graphicspath{{figs241022/}}
+\begin{document}
+\chapter{構文解析}
+\section{構文解析の基礎}
+\subsection{BNF定義とCF文法}
+
+プログラミング言語の構文はCF文法(文脈自由文法, context-free grammar)によって定義される．
+
+\begin{Def}
+CF文法$G$は$G=\{N,\Sigma,P,S\}$の四つ組で定義される．
+ここで，$N$は非終端記号の集合，$\Sigma$は終端記号の集合，$P$は生成規則の集合，$S\in N$は
+開始記号である．$P$の各生成規則は $A\rightarrow\alpha$の形をしている．ここで，$A\in N$,
+$\alpha\in (N\cup\Sigma)^\ast$である．
+\end{Def}
+
+プログラミング言語の構文解析におけるCF文法では，
+$\Sigma$は字句解析によって得られるトークンの集合とするのが一般的である．
+
+PL2\footnote{学生実験cにおいて対象とする原始プログラムを記述するプログラミング言語}
+のプログラムにおける手続きの定義は以下の文法で定めらている．'\texttt{procedure}'は
+予約語，'\texttt{IDENT}'は識別子のトークン，`\texttt{(}', `\texttt{)}', `\texttt{:}'
+および`\texttt{,}'は区切り記号である．
+
+\[\begin{array}{l}
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_decl}} & \rightarrow & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ `\texttt{(}'\ `\texttt{)}'\ `\texttt{:}'\ \tuple{\mathsf{inblock}}\\
+  \tuple{\mathsf{proc\_decl}} & \rightarrow & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ '\texttt{(}'\ \tuple{\mathsf{id\_list}}\ `\texttt{:}'\ \tuple{\mathsf{inblock}}\\ 
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_name}} & \rightarrow & `\texttt{IDENT}'
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{id\_list}} & \rightarrow & `\texttt{IDENT}'\\
+  \tuple{\mathsf{id\_list}} & \rightarrow & \tuple{\mathsf{id\_list}}\ `\texttt{,}'\ `\texttt{IDENT}'
+\end{array}
+\end{array}\]
+
+$\tuple{\mathsf{proc\_decl}}$は識別子のトークンである名前$\mathsf{proc\_name}$を
+持つ手続きを定義する．本体は$\tuple{\mathsf{inblock}}$で記述されるプログラムで
+定義される．
+
+$\beta,\gamma\in(N\cup\Sigma)^\ast$,
+$A\in N$, $A\rightarrow\alpha$に対して，$\beta A\gamma\Rightarrow \beta\alpha\gamma$
+を$P$による{\bf 導出}という．導出は終端記号と非終端記号の系列に対して，
+生成規則の左辺の非終端記号を右辺で置き換える操作である．
+$\alpha_1,\alpha_2,\cdots,\alpha_n\in (N\cup\Sigma)^\ast$において，
+$\alpha_1\Rightarrow\alpha_2\Rightarrow\cdots\Rightarrow\alpha_n$のとき，
+$\alpha_1\Rightarrow^\ast\alpha_n$と書くことにする．
+
+$G$が定義する言語は$L(G)=\{w\in\Sigma^\ast\,|\,S\Rightarrow^\ast w\}$で定義される．
+すなわち開始記号$S$から$P$の生成規則を用いて導出し，すべての非終端記号が
+おきかえられた終端記号の系列である．
+
+$G$によってプログラミング言語が定義されているとき，原始プログラムを字句解析した
+系列$w$が$w\in L(G)$であるとき，構文としてそのプログラムは正しいといえる．
+$w\notin L(G)$であれば，構文エラーがあると判断し，目的コードの生成は行わない．
+
+\begin{Exmp}\label{DerivEx1}
+以下のPL2プログラムは$\tuple{\mathsf{proc\_decl}}$から生成される
+系列である．ここで，$\tuple{\mathsf{inblock}}\Rightarrow^\ast
+`\texttt{IDENT}' \texttt{:=} `\texttt{IDENT}' \texttt{+} `\texttt{NUMBER}'$
+とする．
+\begin{Verbatim}[frame=single]
+  procedure main(x,y):
+    x:=y+1
+\end{Verbatim}
+\end{Exmp}
+
+\subsubsection{BNF定義}
+
+形式的にはプログラミング言語は文脈自由文法で定義されるが，文脈自由文法では
+生成規則の集合を記述すれば十分であることが多い．このため，生成規則の集合で
+プログラミング言語を定義する．その際に一般にBNF(Backus-Nauer Form)定義と
+と呼ばれる記法が用いられる．BNFは生成規則とほぼ同じであるが，$\rightarrow$
+の代わりに$\mathtt{::=}$を用いる．また，同じ左辺をもつ規則をまとめて，
+右辺を$\texttt{|}$で並べて記載する．$\tuple{\mathsf{proc\_decl}}$についての
+BNF定義は以下のようになる．
+
+\[\begin{array}{l}
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_decl}} & \mathtt{::=} & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ `\texttt{(}'\ `\texttt{)}'\ `\texttt{;}'\ \tuple{\mathsf{inblock}}\\
+  & | & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ '\texttt{(}'\ \tuple{\mathsf{id\_list}}\ `\texttt{;}'\ \tuple{\mathsf{inblock}}\\ 
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_name}} & \mathtt{::=} & `\texttt{IDENT}'
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{id\_list}} & \mathtt{::=} & `\texttt{IDENT}'\\
+  & | & \tuple{\mathsf{id\_list}}\ `\texttt{,}'\ `\texttt{IDENT}'
+\end{array}
+\end{array}\]
+
+\subsubsection{最左導出と最右導出}
+
+導出の途中に現れる系列$\alpha\in(N\cup\Sigma)^\ast$において，$\alpha$が複数の非終端記号を含むとき
+どの非終端記号を置き換えて導出するかによって，複数の導出が存在する．
+例えば，$A,B$を非終端記号に含み，$\{a,b,c\}\subseteq\Sigma$, $A\rightarrow a$, $B\rightarrow b$
+という生成規則を持つとき，$ABc$に対する導出は$ABc\Rightarrow aBc$と
+$ABc\Rightarrow Abc$がある．$\alpha\in(N\cup\Sigma)^\ast$に対する導出のうち，
+最も左にある非終端記号を置き換える導出を{\bf 最左導出}，最も右にある非終端記号を
+置き換える導出を{\bf 最右導出}といい，それぞれ$\alpha\Rightarrow_{lm}\beta$,
+$\alpha\Rightarrow_{rm}\beta'$のように記述する．
+
+$\alpha$の$A\rightarrow\gamma$による最左導出$\alpha\Rightarrow_{lm}\beta$が
+存在するとき，$\alpha$は$\alpha_1 A\alpha_2$の形をしていて$\alpha_1\in\Sigma^\ast$
+である．すなわち，$\alpha$の$A$より左の$\alpha_1$は終端記号だけの系列か，$\varepsilon$
+であり，$\beta=\alpha_1\gamma\alpha_2$である．
+
+$\alpha$の$A\rightarrow\gamma$による最右導出$\alpha\Rightarrow_{rm}\beta$が
+存在するとき，$\alpha$は$\alpha_1 A\alpha_2$の形をしていて$\alpha_2\in\Sigma^\ast$
+である．すなわち，$\alpha$の$A$より右の$\alpha_2$は終端記号だけの系列か，$\varepsilon$
+であり，$\beta=\alpha_1\gamma\alpha_2$である．
+
+最左導出，最右導出の０回以上の繰り返しをそれぞれ$\Rightarrow_{lm}^\ast$，
+$\Rightarrow_{rm}^\ast$で表す．
+
+\begin{Exmp}
+PL2の$\tuple{\mathsf{proc\_decl}}$からの最左導出は以下のようになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{leftmost-crop.pdf}
+\end{figure}
+
+PL2の$\tuple{\mathsf{proc\_decl}}$からの最右導出は以下のようになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{rightmost-crop.pdf}
+\end{figure}
+
+
+
+\end{Exmp}
+
+開始記号$S$からの0回以上の導出によって得られる$\alpha\in(N\cup\Sigma)^\ast$
+(ここで，$S\Rightarrow^\ast\alpha$)のことを{\bf 文形式}(sential form)という．
+さらに，$S\Rightarrow_{lm}^\ast\beta$, $S\Rightarrow_{rm}^ast\gamma$となる
+$\beta,\gamma\in(N\cup\Sigma)^\ast$のことをそれぞれ左文形式，右文形式という．
+
+\subsection{解析木}
+
+導出の過程は木構造で表現することができる．非終端記号，終端記号を頂点として
+表し，$A\rightarrow\alpha$で導出したとき，$A$の頂点から
+$\alpha=\alpha_1\alpha_2\cdots\alpha_n$($\alpha_i\in N\cup\Sigma$)の$a_i$に
+有向辺を追加する．$S$からの導出をこのようにして表すと，$S$の頂点を根，
+$a\in\Sigma$の頂点を葉とする木構造が構成される．この木構造のことを{\bf 解析木}
+(parse tree)(あるいは{\bf 構文木}(syntax tree))という．
+
+例\ref{DerivEx1}の例の(最左)導出は以下のようになる．
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{derivation-crop.pdf}
+\end{figure}
+
+この導出から構成される木構造は以下のようになる．
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{derivation-tree-crop.pdf}
+\end{figure}
+
+解析木を構成するにあたって，最左導出では，開始記号は単一の記号なので，
+必ず最左の非終端記号であり，以下のような木を構成する．
+
+\begin{figure}[H]
+\centering
+\includegraphics{derivation-tree-01-crop.pdf}
+\end{figure}
+
+次に最左の非終端記号である$\NTerm{id\_list}$を導出すると
+以下の木が得られる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{derivation-tree-02-crop.pdf}
+\end{figure}
+
+このように最左導出によって構文木は根から下向きに構成される．このような構文解析を{\bf 下降型構文解析}という．
+
+入力系列に対して引数リスト$\NTerm{id\_list}$を構成する$\Term{IDENT}$に$\NTerm{id\_list}\rightarrow\Term{IDENT}$を
+逆向きに適用し，木を構成する．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{derivation-tree-up01-crop.pdf}
+\end{figure}
+
+次に，$\NTerm{id\_list}\rightarrow\NTerm{id\_list}\Term{,}\Term{IDENT}$を逆向き
+に適用する．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{derivation-tree-up02-crop.pdf}
+\end{figure}
+
+以下，右辺にマッチする生成規則を適用し，$\NTerm{inblock}$の部分木を生成する．
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics{derivation-tree-up03-crop.pdf}
+% \end{figure}
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up04-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up05-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up06-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up07-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up08-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up09-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up10-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up11-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up12-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up13-crop.pdf}
+% \end{figure}
+
+\begin{figure}[H]
+  \includegraphics{derivation-tree-up14-crop.pdf}
+\end{figure}
+
+最後に$\NTerm{proc\_decl}$を左辺に持つ規則によって木が構成される．
+
+\begin{figure}[H]
+  \includegraphics{derivation-tree-up15-crop.pdf}
+\end{figure}
+
+このように構文解析する系列に対して生成規則の右辺をマッチさせて，
+解析木を構成すると木は葉から根の方向に構成される．このような構文解析を
+{\bf 上昇型構文解析}という．
+
+\subsection{文法の曖昧性}
+
+$\NTerm{proc\_decl}$の例においては，どのような順番で生成規則を適用しても
+構成される解析木は同じである．文法によっては，生成規則の適用の順番によって
+同じ終端記号系列に対して複数の解析木が構成できることがある．
+
+CF文法$G_1=\langle \{E\},\{\mathtt{or},\mathtt{and},eqt\},P_1,E\rangle$を
+考える．ここで，
+\[P_1=\left\{\begin{array}{l}E\rightarrow E\,\mathtt{or}\,E\\
+  E\rightarrow E\,\mathtt{and}\,E\\
+  E\rightarrow eqt\end{array}\right\}
+\]
+とする．$eqt$は等式のトークンであるとする．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \includegraphics[width=0.3\textwidth]{ambiguous-tree-a-crop.pdf}
+    & &
+    \includegraphics[width=0.3\textwidth]{ambiguous-tree-b-crop.pdf}\\
+    (a) & & (b)\\
+  \end{tabular}
+  \caption{複数の解析木}\label{two-interpretations}
+\end{figure}
+
+$L(G_1)$に属する$eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,eqt$という系列に対して図\ref{two-interpretations}
+のような２つの解析木が存在する．導出において，$\underline{E}$を
+置き換えの対象となった$E$とすると，
+(a)は$\underline{E}\Rightarrow \underline{E}\,\mathtt{or}\,E
+\Rightarrow eqt\,\mathtt{or}\,\underline{E}\Rightarrow
+eqt\,\mathtt{or}\,\underline{E}\,\mathtt{and}\,E\Rightarrow 
+eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,\underline{E}\Rightarrow
+eqt\mathtt{or}eqt\mathtt{and}eqt$,
+(b)は$\underline{E}\Rightarrow \underline{E}\,\mathtt{and}\,E
+\Rightarrow \underline{E}\,\mathtt{or}\,E\,\mathtt{and}\,E
+\Rightarrow eqt\,\mathtt{or}\,\underline{E}\mathtt{and}\,E
+\Rightarrow eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,\underline{E}
+\Rightarrow eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,eqt$,
+という導出に対する解析木となる．
+
+このように１つのトークン系列に対して２つ以上の異なる解析木が存在するとき
+文法は曖昧であるという．
+
+３つの$eqt$のトークンが具体的にそれぞれ$x=1$, $y=2$, $z=3$であるとする．
+$x,y,z$がすべて$1$であるとすると，$x=1$は真，$y=2$, $z=3$は偽となる．
+$\mathtt{and}$, $\mathtt{or}$がそれぞれ論理積，論理和を表すとすると，
+(a)の解釈では，最初のeqt($x=1$)が真となるので，全体の論理式は真であるが，(b)の解釈では
+最後のeqt($z=3$)が偽であるので論理式は偽となる．
+
+曖昧な文法では入力トークンの系列の意味が定まらないため，
+プログラミング言語の文法は曖昧でないことが望まれる．
+
+論理和と論理積の場合，一般には和が積が優先されると解釈されるため，
+(a)の解釈をとる．これにそって$G_1$の曖昧さを除去した文法$G_2$を
+以下に示す．
+
+\[G_2=\langle\{E,A\},\{\mathtt{or},\mathtt{and},eqt\},P_2,E\rangle\]
+
+ここで，$P_2=\left\{\begin{array}{l}
+  E\rightarrow E\,\mathtt{or}\,A\\
+  E\rightarrow A\\
+  A\rightarrow A\,\mathtt{and}\,eqt\\
+  A\rightarrow eqt\end{array}\right\}$
+
+$L(G_1)=L(G_2)$であり，$G_2$は曖昧ではない．これは，$\mathtt{and}$を$\mathtt{or}$より
+優先するために，新たな非終端記号$A$を導入して，$\mathtt{and}$が解析木で$\mathtt{or}$
+よりも葉に近いように解釈されるようにしたためである．$G_2$では，{\bf 単一生成規則}
+(single production)``$E\rightarrow A$''を導入したため解析木のサイズが増大する．
+$n$レベルの優先度の導入のために$n$個の非終端記号が導入され，$n$個の単一生成規則が
+必要になる．曖昧性を除去するトレードオフとして，解析木が大きくなり，解析により長い時間が
+かかることになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\textwidth]{unambigous-tree-crop.pdf}
+\end{figure}
+
+このため，生成規則の適用順序を決めて解析の曖昧性を除去する場合もある．C言語などの
+条件分岐は $\mathtt{else}$つきの場合と$\mathtt{if}\sim\mathtt{then}\sim\mathtt{else}\sim$，
+$\mathtt{else}$なしの場合$\mathtt{if}\sim\mathtt{then}\sim$の場合がある．
+
+\[\begin{array}{rcl}
+  \NTerm{statement} & \mathtt{::=} & \NTerm{conditional}\,|\, \cdots\\
+  \NTerm{conditional} & \mathtt{::=} & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\\
+  & | & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\,\Term{else}\,\NTerm{statement}
+\end{array}\]
+
+$b_1,b_2$を$\NTerm{expression}$から導出されるトークン列, $s_1,s_2$を$\NTerm{statement}$
+から導出されるトークン列とする．
+$\mathtt{if}\,\mathtt{(}\,b_1\,\mathtt{)}\,\mathtt{if}\,\mathtt{(},b_2\,\mathtt{)}\,s_1\,\mathtt{else}\,s_2$に
+対して図\ref{dangling-if}のような２つの解析木が存在する．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \includegraphics[width=.4\textwidth]{dangling-if-crop.pdf}
+    & &
+    \includegraphics[width=.4\textwidth]{dangling-if-2-crop.pdf}\\
+    (a) & & (b)
+  \end{tabular}
+\end{figure}
+
+C言語では，$\mathtt{else}$は最も近い条件に対するものであると解釈するので，解析木として
+(b)であると決め，曖昧さを除去している．したがって，$b_1$が真で，$b_2$が偽であると
+評価された場合に実行される．構文解析における曖昧性は望ましいものとは言えないので，
+プログラム言語を定義する場合は無曖昧なCF文法で定義することを基本とする．
+
+上記の場合は，新たな予約語$\mathtt{fi}$を導入することで，曖昧さを解消できる．
+
+\[\begin{array}{rcl}
+  \NTerm{statement} & \mathtt{::=} & \NTerm{conditional}\,|\, \cdots\\
+  \NTerm{conditional} & \mathtt{::=} & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\,\Term{fi}\\
+  & | & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\,\Term{else}\,\NTerm{statement}\,\Term{fi}
+\end{array}\]
+
+\subsection{解析木の表現}
+
+木の頂点の出力次数がわかているとき解析木をトラバースする方法に基づいて，
+木構造を１次元的に表現することができる．
+木$T$の根頂点を$root(T)$と書くことにする．$root(T)$の次数が$n$であるとき
+$root(T)$からの子を根頂点とする木を左から$T_1,T_2,\cdots,T_n$とする．
+
+\begin{itemize}
+  \item {\bf プリオーダー} $root(T)$の次に$T_1$のプリオーダー系列
+  $\mathsf{pre}(T_1)$を連結し，その次に$\mathsf{pre}(T_2)$を連結し，
+  というのを再帰的に$T_n$まで繰り返す．
+  \item {\bf インオーダー} $T_1$のインオーダーの系列$\mathsf{in}(T_1)$
+  に$root(T)$を連結し，その次に$\mathsf{in}(T_2), \cdots, \mathsf{in}(T_n)$
+  を連結する．
+  \item {\bf ポストオーダー}　$T_1$のポストオーダー$\mathsf{post}(T_1)$
+  , $\cdots \mathsf{post}(T_n)$を連結し，最後に$root(T)$を連結する．
+\end{itemize}
+
+関数を表す式$f(g(a,h(x,y,z)),b)$に対して，関数名とその引数を
+親子関係として木構造で表すと，以下のようになる．
+
+\begin{tikzpicture}
+  \node (N0) at (0,0) {$f$};
+  \node (N1) at (-1,-1) {$g$};
+  \node (N2) at (1,-1) {$b$};
+  \node (N3) at (-1.5,-2) {$a$};
+  \node (N4) at (0,-2) {$h$};
+  \node (N5) at (-1,-3) {$x$};
+  \node (N6) at (0,-3) {$y$};
+  \node (N7) at (1,-3) {$z$};
+  \path[->] (N0) edge (N1) (N0) edge (N2) (N1) edge (N3) (N1) edge (N4)
+            (N4) edge (N5) (N4) edge (N6) (N4) edge (N7);
+\end{tikzpicture}
+この木構造はプリオーダーで表すと $fgahxyzb$となる．
+
+$f$が2引数，$g$が2引数，
+$h$が3引数であることが既知であれば，この系列から関数の形を再現できる．
+
+四則演算の算術式$(4+8\times 9)\times 3-2$は以下のような構造を持つ．
+
+  \begin{tikzpicture}
+    \node (Nroot) at (0,0) {$-$};
+    \node (N1) at (-1,-1) {$\times$};
+    \node (N2) at (1,-1) {$2$};
+    \node (N11) at (-2,-2) {$+$};
+    \node (N111) at (-3,-3) {$4$};
+    \node (N12) at (0,-2) {$3$};
+    \node (N112) at (-1,-3) {$\times$};
+    \node (N1121) at (-2,-4) {$8$};
+    \node (N1122) at (0,-4) {$9$};
+    \path[->] (Nroot) edge (N1) (Nroot) edge (N2)
+              (N1) edge (N11) (N1) edge (N12)
+              (N11) edge (N111) (N11) edge (N112)
+              (N112) edge (N1121) (N112) edge (N1122);
+  \end{tikzpicture}
+  これをポストオーダー系列で表すと
+  $489\times +3\times 2-$となる．
+
+  この記法は{\bf 逆ポーランド記法}と呼ばれる．それぞれの演算の引数が
+  決まっていればスタックに対するルールに従って計算すれば式の評価が行われる．
+
+  逆ポーランド記法における評価の方法は以下のとおりである．
+  \begin{enumerate}
+    \item 数字がきたらスタックに積む
+    \item 演算がきたら引数の数だけスタックからポップして演算を施し，その結果をスタックにプッシュする．
+    \item 入力を全部読んだあとにスタックトップのあるのが評価値
+  \end{enumerate}
+
+  $489\times +3\times 2-$をスタックと対にしてこの方法で評価すると以下のようになる．
+
+  \[\begin{array}{rcl}
+    (489\times +3\times 2-,[]) & \rightarrow &(89\times +3\times 2-,[4])\\
+    & \rightarrow & (9\times +3\times 2-,[4,8])\\
+    & \rightarrow & (\times +3\times 2-,[4,8,9])\\
+    & \rightarrow & (+3\times 2-,[4,72])\\
+    & \rightarrow & (3\times 2-,[76])\\
+    & \rightarrow & (\times 2-,[76,3])\\
+    & \rightarrow & (2-,[228])\\
+    & \rightarrow & (-,[228,2])\\
+    & \rightarrow & (\varepsilon,[226])
+  \end{array}\]
+
+  プリオーダーは，木の根を開始記号とする最左導出の規則適用に相当し，
+  ポストオーダーは，木の根を開始記号とする最右導出の逆順の規則適用に
+  相当する．
+
+\subsection{FirstとFollow}
+
+入力系列$w$が与えられたとき，できるだけ効率的にCF文法に従って$w\in L(G)$
+(あるいは$w\notin L(G)$)を示したい．すなわち，$S\Rightarrow^\ast w$となる
+導出を示す必要がある．この際に導出に使う生成規則を選択する必要がある．
+例えば，$A\rightarrow aB,A\rightarrow bC$という２つの規則があり，$\beta A\gamma$
+という文形式から次の導出を行う．このとき，両方の生成規則が適用可能である．
+簡単のために最左導出であると考えると，
+$\beta\in\Sigma^\ast$であり，入力文字列$w$の接頭語が$\beta a$であるならば
+$A\rightarrow aB$を選択すべきであり，接頭語が$\beta b$であるならば，
+$A\rightarrow bC$を選択すべきである．
+
+このように次に処理すべきトークン(上の場合は$\beta$の次のトークン)によって
+生成規則の選択を決めることができる場合がある．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    $\mathsf{First}(\alpha)$ & &
+    $\mathsf{Follow}(A)$
+    \\
+  \includegraphics{firstfollow-1-crop.pdf}
+  & &
+  \includegraphics{firstfollow-2-crop.pdf}
+  \end{tabular}
+  \caption{導出の際の先読みによる決定}
+\end{figure}
+
+さらに，$A\rightarrow\varepsilon$の場合は，$A$に続く文字が何かによって
+この生成規則を適用できるかどうかを決めることができる場合がある．
+
+コンパイラの構文解析においては，このようなまだ読み込んでいない{\bf 先読み文字}の
+情報を用いて，生成規則の選択を決めることが行われる．もしこのような先読み文字の
+情報を用いない場合は，すべての選択を試してみることになる．生成規則の選択が
+まちがっていた場合は，まちがいをやりなおす{\bf バックトラック}によって規則を
+選び直さないといけなくなる．$\beta b$が接頭語であるにもかかわらず，
+$A\rightarrow aB$で書き換えた場合は，書き換えをやりなおして，$A\rightarrow bC$
+に書き換える．このとき一旦読んでしまったトークンをまた入力系列に戻す．
+このような操作には時間がかかるため，一般的なプログラミング言語の設計においては
+生成規則の解析と先読み文字によって，適用できる生成規則が一意的になるような
+CF文法で設計される．
+
+生成規則が適用されるときに生成される接頭語をFirst，生成規則が適用されて
+生成される文字列の直後の接頭語をFollowといい，これらは生成規則をあらかじめ
+解析することによって得られる．
+
+\begin{Def}
+  CF文法$G=\langle N,\Sigma,P,S\rangle$が与えられたとき，系列
+  $\alpha\in(N\cup\Sigma)^\ast$に対する$\mathsf{Follow}_1$集合を
+  以下のように定義する．
+  \begin{list}{}{}
+    \item $\alpha\Rightarrow^\ast\varepsilon$のとき，
+    $\mathsf{First}_1(\alpha)=\{a\in\Sigma\,|\,
+    \alpha\Rightarrow^\ast a\beta,\beta\in(N\cup\Sigma)^\ast\}\cup\{\varepsilon\}$
+    \item $\alpha\not\Rightarrow^\ast\varepsilon$のとき，
+    $\mathsf{First}_1(\alpha)=\{a\in\Sigma\,|\,
+    \alpha\Rightarrow^\ast a\beta,\beta\in(N\cup\Sigma)^\ast\}$
+  \end{list}
+\end{Def}
+
+$\mathsf{First}_1(\alpha)$は，$\alpha$から導出によって生成される記号列で先頭に
+出現する可能性のある終端記号の集合を表す．$\alpha$から$\varepsilon$が生成される，
+つまり，$\alpha$が導出によって消失しうる場合には，$\mathsf{First}_1(\alpha)$には
+$\varepsilon$という特別な要素を含めることにする．明らかに$\mathsf{First}_1(\varepsilon)
+=\{\varepsilon\}$である．
+
+$\alpha\in(N\cup\Sigma)^+$に対して，$\alpha$の最初の記号を$\mathsf{fst}(\alpha)$，
+最初の記号を除いた系列を$\mathsf{fol}(\alpha)$と書くことにする．($\mathsf{fst}(\alpha)\in
+N\cup\Sigma$, $\mathsf{fol}(\alpha)\in(N\cup\Sigma)^\ast$となる．)
+CF文法$\langle N,\Sigma,P,S\rangle$において，$PO_P$を以下のように定める．
+$PO_P=\{\gamma\in(N\cup\Sigma)^\ast\,|\,\beta\gamma=\alpha, \beta\in(N\cup\Sigma)^\ast,\,
+A\rightarrow\alpha\in P\}$　$PO_P$は，生成規則$A\rightarrow\alpha$の右辺$\alpha$の
+接尾語の集合を表す．
+
+$\alpha\in PO_P\cup N$に対して
+$\mathsf{First}_1(\alpha)$は，以下のようにして計算することができる．
+
+\begin{Alg}\mbox{\rm ($\mathsf{First}_1$を求めるアルゴリズム):}
+  \begin{list}{{\bf ステップ}\,{\rm\arabic{coffee}:}}{\usecounter{coffee}}
+    \item $\mathsf{First}_1(\varepsilon)\leftarrow\{\varepsilon\}$
+    \item $\alpha\in PO_P\backslash\{\varepsilon\}$に対して
+    \begin{list}{(\alph{bean})}{\usecounter{bean}}
+      \item $\mathsf{fst}(\alpha)\in\Sigma$ならば，
+      $\mathsf{First}_1(\alpha)\leftarrow \{\mathsf{fst}(\alpha)\}$
+      \item $\mathsf{fst}(\alpha)\in N$ならば，
+      $\mathsf{First}_1(\alpha)\leftarrow \varnothing$
+    \end{list}
+    \item すべての$\mathsf{First}_1(\alpha)$ ($\alpha\in PO_P\cup N$)に新たな要素が
+    追加されなくなるまで以下を繰り返す．
+    \begin{list}{(\alph{bean})}{\usecounter{bean}}
+      \item $\mathsf{fst}(\alpha)=A\in N$である$\alpha$に対して
+      $\mathsf{First}_1(\alpha)$に以下の要素を追加する．
+      \begin{list}{}{}
+        \item $\varepsilon\notin\mathsf{First}_1(A)$のとき，$\mathsf{First}_1(A)$
+        \item $\varepsilon\in\mathsf{First}_1(A)$のとき，$\mathsf{First}_(A)\backslash\{\varepsilon\}\cup\mathsf{First}_1(\mathsf{fol}(\alpha))$
+      \end{list}
+    \item $A\rightarrow\beta\in P$に対して$\mathsf{First}_1(\beta)$
+    \end{list}
+  \end{list}
+\end{Alg}
+
+\begin{Def}
+  CF文法$G=\langle N,\Sigma,P,S\rangle$に対して，$A\in N$に対する$\mathsf{Follow}_1(A)$
+  は以下のように定義される．
+  \[\begin{array}{rcl}
+  \mathsf{Follow}_1(A) & = & \{a\in\Sigma\,|\,S\Rightarrow^\ast\beta Aa\gamma,\beta,\gamma\in(N\cup\Sigma)^\ast\}\\
+  & & \cup\{\#\,|\,S\Rightarrow^\ast\beta A, \beta\in(N\cup\Sigma)^\ast\}
+  \end{array}
+  \]
+  ここで，$\#$は入力の終わりを示す記号である．
+\end{Def}
+
+\begin{Alg}\ 
+  \begin{list}{{\bf ステップ}\,{\rm \arabic{coffee}:}}{\usecounter{coffee}}
+    \item $\mathsf{Follow}_1(S)\leftarrow\{\#\}$
+    \item $A\in N\backslash\{S\}$に対して$\mathsf{Follow}_1(A)\leftarrow\varnothing$
+    \item 
+    $B\rightarrow\beta C\gamma\in P$を満たす$B,C\in N$, $\beta,\gamma\in(N\cup\Sigma)^\ast$
+    に対してすべての$\mathsf{Follow}_1(A)$($A\in N$)に新たな追加がなくなるまで以下を追加する．
+    \begin{list}{(\alph{bean})}{\usecounter{bean}}
+      \item $\varepsilon\notin\mathsf{First}_1(\gamma)$のとき，$\mathsf{First}_1(\gamma)$
+      \item $\varepsilon\in\mathsf{First}_1{\gamma}$のとき，$\mathsf{First}_1(\gamma)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(B)$
+    \end{list}
+  \end{list}
+\end{Alg}
+
+\section{下降型構文解析}
+
+\subsection{左再帰性}
+
+手続き宣言のBNFの一部を以下に再掲する．
+
+\[\begin{array}{rcl}
+\NTerm{proc\_decl} & \mathtt{::=} & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ 
+\NTerm{id\_list}\ \Term{)}\ \Term{:}\ \NTerm{inblock}\\
+\NTerm{id\_list}\ & \mathtt{::=} & \NTerm{id\_list}\ \Term{,}\ \Term{IDENT}\\
+& | & \Term{IDENT}\\
+\end{array}\]
+
+$\NTerm{proc\_decl}$からの最左導出の第一段階は
+$\NTerm{proc\_decl}\Rightarrow\Term{procedure}\ \Term{IDENT}\ \Term{(}\ \NTerm{id\_list}\ \Term{)}\ \Term{:}\ \NTerm{inblock}$であり，
+次に$\NTerm{id\_list}$に対して導出が適用される．ここで，
+$\NTerm{id\_list}\mathtt{::=}\NTerm{id\_list}\Term{,}\Term{IDENT}$は左再帰的(left-recursive)
+と呼ばれる．右辺の最初に左辺と同じ非終端記号を含むので
+
+\[\begin{array}{rcl}
+  \NTerm{id\_list} & \Rightarrow_{lm} & \NTerm{id\_list}\Term{,}\Term{IDENT}\\
+ & \Rightarrow_{lm} & \NTerm{id\_list}\Term{,}\Term{IDENT}\Term{,}\Term{IDENT}\\
+ & \Rightarrow_{lm} & \NTerm{id\_list}\Term{,}\Term{IDENT}\Term{,}\Term{IDENT}\Term{,}\Term{IDENT}\\
+ \multicolumn{3}{c}{$\vdots$}
+\end{array}\]
+
+のように同じルールが際限なく適用されて$\NTerm{id\_list}$が消えない可能性がある．
+$\NTerm{id\_list}\rightarrow\Term{IDENT}$を適用すればこの導出を止めることができるが，
+$\Term{IDENT}\in\mathsf{First}_1(\NTerm{id\_list})$であるので，
+文形式の左端によっては別の規則を選択することができない．
+
+\subsubsection{左再帰性除去}
+
+$\{A\rightarrow A\alpha, A\rightarrow\beta\}$という左再帰の規則を含む生成規則に対して，
+以下の生成規則集合は$A$から同じ文形式への導出を持ち，左再帰性を持つ規則を含まない．
+\[\begin{array}{rcl}A & \rightarrow & \beta A'\\A' & \rightarrow & \alpha A'\\A' & \rightarrow & \varepsilon\end{array}\]
+$A'$は新たな非終端記号である．
+
+これに従って$\NTerm{id\_list}$に対して左再帰性を除去すると以下のようになる．
+
+\[\begin{array}{rcl}
+  \NTerm{id\_list} & \mathtt{::=} & \Term{IDENT}\ \NTerm{id\_list'}\\
+  \NTerm{id\_list'}& \mathtt{::=} & \Term{,}\ \Term{IDENT}\ \NTerm{id\_list'}\\
+                   &    |         & \varepsilon
+\end{array}\]
+
+この場合の解析木は以下のようになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{non-leftrecursive-tree-crop.pdf}
+\end{figure}
+
+\begin{Exmp}\ 加算\texttt{+}と乗算\texttt{*}を持つ式に対して，
+  左再帰性をもつ生成規則と$E$からの導出が等しい左再帰性を除去しｈた
+  生成規則は以下のようになる．
+  \begin{center}
+  \begin{tabular}{ccc}
+    $\begin{array}{rcl}
+      E & \rightarrow & E\,\texttt{+}\,T\,|\,T\\
+      T & \rightarrow & T\,\texttt{*}\,F\,|\,F\\
+      F & \rightarrow & \texttt{(}\,E\,\texttt{)}\,|\,\Term{IDENT}
+    \end{array}$
+    & &
+    $\begin{array}{rcl}
+      E & \rightarrow & TE'\\
+      E'& \rightarrow & \texttt{+}\,TE'\ |\ \varepsilon\\
+      T & \rightarrow & FT'\\
+      T'& \rightarrow & \texttt{*}\,FT'\ |\ \varepsilon\\
+      F & \rightarrow & \texttt{(}\,E\,\texttt{)}\ |\ \Term{IDENT}
+    \end{array}$\\
+     (a) 左再帰性を持つ生成規則 & & (b) 左再帰性を除去した生成規則
+  \end{tabular}
+\end{center}
+\end{Exmp}
+
+\subsection{左括り出し}
+
+以下のBNF定義において
+
+\[\begin{array}{rcl}
+  \NTerm{conditional} & \mathtt{::=} & \Term{if}\ \NTerm{expression}\ \Term{then}\ \NTerm{statement}\ \Term{else}\ \NTerm{statement}\ \Term{fi}\\
+  & | & \Term{if}\ \NTerm{expression}\ \Term{then}\ \NTerm{statement}\ \Term{fi}
+\end{array}\]
+
+予約語$\Term{if}$を見ただけではどちらの規則を適用すればよいかわからない．
+さらに新たな非終端記号$\NTerm{conditional'}$を導入し，
+
+\[\begin{array}{rcl}
+  \NTerm{conditional} & \mathtt{::=} & \Term{if}\ \NTerm{expression}\ \Term{then}\ \NTerm{statement}\ \NTerm{conditional'}\\
+  \NTerm{conditional'}& \mathtt{::=} & \Term{else}\ \NTerm{statement}\ \Term{fi}\\
+  & | & \Term{fi}
+\end{array}\]
+
+とすれば，$\NTerm{conditional}$の規則は単一になり，$\NTerm{conditional'}$についても
+先読みトークンが$\Term{else}$か$\Term{fi}$かで決定的に規則を選択できる．
+
+同じ左辺を持つ生成規則において，右辺の共通な左端をまとめることを{\bf 左括り出し}(left-factoring)
+という．一般には $A\rightarrow \alpha\beta_1\,|\,\alpha\beta_2$に対して，新たな非終端記号
+$A'$を導入して$A\rightarrow \alpha A'$, $A'\rightarrow\beta_1\,|\,\beta_2$に変換すること
+である．
+
+\subsection{LL構文解析}
+
+必要に応じて左再帰性の除去，左括りだしを施した後，最左導出によって
+構文解析を行う．入力系列を先頭から読みながら最左導出を適用する
+構文解析は{\bf LL(Left-to-right leftmost)構文解析}と呼ばれる．
+
+\subsubsection{下向き構文解析表}
+
+最左導出において，開始記号から導出される文形式で最左に非終端記号$A$を含む文形式は
+$\beta A\gamma$の形であり，$\beta\in\Sigma^\ast$, $\gamma\in(N\cup\Sigma)^\ast$である．
+CF文法$G$の生成規則のうち，左辺に$A$を持つ生成規則が以下のようになっているとする．
+
+\[A\rightarrow\,\alpha_1\,|\,\alpha_2\,|\,\cdots\,|\,\alpha_n\]
+
+入力系列$w$に対する解析木を構成する場合，$w=\beta\beta'$であるとき
+$A\rightarrow\alpha_i$による$\beta A\gamma$の導出が$w$に到達する
+ためには，以下の条件が成り立つ必要がある．
+
+\begin{itemize}
+  \item $\beta'\not=\varepsilon$かつ$\varepsilon\notin\mathsf{First}_1(\alpha_i)$のとき
+  $\mathsf{fst}(\beta')\in\mathsf{First}_1(\alpha_i)$ 
+  \item $\beta'\not=\varepsilon$かつ$\varepsilon\in\mathsf{First}_1(\alpha_i)$のとき，
+  $\mathsf{fst}(\beta')\in\mathsf{Follow}_1(A)$
+  \item $\beta'=\varepsilon$のとき，$\alpha_i=\varepsilon$かつ$\#\in\mathsf{Follow}_1(A)$
+\end{itemize}
+
+最左導出に対する下向き構文解析表は，縦向きに非終端記号ごとの行，
+横向きに$\Sigma\cup\{\#\}$ごとの列を持つ表であり、以下のように構成される．
+
+\[A\rightarrow\,\alpha_1\,|\,\alpha_2\,|\,\cdots\,|\,\alpha_n\]
+
+であるとき、
+\begin{itemize}
+  \item $a\in\First{\alpha_i}\cap\Sigma$ならば、$A$の行、$a$の列に$A\rightarrow\alpha_i$を追加する。
+  \item $\varepsilon\in\First{\alpha_i}$ならば、$A$の行、$a\in\Follow{A}$の列に
+  $A\rightarrow\alpha_i$を追加
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \includegraphics[scale=1]{firstfollow-1-crop.pdf}
+    & \qquad & 
+    \includegraphics[scale=1]{firstfollow-2-crop.pdf}
+  \end{tabular}
+\end{figure}
+
+\subsubsection{LL(1)構文解析}
+
+\begin{Def}
+  CF文法$G$に対する下向き構文解析表において、
+  表のエントリの生成規則が高々１つであるとき、
+  $G$は{\bf LL(1)構文解析可能}である。このとき、
+  $G$は{\bf LL(1)文法}である。
+\end{Def}
+
+下向き構文解析表は，最左導出可能なすべての生成規則を数え上げる．
+したがって，
+CF文法$G$がLL(1)構文解析可能であるとき、$w\in L(G)$であるとき、
+かつ、そのときに限り、開始記号から$w$への決定的な生成規則の
+適用によって導出が存在する．明らかに下向き構文解析表以外の
+生成規則を適用しても導出を構成することはできない．
+
+LL構文解析は，構文木を最左導出で根方向から葉方向に構成する．
+先読み文字（トークン）以外の入力文字を直接参照することなく，
+適用可能な生成規則を正確に予測しながら構成するため{\bf 予測的
+構文解析}とも呼ばれる．
+
+先読み文字をk文字読んで導出の生成規則を決定できるCF文法を
+LL(k)文法という．2文字以上先読みすると一般にはより適用する
+生成規則を限定することができる．しかし，一般的には2以上の
+$k$が使われることは少ない．
+
+\subsection{拡張CF文法とELL(1)文法}
+
+拡張CF文法は，生成規則の右辺に正規表現の選択とKleene閉包
+を導入して拡張したCF文法である．この拡張によってCF文法の
+表現力が増加することはない．この拡張によってプログラミング言語
+をよりコンパクトに定義することができるようになる．
+
+\begin{Alg}
+  拡張CF文法$G=\tuple{N,\Sigma,P,S}$に対して等価なCF文法$G'=
+  \tuple{N',\Sigma',P',S'}$を以下のようにして構成できる．
+  $P$のすべての右辺が$(N\cup\Sigma)^\ast$の要素になるまで
+  ステップ\ref{exCFconv}を繰り返す．
+  \begin{list}{ステップ\arabic{coffee}:}{\usecounter{coffee}}
+    \item\label{exCFconv} $A\rightarrow e\in P$のうち$e\notin(N\cup\Sigma)^\ast$である
+    生成規則を$P$から取り除く．
+    \begin{list}{(\alph{bean})}{\usecounter{bean}}
+      \item $e=e_1\,|\,e_2$の場合：$P$に$A\rightarrow e_1$と$A\rightarrow e_2$に
+      加える．
+      \item $e=e_1e_2$の場合：新たな非終端記号$B$を導入し，
+      $A\rightarrow e_1B$と$B\rightarrow e_2$を$P$に加え，$N$に$B$を
+      追加する．
+      \item $e=e_1^\ast$の場合：新たな非終端記号$B$を導入し，
+      $A\rightarrow B$, $B\rightarrow e_1B$, $B\rightarrow\varepsilon$
+      を$P$に追加し，$N$に$B$を追加する．
+    \end{list}
+  \end{list}
+  最終的に得られた$N$を$N'$とし，$P$を$P'$とする．
+\end{Alg}
+
+変換に基づいて得られるCF文法に対して$\mathsf{First}_1(\alpha)$を
+求めることができる．この$\mathsf{First}_1$を用いて拡張CF文法に対する
+$\mathsf{First}_1$を構成できる．
+
+\begin{Def}
+  拡張CF文法の生成規則$A\rightarrow e$に対して
+  \begin{itemize}
+    \item $e=\varepsilon$のとき，$\First{e}=\{\varepsilon\}$
+    \item $e\in\Sigma$のとき, $\First{e}=\{e\}$
+    \item $e=e_1\,|\,e_2$のとき，$\First{e}=\First{e_1}\cup\First{e_2}$
+    \item $e=e_1 e_2$のとき，
+    \begin{list}{}{}
+      \item $\varepsilon\in\First{e_1}$のとき，$\First{e}=\First{e_1}\backslash\{\varepsilon\}\cup\First{e_2}$
+      \item $\varepsilon\notin\First{e_1}$のとき，$\First{e}=\First{e_1}$
+    \end{list}
+    \item $e=e_1^\ast$のとき，$\{\varepsilon\}\cup\First{e_1}$
+  \end{itemize}
+\end{Def}
+
+\begin{Def}
+  $A\rightarrow e\in P$のとき，$\Follow{e}=\Follow{A}$
+  \begin{list}{}{}
+    \item $e=e_1\,|\,e_2$のとき，$\Follow{e_1}=\Follow{e}$, $\Follow{e_2}=\Follow{e}$
+    \item $e=e_1 e_2$のとき，$\Follow{e_2}=\Follow{e}$
+    \begin{list}{}{}
+      \item $\varepsilon\in\First{e_2}$のとき，$\Follow{e_1}=\First{e_2}\backslash\{\varepsilon\}\cup\Follow{e}$
+      \item $\varepsilon\notin\First{e_2}$のとき，$\Follow{e_1}=\First{e_2}$
+    \end{list}
+    \item $e=e_1^\ast$のとき，$\Follow{e_1}=\First{e_1}\backslash\{\varepsilon\}\cup\Follow{e}$
+  \end{list}
+
+  \greentext{$\mathsf{Follow}_1$は大きな項からその部分項へ計算される．}
+\end{Def}
+
+拡張CF文法に対してもCF文法と同様に下向き構文解析表を構成することができる．
+
+\begin{Def}
+  拡張CF文法$G$に対する下向き構文解析表を構成したとき，表の各エントリーの
+  生成規則が高々１つであるとき，ELL(1)構文解析可能である．
+  このとき，$G$はELL(1)文法である．
+\end{Def}
+
+\subsection{JJTreeによる降下型構文解析プログラムの生成}
+
+JJTreeは，JavaCCのプリプロセッサである．jjtファイルには，
+生成規則と字句解析の仕様を記述する．
+
+JJTreeのプログラムには，字句解析に用いるトークンの定義と
+生成規則を表すクラスメソッドを記述する．
+例えば，$E\rightarrow T(\texttt{+}T)^\ast$といった
+生成規則は以下のようなクラスメソッドとして記述する．
+
+\begin{center}
+\begin{minipage}{0.5\textwidth}
+\begin{Verbatim}[frame=single]
+  void E() :
+  {}
+  {
+    T()
+      ( <ADDOP> T())*
+  }
+\end{Verbatim}
+\end{minipage}
+\end{center}
+
+ここで，$\texttt{<ADDOP>}$は\texttt{+}のトークンである．
+生成規則の左辺をクラスメソッドとし，本体を右辺として
+記述する．JJTreeは，下降型構文解析プログラムを生成する．
+
+JJTreeによるプログラム生成の流れを図\ref{jjtree-config}に示す．
+jjtファイルをJJTreeプロセッサに入力し，javaccファイル(.jjファイル)
+といくつかのjavaファイルが生成される．さらにjavaccで変換し，
+すべてのファイルをjavaファイルに変換する．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.8]{jjtree-config-crop.pdf}
+  \caption{jjtree-config}
+\end{figure}
+
+\subsection{例}
+
+（本内容のjavaccコードは，早乙女健治(著)：Javacc : コンパイラ・コンパイラfor Java (テクノプレス刊2003)
+からの引用によるものです．）
+
+以下の拡張CF文法で定義された四則演算式を構文解析する．
+
+\[\begin{array}{rcl}
+  \NTerm{AddExpr} & \mathtt{::=} & \NTerm{MulExpr} ((\texttt{+}|\texttt{-})\NTerm{MulExpr})*\\
+  \NTerm{MulExpr} & \mathtt{::=} & \NTerm{PrimExpr} ((\texttt{*}|\texttt{/})\NTerm{PrimExpr})*\\
+  \NTerm{PrimExpr} & \mathtt{::=} & \Term{(}\ \NTerm{AddExpr}\ \Term{)}\ |\ \Term{Literal}
+\end{array}\]
+
+\begin{Verbatim}[frame=single]
+  /** simple calculator **/
+  options {
+    STATIC=false;
+    MULTI=true;
+  }
+  PARSER_BEGIN(Calc)
+  public class Calc {
+    public static void main(String args[]) throws ParseException {
+      while (true) {
+        Calc parser = new Calc(System.in);
+        switch (parser.CalcUnit()) {
+          case -1:
+            return;
+          case 0:
+            continue;
+          default:
+   //       ((SimpleNode)parser.jjtree.rootNode()).dump("");
+            parser.jjtree.rootNode().calculate();
+        }
+      }
+    }
+  }
+  PARSER_END(Calc)
+  SKIP:
+  {
+    " "|"\r"
+  }
+  
+  TOKEN:
+  {
+      < ADDOP: "+" >
+    | < SUBOP: "-" >
+    | < MULOP: "*" >
+    | < DIVOP: "/" >
+    | < LP: "(" >
+    | < RP: ")" >
+    | < LITERAL: (["0"-"9"])* >
+    | < NL: "\n" >
+  }
+  
+  int CalcUnit() :
+  {}
+  {
+    ( AddExpr() <NL>
+      { return 1; }
+    | <NL>
+      { return 0; }
+    | <EOF>
+      { return -1; }
+    )
+  }
+  void AddExpr() #void :
+  {}
+  {
+    MulExpr()
+      (
+        <ADDOP> MulExpr() #AddNode(2)
+      | <SUBOP> MulExpr() #SubNode(2)
+      )*
+  }
+  void MulExpr() #void :
+  {}
+  {
+    PrimExpr()
+      (
+        <MULOP> PrimExpr() #MulNode(2)
+      | <DIVOP> PrimExpr() #DivNode(2)
+      )*
+  }
+  void PrimExpr() #void :
+  {}
+  {
+      Literal()
+    | <LP> AddExpr() <RP>
+  }
+  void Literal() :
+  { Token t; }
+  {
+    t=<LITERAL>
+      { jjtThis.litValue = Integer.parseInt(t.image); }
+  }  
+\end{Verbatim}
+
+\texttt{AddExpr()}内の，\verb|#AddNode(2)|, \verb|#SubNode(2)|
+\texttt{MulExpr()}内の，\verb|#MulNode(2)|, \verb|#DivNode(2)|は
+それぞれ，四則演算子が２項演算なので，２つノードが生成されれば，
+新たにノードを生成する効果を持つ．
+
+\section{上昇型構文解析}
+
+下降型構文解析は単純で効率的な構文解析手法ではあるが，CF文法が実用的には
+LL(1)文法である必要がある，LL(1)言語に用いることのできるCF文法の
+生成規則の適用と意図する構文木の対応が必ずしも
+明確ではないなどの特徴があるため，比較的シンプルで構文と意味の
+間に柔軟性がある言語の解析に向いている．下降型では，入力系列を読み取る
+ことなく，構文木の根の方向から適用する生成規則を限られた先読み文字に
+よって決定することができなければならない．
+
+これに対して，生成規則の右辺を入力および入力から導出の逆動作({\bf 還元})で
+得られた文形式に対してマッチングすることで，左辺に置き換える還元を行って，
+開始記号まで還元することによって，
+逆方向から導出を構成する構文解析手法がある．これは，構文木の葉の方向から根を
+構成するので{\bf 上昇型構文解析}と呼ばれる．ここでは，上昇型構文解析の計算機構である
+プッシュダウン変換機械(pushdown transducer)を示し，この上での上昇型構文解析として
+LR構文解析を示す．一般に用いられるLR(1)構文解析はLL(1)構文解析よりも適用できる
+CF文法の範囲が大きい．Yaccなどの構文解析プログラム生成ツールが対象としている
+LALR(1)構文解析はLL(1)構文解析とは適用できるCF文法の
+範囲は比較できないが，左括りだしや左再帰性の除去などが必要なく，構文木を直接的に
+得られるためよく用いられる．LR構文解析として，SLR(1)構文解析手法を示したのち，
+その拡張としてLR(1)構文解析手法を示す．
+
+\subsection{プッシュダウン変換機械}
+
+プッシュダウン変換機械(pushdown transducer, PDT)は，プッシュダウンオートマトンに
+出力テープを追加した計算モデルである．プッシュダウンオートマトン(PDA)はスタックへの
+プッシュ，ポップ動作によってスタック記号を容量制限のない記憶に格納することができる．
+プログラミング言語は文脈自由文法で定義されることから，その受理にはプッシュダウン
+オートマトンを用いる必要がある．さらに構文解析の際にはどの生成規則が使われたかを
+出力する必要があるので，出力テープを持つPDTを用いる．下降型構文解析においては，
+入れ子構造をもつ手続き呼び出しがスタックの働きをしている．上昇型構文解析では，
+構文解析表に従って動作するPDTを構成する．
+
+\begin{Def}
+  PDTを$T=\langle\Gamma,\Sigma,O,\Delta,I_0,F\rangle$として定義する．ここで
+  
+  \begin{tabular}{rl}
+    $\Gamma$ & スタック記号の有限集合\\
+    $\Sigma$ & 入力記号の有限集合\\
+    $O$ & 出力記号の有限集合\\
+    $\Delta$ & 遷移関数 $\Gamma^+\times\Sigma\rightarrow\Gamma^\ast\times O^\ast\times\{0,1\}$\\
+    $I_0\in\Gamma$ & 初期スタック記号\\
+    $F\subseteq\Gamma\cup\{\varepsilon\}$ & 最終スタック記号の集合
+  \end{tabular}
+\end{Def}
+
+$\Sigma$には特別の記号$\texttt{\#}$を含む．$\texttt{\#}$は入力テープの右端を示す希望である．
+$(s,i,o)$の３項組を時点表示(configuration)という．スタック$s\in\Gamma^\ast$はスタック記号の
+有限系列，入力テープ$I\in\Sigma^\ast$，出力テープ$o\in O^\ast$とする．$s$は左側が
+スタックの底，右側がスタックトップを表す．
+遷移関数$\Delta:\Gamma^+\times\Sigma\rightarrow\Gamma^\ast\times O^\ast\times\{0,1\}$によって
+時点表示を更新する．
+\begin{list}{$\bullet$}{}
+  \item $\Delta(u,a)=(w,\pi,1)$のとき，遷移を$u\xrightarrow{a}(w,\pi)$と書き，
+  PDT $T$の時点表示の更新を$(vu,ax,o)\vdash (vw,x,o\pi)$で表す．
+  \item $\Delta(u,a)=(w,\pi,0)$のとき，遷移を$u\xrightarrow{(a)}(w,\pi)$と書き，
+  PDT $T$の時点表示の更新を$(vu,ax,o)\vdash (vw,ax,o\pi)$で表す．
+\end{list}
+
+$u\xrightarrow{a}(w,\pi)$を時点表示$(vu,ax,o)$に適用するときには，$T$のスタックの上部$u$を$w$に置き換え，
+出力テープに$\pi$を追加して，$o\pi$とする．$u\xrightarrow{(a)}(w,\pi)$を時点表示$(vu,ax,o)$に
+適用するときには，スタックの上部$u$を$v$に置き換えて，出力テープに$\pi$を追加して$o\pi$とする．
+このとき，入力$a$は読み込まない．遷移を行うためには入力テープの先頭は$a$である必要があるが，
+入力テープのポインタは動かさない．この動作を{\bf 先読み}といい，$a$を{\bf 先読み記号}という．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{PDT-crop.pdf}
+  \caption{プッシュダウン変換機械(PDT)}
+\end{figure}
+
+\subsection{LR構文解析}
+
+CF文法の上昇型構文解析器(bottom-up parser)は，入力として$x\texttt{\#}\in\Sigma^\ast$
+を受取り，$x\texttt{\#}$から導出の逆関係$\Leftarrow$を用いて，入力の左側から
+{\bf 還元}(reduction)により開始記号$S$を得る．
+
+\[w=\alpha_{n}\Leftarrow\alpha_{n-1}\Leftarrow\cdots\Leftarrow\alpha_1\Leftarrow\alpha_0=S\]
+
+ここで，$\beta\alpha\gamma\Leftarrow\beta A\gamma$となる生成規則$A\rightarrow\alpha$が
+存在する．$\alpha_0$においては，$\beta=\varepsilon$である．上記の還元の系列は，逆方向から
+見ると最右導出になっている．例えば$\alpha_1=AB\Leftarrow S$であるとき，$\alpha_2=A\beta\Leftarrow AB$
+である．$A\rightarrow\alpha$による還元が$\alpha_{i+1}=\beta\alpha\gamma\Leftarrow\beta A\gamma=\alpha_i$
+であるとき，$\alpha$を$\alpha_{i+1}$の{\bf ハンドル}(handle)という．$\alpha_i$から
+決定的にハンドルを見つけて還元することが効率的な構文解析を構成するために必要である．
+$\alpha_i$におけるハンドルが$\alpha$である場合，$\alpha_i=\beta\alpha\gamma$, 
+$\beta\in\Sigma^\ast$であり，$\beta$は入力$w$の接頭語になっている．
+
+上昇型構文解析器を構成するとき，CF文法$G=\langle N,\Sigma,P,S\rangle$から
+{\bf 拡大文法}(augmented grammar)$G'=\langle N\cup\{S'\},\Sigma\cup\{\texttt{\#}\},
+P\cup\{S'\rightarrow S\#\},S'\rangle$を構成する．ここで，$S'$は新たな非終端記号
+であり，$\texttt{\#}$は終端記号である．拡大文法における上昇型構文解析では
+$S'\rightarrow S\texttt{\#}$による還元か，ハンドルが見つからない場合に終了する．
+前者の場合，最右導出が構成できて$w\in L(G)$が示され，後者の場合は，$w\notin L(G)$
+であり，構文エラーである．
+
+\begin{Exmp}
+  文法$\langle\{i,n,\texttt{+},\texttt{*},\texttt{(},\texttt{)}\},\{E\},P,E\}$に対する拡大文法は
+  $\langle\{i,n,\texttt{+},\texttt{*},\texttt{\#},\texttt{(},\texttt{)}\},\{E,S'\},P\cup\{S'\rightarrow E\texttt{\#}\},S'\rangle$
+  となる．ここで，
+  
+  $P=\left\{\begin{array}{rlcrl}
+    0: & S'\rightarrow E\texttt{\#} & & 3: & E\rightarrow \texttt{(}\,E\,\texttt{)}\\
+    1: & E\rightarrow E\,\texttt{+}\,E & & 4: & E\rightarrow i\\
+    2: & E\rightarrow E\,\texttt{*}\,E & & 5: & E\rightarrow n\\
+  \end{array}\right\}$
+
+  入力系列を$\texttt{(i+n)+i*i\#}$とする．
+  \[\begin{array}{rcl}
+    S' & \Rightarrow_{rm} & E\texttt{\#}\\
+       & \Rightarrow_{rm} & E\,\texttt{+}\,E\texttt{\#}\\
+       & \Rightarrow_{rm} & E\,\texttt{+}\,E\,\texttt{*}\,E\texttt{\#}\\
+       & \Rightarrow_{rm} & E\,\texttt{+}\,E\,\texttt{*}\,\texttt{i}\texttt{\#}\\
+       & \Rightarrow_{rm} & E\,\texttt{+}\,\texttt{i}\,\texttt{*}\,\texttt{i}\texttt{\#}\\
+       & \Rightarrow_{rm} & \texttt{(}\,E\,\texttt{)}\,\texttt{+}\,\texttt{i}\,\texttt{*}\,\texttt{i}\texttt{\#}\\
+       & \Rightarrow_{rm} & \texttt{(}\,E\,\texttt{+}\,E\,\texttt{)}\,\texttt{+}\,\texttt{i}\,\texttt{*}\,\texttt{i}\texttt{\#}\\
+       & \Rightarrow_{rm} & \texttt{(}\,E\,\texttt{+}\,n\,\texttt{)}\,\texttt{+}\,\texttt{i}\,\texttt{*}\,\texttt{i}\texttt{\#}\\
+       & \Rightarrow_{rm} & \texttt{(}\,i\,\texttt{+}\,n\,\texttt{)}\,\texttt{+}\,\texttt{i}\,\texttt{*}\,\texttt{i}\texttt{\#}\\
+      \end{array}\]
+
+これを還元によって受理するPDTの動作は以下のようになる．
+
+  \[\begin{array}{clll}
+    \multicolumn{4}{l}{(I_0,\texttt{(i+n)+i*i\#},\varepsilon)}\\
+    \vdash & (I_0\texttt{(},& \texttt{i+n)+i*i\#}, & \varepsilon)\\
+    \vdash & (I_0\texttt{(i},& \texttt{+n)+i*i\#}, & \varepsilon)\\
+    \vdash & (I_0\texttt{(}E,& \texttt{+n)+i*i\#}, & 4)\\
+    \vdash & (I_0\texttt{(}E\texttt{+},& \texttt{n)+i*i\#}, & 4)\\
+    \vdash & (I_0\texttt{(}E\texttt{+n},& \texttt{)+i*i\#}, & 4)\\
+    \vdash & (I_0\texttt{(}E\texttt{+}E,& \texttt{)+i*i\#}, & 45)\\
+    \vdash & (I_0\texttt{(}E\texttt{+}E\texttt{)},& \texttt{+i*i\#}, & 45)\\
+    \vdash & (I_0\texttt{(}E\texttt{)},& \texttt{+i*i\#}, & 451)\\
+    \vdash & (I_0E,& \texttt{+i*i\#}, & 4513)\\
+    \vdash & (I_0E\texttt{+},& \texttt{i*i\#}, & 4513)\\
+    \vdash & (I_0E\texttt{+i},& \texttt{*i\#}, & 4513)\\
+    \vdash & (I_0E\texttt{+}E,& \texttt{*i\#}, & 45134)\\
+    \vdash & (I_0E\texttt{+}E\texttt{*},& \texttt{i\#}, & 45134)\\
+    \vdash & (I_0E\texttt{+}E\texttt{*i},& \texttt{\#}, & 45134)\\
+    \vdash & (I_0E\texttt{+}E\texttt{*}E,& \texttt{\#}, & 451344)\\
+    \vdash & (I_0E\texttt{+}E,& \texttt{\#}, & 4513442)\\
+    \vdash & (I_0E,& \texttt{\#}, & 45134421)\\
+    \vdash & (I_0E\texttt{\#},& \varepsilon, & 45134421)\\
+    \vdash & (I_0S',& \varepsilon, & 451344210)\\
+  \end{array}\]
+\end{Exmp}
+
+\begin{Def}
+  最右導出$S'\Rightarrow_{rm}^\ast\alpha A w\Rightarrow_{rm}\alpha\beta w$ (ここで$w\in\Sigma\{\texttt{\#}\}$) 
+  において，$\alpha A$の接頭語および$\alpha\beta$の接頭語を$G'$の{\bf 可延頭部}(viable prefix)という．
+\end{Def}
+
+可延頭部は，上昇型構文解析において構文解析が進んでいる状態を示している．
+\subsubsection{SLR(1)構文解析}
+
+\begin{Def}
+  CF文法$G=\langle N,\Sigma,P,S\rangle$とする．
+$A\rightarrow\alpha\in P$ ($\alpha\in(N\cup\Sigma)^\ast$)に対して，$\alpha$の
+$i$番目の記号を$\alpha(i)\in N\cup\Sigma$で表す．また，$\alpha$の接頭語で
+長さが$k(\geq 0$)の系列を$\alpha(:k)$, $\alpha$の接尾語で長さ$\ell(\geq 0)$の系列を$\alpha(\ell:)$
+で表すこととする．$k=0,\ell=0$のときはそれぞれ$\varepsilon$とする．
+各生成規則$A\rightarrow\alpha$に対するLR(0)項を以下のような形を持つ
+項として定義する．
+\[[\,A\rightarrow\alpha(:k)\bullet\alpha(\ell:)\,]\]
+ここで，$|\alpha|=k+\ell$である．
+
+$G$から得られるLR(0)項の集合を$LR(0)_G$と書く．
+\end{Def}
+
+$A\rightarrow\alpha\in P$に対して，$|\alpha|=m$のとき，$m+1$個のLR(0)項が存在する．
+\begin{Exmp}\label{ArithmeticExample}
+  文法$G_{Arith}=\langle\{E,T,F\},\{i,\texttt{+},\texttt{*},\texttt{(},\texttt{)}\},P,E\rangle$
+  とする．ここで，\\$P=\left\{\begin{array}{l}
+    E\rightarrow E\texttt{+}T\,|\,T,\\
+    T\rightarrow T\texttt{*}F\,|\,F,\\
+  F\rightarrow i\,|\,\texttt{(}\,E\,\texttt{)}
+  \end{array}\right\}$とする．
+  $P$から得られるLR(0)は以下のようになる．
+  \[\begin{array}{llll}
+    [E\rightarrow\bullet E\texttt{+}T] & [E\rightarrow E\bullet\texttt{+}T]
+    & [E\rightarrow E\texttt{+}\bullet T] & [E\rightarrow E\texttt{+}T\bullet]\\\relax
+    [E\rightarrow\bullet T] & [E\rightarrow T\bullet]\\\relax
+    [T\rightarrow\bullet T\texttt{*}F] & [T\rightarrow T\bullet\texttt{*}F]
+    & [T\rightarrow T\texttt{*}\bullet F] & [T\rightarrow T\texttt{*}F\bullet]\\\relax
+    [T\rightarrow\bullet F] & [T\rightarrow F\bullet]\\\relax
+    [F\rightarrow\bullet\texttt{(}E\texttt{)}] & [F\rightarrow\texttt{(}\bullet E\texttt{)}]
+    & [F\rightarrow\texttt{(}E\bullet\texttt{)}] & [F\rightarrow\texttt{(}E\texttt{)}\bullet]\\\relax
+    [F\rightarrow\bullet i] & [F\rightarrow i\bullet]
+  \end{array}\]
+\end{Exmp}
+
+\begin{Def}
+  拡大文法の開始記号を$S'$とする．$A\rightarrow\alpha_1\alpha_2$を
+  生成規則に含む．
+  $S'\Rightarrow_{rm}^\ast\beta A w\Rightarrow_{rm}\beta\alpha_1\alpha_2 w$
+  となる導出が存在するとき，$[A\rightarrow\alpha_1\bullet\alpha_2]$を可延頭部
+  $\beta\alpha_1$に対する正準LR(0)項と呼ぶ．可延頭部$\beta\alpha_1$に対する
+  正準LR(0)項の集合を$I_0(\beta\alpha_1)$と書く．
+\end{Def}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{viable-prefix-crop.pdf}
+  \caption{導出と可延頭部}\label{derivation-viableprefix}
+\end{figure}
+
+LR構文解析は，生成規則の右辺のマッチングによって構文木を構成する．
+LR(0)項は$\bullet$
+までその生成規則の右辺にマッチングしている状態を示す(図\ref{derivation-viableprefix})．
+可延頭部$\gamma\in(N\cup\Sigma)^\ast$に対する正準LR(0)項は，以下のような
+遷移系を定義することによって計算することができる．
+
+\begin{Def}
+  CF文法$G$に対して
+  $LR(0)_G$上に以下の遷移関係$\xrightarrow{M}$を定義する．($M\in N\cup\Sigma\cup\{\varepsilon\}$)
+  $A\rightarrow\alpha\in P$において
+  \begin{list}{}{}
+    \item $a\in\Sigma$のとき
+    $[A\rightarrow\beta\bullet a\beta']\xrightarrow{a}
+    [A\rightarrow\beta a\bullet\beta']$
+    \item $X\in N$のとき
+    $[A\rightarrow\beta\bullet X\beta']\xrightarrow{X}
+    [A\rightarrow\beta X\bullet\beta']$および\\
+    \quad $X\rightarrow\gamma\in P$に対して
+    $[A\rightarrow\beta\bullet X\beta']\xrightarrow{\varepsilon}
+    [X\rightarrow\bullet \gamma]$ 
+  \end{list}
+
+  $\theta\in LR(0)_G$に対して$\mathsf{act}(\theta)=\{M\,|\,\theta\xrightarrow{\varepsilon}^\ast\xrightarrow{M}\theta',
+  M\not=\varepsilon\mbox{となる$\theta'$が存在する}\}$\\
+  $I\subseteq LR(0)_G$に対して
+  $\mathsf{act}(I)=\cup_{\theta\in I}\mathsf{act}(\theta)$とする．
+  % $LR(0)_G$を状態，$\xrightarrow{M}$をその間の状態遷移として
+  % 定められる遷移系$(LR(0)_G,\xrightarrow{M})$を$G$に対する{\bf LR(0)遷移系}
+  % と呼ぶ．
+\end{Def}
+
+\begin{Exmp}
+  例\ref{ArithmeticExample}の文法$G_{Arith}$に対する遷移は図\ref{GarithLR0}
+  のようになる．
+  \begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{LR0TS-crop.pdf}
+    \caption{$G_{Arith}$に対するLR(0)遷移}\label{GarithLR0}
+  \end{figure}
+\end{Exmp}
+
+LR(0)項を状態として，$\bullet$
+が次のシンボルに移動する遷移系によって，可延頭部が計算できる．拡大文法を考えると
+$[S'\rightarrow\bullet S\texttt{\#}]$から$[A\rightarrow\alpha_1\bullet\alpha_2]$
+への遷移
+\[[S'\rightarrow\bullet S\texttt{\#}]\xrightarrow{M_1}\cdots\xrightarrow{M_n}
+[A\rightarrow\alpha_1\bullet\alpha_2]\]
+が存在するとき，連接$M_1M_2\cdots M_n$が可延頭部となる．($M_i$には$\varepsilon$
+も含まれる．)
+
+\begin{Def}
+  $I$をLR(0)項の集合とする．$I$と$\alpha\in(N\cup\Sigma)^\ast$に対して$\mathsf{Goto}$関数を
+  以下のように定義する．
+  \[
+    \mathsf{Goto}(I,\alpha)=\begin{cases}
+      \{\theta'\,|\,\theta\xrightarrow{\varepsilon}^\ast\theta\mbox{となる$\theta\in I$が存在する}\} 
+      & \mbox{$\alpha=\varepsilon$のとき}\\
+      \mathsf{Goto}(\{\theta'\,|\,\theta\xrightarrow{M}\theta'\mbox{となる$\theta\in
+      \mathsf{Goto}(I,\beta)$が存在する})
+      & \mbox{$\alpha=\beta M$,$M\not=\varepsilon$のとき}
+    \end{cases}\]
+\end{Def}
+
+可延頭部に対する正準LR(0)項の集合は，LR(0)遷移系をNFAとみなして，部分集合構成法を
+用いて決定的な遷移をもつ遷移系に変換することによって求めることができる．
+
+\begin{Alg}
+  以下の手順に沿って構成される遷移系$\Theta=(\mathcal{S},\mathcal{E})$を{\bf 正準LR(0)遷移系}とよぶ．
+  $\mathcal{S}$は$\Theta$の状態，$\mathcal{E}$は$\Theta$の辺である．
+  \begin{list}{{\rm\bf ステップ\arabic{coffee}}:}{\usecounter{coffee}}
+    \item $I_0=\mathsf{Goto}([S'\rightarrow S\texttt{\#}\,],\varepsilon)$とする．
+    \item $\Theta\leftarrow(\{I_0\},\varnothing)$;$T\leftarrow\{I_0\}$
+    \item\label{loopLR0} $T=\varnothing$ならば終了する．$\Theta$に正準LR(0)遷移系が得られる．
+    \item $I\in T$を選び，$T$から削除する．
+    \item すべての$M\in\mathsf{act}(I)$に対して，$I'=\{\theta'\,|\,\theta\in I,\theta
+    \xrightarrow{\varepsilon}^\ast\xrightarrow{M}\xrightarrow{\varepsilon}^\ast\theta'\}$
+    を構成する．
+    \begin{list}{}{}
+      \item $I'\notin\mathcal{S}$ならば，$T$に$I'$を
+        $\mathcal{S}$に$I'$を追加し，$\mathcal{E}$に$I\xrightarrow{M}I'$を追加する．
+      \item $I'\in\mathcal{S}$ならば，$\mathcal{E}$に$I\xrightarrow{M}I'$を追加する．
+    \end{list}
+    \item ステップ\ref{loopLR0}へもどる．
+  \end{list}  
+\end{Alg}
+
+正準LR(0)遷移系は，正準LR(0)オートマトンと言われることもある．
+
+\begin{Prop}
+$\theta$が可延頭部$\alpha$に対する正準LR(0)項であるとき，かつそのときに限り
+$\theta\in\mathsf{Goto}(I_0,\alpha)$である．
+\end{Prop}
+
+\begin{Exmp}
+  $G_{Arith}$の正準LR(0)遷移系は図\ref{LR0TSDet}のようになる．
+  \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.8]{LR0TSDet-crop.pdf}
+    \caption{$G_{Arith}$のLR(0)遷移系}\label{LR0TSDet}
+  \end{figure}
+\end{Exmp}
+
+\paragraph{LR(0)構文解析}
+
+正準LR(0)遷移系をPDT上で動作させることによってLR(0)構文解析を行う．
+PDTのスタック上には常に次の形で記号を書き込む．ここで，$I_i$はLR(0)遷移系の
+状態であり，$M_i$は$N\cup\Sigma$の要素である．
+
+\[I_0 M_1 I_1 M_2\cdots M_n I_n\]
+
+スタックトップから$M_{i+1},\cdots,M_n$を抽出して，生成規則の右辺とマッチさせる．
+マッチングが成功している場合，LR(0)項は，
+$[A\rightarrow M_{i+1}\cdots M_n\bullet]$の形のLR(0)項によって{\bf 還元}され，
+スタックの内容を$A$でおきかえる．これは$A$の遷移が可能になったことを示すので，
+$M_1$の前にある状態から$A$の遷移で移動可能な状態$I$をスタックにプッシュし，
+使われた生成規則の番号を出力テープに出力する($\ast$)．
+これに対して，$[A\rightarrow\alpha\bullet]$という状態に達していない場合は，
+$M$をスタックにプッシュして，移動した先の状態$I_i$をプッシュする($\dagger$)．
+($\ast$)の振舞いを{\bf 還元動作}，($\dagger$)の振舞いを{\bf シフト動作}と呼ぶ．
+
+\begin{list}{}{}
+  \item [{\bf 還元}]
+  スタックが$I_0X_1I_1\cdots X_{n}I_n$であり，
+$[A\rightarrow X_{i+1}X_{i+2}\cdots X_n\bullet]\in I_n$となる場合，
+スタックトップ(系列の右側)から$X_{i+1}I_{i+1}\cdots X_nI_n$をポップして
+$A$をプッシュして，$I_0X_1\cdots I_iAI'_{i+1}$とする．ここで，
+$I'_{i+1}=\mathsf{Goto}(I_i,A)$，$A\rightarrow X_{i+1}\cdots X_n$の生成規則
+を$r$とする．
+\[\begin{array}{cl}
+  & (I_0X_1I_1\cdots I_iX_{i+1}I_{i+1}\cdots X_nI_n,aw,\pi)\\
+  \vdash & (I_0X_1I_1\cdots I_iAI'_{i+1},aw,\pi r)
+\end{array}\]
+
+  \item [{\bf シフト}]
+  $a\in\Sigma$,
+  $[A\rightarrow X_{i+1}\cdots X_n\bullet a X_{n+1}\cdots X_m]\in I_n$であるとき，
+  スタックに$a I_{n+1}$ ($I_{n+1}=\mathsf{Goto}(I_n,a)$) をプッシュする．
+
+  \[\begin{array}{cl}
+      & (I_0X_1I_1\cdots X_nI_n,aw,\pi)\\
+  \vdash & (I_0X_1I_1\cdots X_nI_n a I_{n+1},w,\pi)
+  \end{array}
+  \]
+  \item [{\bf 受理}]
+  $[S'\rightarrow X\texttt{\#}\in I_n]$かつ入力系列が$\texttt{\#}$であるとき，
+  受理する．
+  \[\begin{array}{cl}
+    & (I_0SI_1,\texttt{\#},\pi)\\
+  \vdash & (acc,\varepsilon,\pi 0)
+  \end{array}\]
+  受理動作は，規則0($S'\rightarrow S\texttt{\#}$)による還元動作である．
+  この場合，スタックに特別な記号$acc$を書き込む．
+  \item [{\bf エラー}]
+  還元，シフト，受理のいずれもが不可能である場合，構文エラーとなり停止する．
+\end{list}
+
+$I_0$のスタックから開始して，$I_0X_1I_1\cdots X_iI_i$となっている場合，
+$I_i=\mathsf{Goto}(I_0,X_1\cdots X_i)$であり，$\theta\in I_i$は，
+可延頭部$X_1\cdots X_i$に対するLR(0)項である．
+
+これらの動作は以下のようなPDTで実現される．
+
+\begin{Alg}\label{PDTLR0}\ 
+\begin{list}{{\rm\bf ステップ \arabic{coffee}:}}{\usecounter{coffee}}
+  \item 正準LR(0)遷移系$(\mathcal{S},\mathcal{E})$を構成し，LR(0)項
+  $[S'\rightarrow\bullet S\texttt{\#}]$を含む$\mathcal{S}$の要素を
+  初期状態$I_0$とする．
+  \item $[A\rightarrow X_1\cdots X_n\bullet]\in I\in\mathcal{S}$, $a\in\Sigma$
+  に対して次の遷移規則を追加する．
+  \[(IX_1I_1\cdots X_nI_n,a)\xrightarrow{(a)}(A,r)\]
+  ここで$I\xrightarrow{X_1}I_1,I_i\xrightarrow{X_i}I_{i+1}\in\mathcal{E}$であり，
+  $r$は$A\rightarrow X_1\cdots X_n$の生成規則の番号である．
+  \item $I\xrightarrow{M}I'\in\mathcal{E}$に対して 
+  $\theta=[A\rightarrow X_1\cdots X_i\bullet a X_{i+1}\cdots X_n]\in I$,
+  $\theta'=[A\rightarrow X_1\cdots X_i a\bullet X_{i+1}\cdots X_n]\in I'$のとき
+  次の遷移規則を追加する．($a\in\Sigma$)
+  \[(I_0X_1I_1\cdots X_iI,a)\xrightarrow{a}(I_0X_1I_1\cdots X_iIaI',\varepsilon)\]
+  ここで$I_i\xrightarrow{X_{i+1}}I_{i+1}\in\mathcal{E}$である．
+  \item $[S'\rightarrow S\bullet\texttt{\#}]\in I\in\mathcal{S}$に対して次の遷移規則を
+  追加する．
+  \[(I'SI,\texttt{\#})\xrightarrow{\texttt{\#}}(acc,0)\]
+\end{list}
+\end{Alg}
+
+このPDTを$PDT_{LR0(G)}$と書くことにする．
+\begin{Prop}
+  CF文法$G$に対して，拡大文法を$G'$とする．
+  $w\in L(G)$であるとき，かつ，そのときに限り，$PDT_{LR0(G')}$は
+  $w\texttt{\#}$を受理する．
+\end{Prop}
+
+\begin{Def}
+  CF文法$G$の拡大文法を$G'$とする．
+  CF文法$G$による$w\in\Sigma^\ast$に対するLR(0)構文解析は，$PDT_{LR0(G')}$において，
+  $(I,w\texttt{\#},\varepsilon)$からの$\vdash$による
+  計算である．
+  $PDT_{LR0(G')}$の遷移関数$\Delta$において，$\Delta(u,a)$の数が
+  任意の$u,a$に対してたかだか1であるとき，{\bf LR(0)構文解析可能}である．
+  LR(0)構文解析可能なCF文法を{\bf LR(0)文法}という．
+\end{Def}
+
+LR(0)文法はそのままではあまり実用的ではない．$G_{Arith}$のLR(0)遷移系において，
+$I_2$の状態は$[E\rightarrow T\bullet]$を含み，$[E\rightarrow T\bullet\texttt{*}F]$
+も含むことから，PDTは入力記号$\texttt{*}$に対して，還元とシフトに相当する
+遷移が可能である．(すなわち$G_{Arith}$はLR(0)文法ではない．)
+
+$(u,a)\xrightarrow{(a)}(AI,\pi)$となる$(AI,\pi)$が複数ある場合，
+{\bf Reduce/Reduceコンフリクト}，
+$(u,a)\xrightarrow{(a)}(AI,\pi)$と$(u,a)\xrightarrow{a}(uaI,a)$が両方存在
+する場合{\bf Shift/Reduceコンフリクト}があるという．
+
+先読み文字の機能を導入すれば，$I_2$において$[E\rightarrow T\bullet]$からの
+還元動作で受理に至る可能性があるのは，$\mathsf{Follow}_1(E)$に
+先読み文字が含まれている場合である．
+先読み文字が$\texttt{*}$
+であれば，スタックに$\texttt{+}I_7$を追加するシフト動作を行う．
+$G_{Arith}$において，$\mathsf{Follow}_1(E)=\{\texttt{\#},\texttt{+},\texttt{)}\}$
+であるので，PDTの動作が定まる．
+
+アルゴリズム\ref{PDTLR0}のPDTの構成を以下のように修正する．
+
+\begin{list}{}{}
+  \item {\bf ステップ2':}
+  $[A\rightarrow X_1\cdots X_n\bullet]\in I\in\mathcal{S}$に対して
+  $a\in\mathsf{Follow}_1(A)$に対して次の遷移規則を追加する．
+
+  \[(IX_1I_1\cdots X_nI_n,a)\xrightarrow{(a)}(A,r)\]
+  ここで$I\xrightarrow{X_1}I_1,I_i\xrightarrow{X_i}I_{i+1}\in\mathcal{E}$であり，
+  $r$は$A\rightarrow X_1\cdots X_n$の生成規則の番号である．
+\end{list}
+
+この修正を適用して得られるPDTを$PDT_{SLR(1)}$と書く．
+
+\begin{Def}
+  CF文法$G$の拡大文法を$G'$とする．
+  CF文法$G$による$w\in\Sigma^\ast$に対するSLR(1)構文解析は，$PDT_{SLR1(G')}$において，
+  $(I,w\texttt{\#},\varepsilon)$からの$\vdash$による
+  計算である．
+  $PDT_{SLR1(G')}$の遷移関数$\Delta$において，$\Delta(u,a)$の数が
+  任意の$u,a$に対してたかだか1であるとき，{\bf SLR(1)構文解析可能}である．
+  SLR(1)構文解析可能なCF文法を{\bf SLR(1)文法}という．
+\end{Def}
+
+\begin{Exmp}
+  $G_{Arith}$に対するPDTは図\ref{Arith-PDT}のように定義される．
+  \begin{figure}[H]
+    \centering
+    \includegraphics{PDTtran-r1-crop.pdf}
+    \caption{$PDT_{SLR1(G_{Arith})}$}\label{Arith-PDT}
+  \end{figure}
+\end{Exmp}
+
+\paragraph{SLR(1)構文解析表}
+$PDT_{SLR1(G')}$の遷移関数を構文解析表の形で書くことが多い．
+SLR(1)構文解析表では，LR(0)遷移系の状態と先読み文字による動作の
+対応(action表)と，非終端記号$A$を還元した後のPDTの振舞い(GOTO表)を示す．
+
+\begin{figure}[H]
+\[
+\begin{array}{|c|cccc|ccc|}\hline
+  & \multicolumn{4}{|c}{action} & \multicolumn{3}{|c|}{GOTO}\\\cline{2-8}
+  & \cdots & \texttt{a} & \cdots & \texttt{\#} & \cdots & A & \cdots\\\hline
+I_0 &     &             &        &             &        &   &       \\
+\vdots &  &             &        &             &        &   &       \\
+I_n &     &             &        &             &        &   &       \\\hline
+\end{array}
+\]
+\caption{SLR(1)構文解析表の形}\label{SLR1ParseTable}
+\end{figure}
+
+action表では，スタックトップにあるLR(0)遷移系の状態$I$で
+先読み文字$a\in\Sigma\cup\{\texttt{\#}\}$となったとき，
+\begin{list}{}{}
+  \item $(uI,a)\xrightarrow{(a)}(A,\pi)$が$\Delta$で定義されていれば，
+  $r\pi$を$I$の行の$a$の欄に追加する．
+  \item $(uI,a)\xrightarrow{a}(uIaI',\varepsilon)$が$\Delta$で定義されていれば，
+  $sI'$を$I$の行の$a$の欄に追加する．
+\end{list}
+
+$r\pi$は還元動作，$sI$はシフト動作を意味する．
+
+GOTO表では，$(uI,a)\xrightarrow{(a)}(AI',\pi)$が$\Delta$で定義されていれば，
+$I'$を$I$の行の$A$の欄に追加する．
+
+構文解析表を構成してaction表にたかだか１つの動作しか記入されていなければ，
+SLR(1)構文解析可能であり，その文法はSLR(1)文法である．
+LR(0)遷移系の構成からGOTO表の欄にはたかだか１つの状態しか記入されない．
+
+\begin{Exmp}
+  $G_{Arith}$に対するSLR(1)構文解析表を図\ref{GarithSLR1}に示す．
+  \begin{figure}[H]
+    \centering
+    \includegraphics{SLR1tab-crop.pdf}
+    \caption{$G_{Arith}$のSLR(1)構文解析表}\label{GarithSLR1}
+  \end{figure}
+\end{Exmp}
+
+% \subsubsection{LR(1)構文解析}
+
+% SLR(1)構文解析は，上昇型構文解析として最も単純な解析手法である\footnote{
+%   SLR=Simple LRの意味}．
+% しかし，適用範囲はあまり大きくない．以下のCF文法$G_{=}$は，SLR(1)
+% 構文解析可能ではない．
+
+% このため，マッチング状態に含まれる文脈情報を増やしたLR(1)構文解析を
+% 考える．LR(0)項を構成する生成規則で還元されたときの次の文字を含めた
+% LR(1)項を考える．LR(1)項に加える文字は，生成規則の左辺$A$の
+% $\mathsf{Follow}_1(A)$のみで十分である．他のLR(1)項は受理計算には
+% 現れない．（すべてエラー状態である．）
+
+% \subsubsection{LALR(1)構文解析}
+
+% \subsection{演算子順位法}
+
+% \section{構文エラー表示と誤り回復}
+
+\end{document}

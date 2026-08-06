@@ -1,0 +1,63 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\include{mymacros}
+\begin{document}
+\begin{tikzpicture}
+  \node (N0) at (0,0) {$\NTerm{proc\_decl}$};
+  \node (N01) at (-6,-9) {$\Term{procedure}$};
+  \node (N02) at (-4,-9) {$\Term{IDENT}$};
+  \node (N03) at (-3,-9) {$\Term{(}$};
+  \node (N04) at (0,-2) {$\NTerm{id\_list}$};
+  \node (N05) at (1,-9) {$\Term{)}$};
+  \node (N06) at (1.5,-9) {$\Term{:}$};
+  \node (N07) at (3,-1) {$\NTerm{inblock}$};
+  \node (N041) at (-2,-4) {$\NTerm{id\_list}$};
+  \node (N042) at (-1,-9) {$\Term{,}$};
+  \node (N043) at (0,-9) {$\Term{IDENT}$};
+  \node (N0411) at (-2,-9) {$\Term{IDENT}$};
+  \node (N071) at (3,-2) {$\NTerm{var\_decl\_part}$};
+  \node (N072) at (5.5,-2) {$\NTerm{statement}$};
+  \node (N0721) at (5,-3) {$\NTerm{assignment\_statement}$};
+  \node (N07211) at (2.5,-9) {$\Term{IDENT}$};
+  \node (N07212) at (3.5,-9) {$\Term{:=}$};
+  \node (N07213) at (5.5,-4) {$\NTerm{expression}$};
+  \node (N072131) at (5,-5) {$\NTerm{expression}$};
+  \node (N0721311) at (5,-6) {$\NTerm{term}$};
+  \node (N07213111) at (5,-7) {$\NTerm{factor}$};
+  \node (N072131111) at (5,-8) {$\NTerm{var\_name}$};
+  \node (N0721311111) at (5,-9) {$\Term{IDENT}$};
+  \node (N072132) at (6.25,-9) {$\Term{+}$};
+  \node (N072133) at (7.6,-5) {$\NTerm{term}$};
+  \node (N0721331) at (7.6,-6) {$\NTerm{factor}$};
+  \node (N07213311) at (7.6,-7) {$\NTerm{number}$};
+  \node (N072133111) at (7.6,-9) {$\Term{NUMBER}$};
+
+  \path[-] (N0) edge ($(N01)+(0,7.5)$);
+  \path[->] ($(N01)+(0,7.5)$) edge (N01);
+  \path[-] (N0) edge ($(N02)+(0,7.5)$);
+  \path[->] ($(N02)+(0,7.5)$) edge (N02);
+  \path[-] (N0) edge ($(N03)+(0,7.5)$);
+  \path[->] ($(N03)+(0,7.5)$) edge (N03);
+  \path[->] (N0) edge (N04);
+  \path[-] (N0) edge ($(N05)+(0,8)$);
+  \path[->] ($(N05)+(0,8)$) edge (N05);
+  \path[-] (N0) edge ($(N06)+(0,8)$);
+  \path[->] ($(N06)+(0,8)$) edge (N06);
+  \path[->] (N0) edge (N07);
+  \path[->] (N04) edge (N041) (N04) edge (N042) (N04) edge (N043);
+  \path[->] (N041) edge (N0411);
+  \path[->] (N07) edge (N071) (N07) edge (N072);
+  \path[->] (N072) edge (N0721);
+  \path[-] (N0721) edge ($(N07211)+(0,5)$) (N0721) edge ($(N07212)+(0,5)$);
+  \path[->] ($(N07211)+(0,5)$) edge (N07211) ($(N07212)+(0,5)$) edge (N07212);
+  \path[->] (N0721) edge (N07213);
+  \path[->] (N07213) edge (N072131) (N072131) edge (N0721311) (N0721311) edge (N07213111)
+  (N07213111) edge (N072131111) (N072131111) edge (N0721311111);
+  \path[-] (N07213) edge ($(N072132)+(0,4)$);
+  \path[->] ($(N072132)+(0,4)$) edge (N072132);
+  \path[->] (N07213) edge (N072133) (N072133) edge (N0721331) (N0721331) edge (N07213311)
+  (N07213311) edge (N072133111);
+\end{tikzpicture}
+\end{document}

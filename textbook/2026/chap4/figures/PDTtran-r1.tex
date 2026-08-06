@@ -1,0 +1,47 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\begin{document}
+ \[
+ \begin{array}{c|c}
+  \mbox{\sf Shift} & \mbox{\sf Reduce}\\[5pt]\hline
+ \begin{array}{rcl}
+  I_0 & \rightarrow^{(} & (I_0(I_4,\varepsilon)\\
+  I_0 & \rightarrow^{i} & (I_0iI_5,\varepsilon)\\
+  I_1 & \rightarrow^{+} & (I_1+I_6,\varepsilon)\\
+  I_2 & \rightarrow^{\ast} & (I_2\ast I_7,\varepsilon)\\
+  I_4 & \rightarrow^{(} & (I_4(I_4,\varepsilon)\\
+  I_6 & \rightarrow^{i} & (I_6iI_5,\varepsilon)\\
+  I_6 & \rightarrow^{(} & (I_6(I_4,\varepsilon)\\
+  I_7 & \rightarrow^{i} & (I_7iI_5,\varepsilon)\\
+  I_7 & \rightarrow^{(} & (I_7(I_4,\varepsilon)\\
+  I_8 & \rightarrow^{+} & (I_8+I_6,\varepsilon)\\
+  I_8 & \rightarrow^{)} & (I_8)I_{11},\varepsilon)\\
+  I_9 & \rightarrow^{\ast} & (I_9\ast I_7,\varepsilon)
+ \end{array} &
+ \begin{array}{rcl}
+  I_0EI_1 & \rightarrow^{(\#)} & (acc,0)\\
+  I_0EI_1+I_6TI_9 & \rightarrow^{(\#,+,))}&(I_0EI_1,1)\\
+  I_0TI_2 & \rightarrow^{(\#,+,))} & (I_0EI_1,2)\\
+  I_0TI_2\ast I_7FI_{10} & \rightarrow^{(\#,\ast,+,))}&(I_0TI_2,3)\\
+  I_0FI_3 & \rightarrow^{(\#,\ast,+,))} & (I_0TI_2,4)\\
+  I_0(I_4EI_8)I_{11} & \rightarrow^{(\#,\ast,+,))} & (I_0FI_3,5)\\
+  I_0iI_5 & \rightarrow^{(\#,\ast,+,))} & (I_0FI_3,6)\\
+  I_4EI_8+I_6TI_9 & \rightarrow^{(\#,+,))} & (I_4EI_8,1)\\
+  I_4TI_2 & \rightarrow^{(\#,+,))} & (I_4EI_8,2)\\
+  I_4TI_2\ast I_7FI_{10} & \rightarrow^{(\#,\ast,+,))}&(I_4TI_2,3)\\
+  I_4FI_3 & \rightarrow^{(\#,\ast,+,))} & (I_4TI_2,4)\\
+  I_4(I_4EI_8)I_{11} & \rightarrow^{(\#,\ast,+,))} & (I_4FI_3,5)\\
+  I_4iI_5 & \rightarrow^{(\#,\ast,+,))} &
+   (I_4FI_3,6)\\
+  I_6TI_9\ast I_7FI_{10} & \rightarrow^{(\#,\ast,+,))}&(I_6TI_9,3)\\
+  I_6FI_3 & \rightarrow^{(\#,\ast,+,))} & (I_6TI_9,4)\\
+  I_6(I_4EI_8)I_{11} & \rightarrow^{(\#,\ast,+,))} & (I_6FI_3,5)\\
+  I_6iI_5 & \rightarrow^{(\#,)\ast,+,))} &
+   (I_6FI_3,6)\\
+  I_7(I_4EI_8)I_{11} & \rightarrow^{(\#,\ast,+,))} & (I_7FI_{10},5)\\
+  I_7iI_5 & \rightarrow^{(\#,\ast,+,))} &
+   (I_7FI_{10},6)\\
+ \end{array}
+ \end{array}
+ \]
+\end{document}

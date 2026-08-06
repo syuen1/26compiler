@@ -1,0 +1,38 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node[anchor=north west] at (0.75,0.75) {$A\rightarrow\varepsilon$};
+  \node[anchor=north west] at (0,0)
+  {\hbox to 1em{}$\beta$\hbox to 1em{}};
+  \node[anchor=north west] at (1.2,0) {$A$};
+  \node[anchor=north west] at (1.75,0) {\hbox to 1em{}$\gamma$\hbox to 1em{}};
+  \draw (0,0) rectangle (1.25,-0.5);
+  \draw (1.7,0) rectangle (3,-0.5);
+  
+  % \draw (-0.7,-1.5) rectangle +(3,-0.5);
+  % \draw (0.65,-1.5) -- +(0,-0.5);
+  % \draw (1.15,-1.5) -- +(0,-0.5);
+  % \draw (2.3,-1.5) -- (3.8,-1.5);
+  % \draw (2.3,-2) -- (3.8,-2);
+  % \draw (3.8,-1.5) -- (3.8,-2);
+  % \node at (0,-1.75) {$\beta$};
+  % \node at (3.05,-1.75) {$\gamma$};
+  \draw[fill,opacity=0.15] (1.5,-1.5) rectangle +(0.5,-0.5);
+
+  \draw (0.2,-1.5) rectangle (2.8,-2);
+
+  \draw[style=dashed] (0,-0.5) -- (0.2,-1.5);
+  \draw[style=dashed] (1.2,-0.5) -- (1.5,-1.5);
+  \draw[style=dashed] (1.7,-0.5) -- (1.5,-1.5);
+  \draw[style=dashed] (3,-0.5) -- (2.8,-1.5);
+  \draw (1.5,-1.5) -- (1.5,-2);
+
+  \node at (1.75,-2.65) {\mbox{先読み文字}};
+  \path[->,thick] (1.75,-2.5) edge (1.75,-2);
+
+  \node at (5,-1) {\parbox{9zw}{先読み文字が$A$の次の文字であるとき$A\rightarrow\varepsilon$が適用可}};
+\end{tikzpicture}
+\end{document}

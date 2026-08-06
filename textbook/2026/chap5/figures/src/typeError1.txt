@@ -1,0 +1,5 @@
+char x;
+int y;
+&int z;
+arr[10] of char a;
+arr[5] of arr[5] of int m;

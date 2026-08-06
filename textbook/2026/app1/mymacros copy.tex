@@ -1,0 +1,53 @@
+\usepackage{amsthm}
+\newtheorem{Def}{定義}[chapter]
+\newtheorem{Thm}{定理}[chapter]
+\newtheorem{Prop}{命題}[chapter]
+\newtheorem{Exmp}{例}[chapter]
+\newtheorem{Alg}{アルゴリズム}[chapter]
+\newcommand{\tuple}[1]{\langle{#1}\rangle}
+\newcommand{\Term}[1]{`\mbox{$\mathtt{#1}$}'}
+\newcommand{\NTerm}[1]{\tuple{\mbox{$\mathsf{#1}$}}}
+\newcommand{\First}[1]{\mathsf{First}_1({#1})}
+\newcommand{\Follow}[1]{\mathsf{Follow}_1({#1})}
+\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
+
+\newcommand{\eof}{{\tt \#}}
+\newcommand{\ttpl}{{\tt +}}
+\newcommand{\ttsb}{{\tt -}}
+\newcommand{\ttmu}{{\tt *}}
+\newcommand{\ttdv}{{\tt /}}
+\newcommand{\ttlp}{{\tt (}}
+\newcommand{\ttrp}{{\tt )}}
+\newcommand{\tteq}{{\tt =}}
+\newcommand{\ttlt}{{\tt <}}
+
+\newcommand{\ttif}{{\tt if}}
+\newcommand{\ttfi}{{\tt fi}}
+\newcommand{\ttthen}{{\tt then}}
+\newcommand{\ttelse}{{\tt else}}
+\newcommand{\ttwhile}{{\tt while}}
+\newcommand{\ttdo}{{\tt do}}
+\newcommand{\ttod}{{\tt od}}
+
+\newcommand{\ttassgn}{{\tt :=}}
+\newcommand{\ttsc}{{\tt ;}}
+
+\newcommand{\ttand}{{\tt \&\&}}
+\newcommand{\ttor}{{\tt ||}}
+\newcommand{\ttneg}{{\tt !}}
+
+\newcommand{\rppush}[1]{\mathsf{push}\ \texttt{#1}}
+\newcommand{\rpassign}{{\tt :=}}
+\newcommand{\rpframe}[1]{\draw #1 -- ($#1+(0,1)$) #1 -- ($#1+(1.5,0)$) ($#1+(1.5,0)$) -- ($#1+(1.5,1)$);}
+\newcommand{\rpframerow}[2]{\draw ($#1}
+
+\newcommand{\newTemp}[1]{{\tt newTemp(}#1\texttt{)}}
+\newcommand{\newLabel}[1]{{\tt newLabel(}#1\texttt{)}}
+\newcommand{\generatefo}[4]{{\tt generate(}{#1},=,{#2},{#3},{#4}\texttt{)}}
+\newcommand{\generateth}[3]{{\tt generate(}{#1},=,{#2},{#3}\texttt{)}}
+\newcommand{\generatetw}[2]{{\tt generate(}{#1},=,{#2}\texttt{)}}
+\newcommand{\generateon}[1]{{\tt generate(}{#1}\texttt{)}}
+\newcommand{\generateCTL}[3]{{\tt generate(}{#1}.{#2},{#3}\texttt{)}}
+
+\newcolumntype{b}{X}
+\newcolumntype{s}{>{\hsize=.5\hsize}X}

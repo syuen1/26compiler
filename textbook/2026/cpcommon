@@ -1,0 +1,2 @@
+# /usr/bin/bash
+for x in chap? app?; do cp mymacros.tex mypackage.tex latexmkrc $x; done

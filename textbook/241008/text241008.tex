@@ -1,0 +1,469 @@
+\documentclass[dvipdfmx,a4j]{jbook}
+\usepackage{graphicx}
+\usepackage{fancyvrb}
+\usepackage{here}
+\usepackage{tikz}
+\setcounter{chapter}{3}
+\setcounter{page}{20}
+\input{mymacros}
+\graphicspath{{figs241008/}}
+\begin{document}
+\chapter{構文解析}
+\section{構文解析の基礎}
+\subsection{BNF定義とCF文法}
+
+プログラミング言語の構文はCF文法(文脈自由文法, context-free grammar)によって定義される．
+
+\begin{Def}
+CF文法$G$は$G=\{N,\Sigma,P,S\}$の四つ組で定義される．
+ここで，$N$は非終端記号の集合，$\Sigma$は終端記号の集合，$P$は生成規則の集合，$S\in N$は
+開始記号である．$P$の各生成規則は $A\rightarrow\alpha$の形をしている．ここで，$A\in N$,
+$\alpha\in (N\cup\Sigma)^\ast$である．
+\end{Def}
+
+プログラミング言語の構文解析におけるCF文法では，
+$\Sigma$は字句解析によって得られるトークンの集合とするのが一般的である．
+
+PL2\footnote{学生実験cにおいて対象とする原始プログラムを記述するプログラミング言語}
+のプログラムにおける手続きの定義は以下の文法で定めらている．'\texttt{procedure}'は
+予約語，'\texttt{IDENT}'は識別子のトークン，`\texttt{(}', `\texttt{)}', `\texttt{:}'
+および`\texttt{,}'は区切り記号である．
+
+\[\begin{array}{l}
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_decl}} & \rightarrow & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ `\texttt{(}'\ `\texttt{)}'\ `\texttt{:}'\ \tuple{\mathsf{inblock}}\\
+  \tuple{\mathsf{proc\_decl}} & \rightarrow & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ '\texttt{(}'\ \tuple{\mathsf{id\_list}}\ `\texttt{:}'\ \tuple{\mathsf{inblock}}\\ 
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_name}} & \rightarrow & `\texttt{IDENT}'
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{id\_list}} & \rightarrow & `\texttt{IDENT}'\\
+  \tuple{\mathsf{id\_list}} & \rightarrow & \tuple{\mathsf{id\_list}}\ `\texttt{,}'\ `\texttt{IDENT}'
+\end{array}
+\end{array}\]
+
+$\tuple{\mathsf{proc\_decl}}$は識別子のトークンである名前$\mathsf{proc\_name}$を
+持つ手続きを定義する．本体は$\tuple{\mathsf{inblock}}$で記述されるプログラムで
+定義される．
+
+$\beta,\gamma\in(N\cup\Sigma)^\ast$,
+$A\in N$, $A\rightarrow\alpha$に対して，$\beta A\gamma\Rightarrow \beta\alpha\gamma$
+を$P$による{\bf 導出}という．導出は終端記号と非終端記号の系列に対して，
+生成規則の左辺の非終端記号を右辺で置き換える操作である．
+$\alpha_1,\alpha_2,\cdots,\alpha_n\in (N\cup\Sigma)^\ast$において，
+$\alpha_1\Rightarrow\alpha_2\Rightarrow\cdots\Rightarrow\alpha_n$のとき，
+$\alpha_1\Rightarrow^\ast\alpha_n$と書くことにする．
+
+$G$が定義する言語は$L(G)=\{w\in\Sigma^\ast\,|\,S\Rightarrow^\ast w\}$で定義される．
+すなわち開始記号$S$から$P$の生成規則を用いて導出し，すべての非終端記号が
+おきかえられた終端記号の系列である．
+
+$G$によってプログラミング言語が定義されているとき，原始プログラムを字句解析した
+系列$w$が$w\in L(G)$であるとき，構文としてそのプログラムは正しいといえる．
+$w\notin L(G)$であれば，構文エラーがあると判断し，目的コードの生成は行わない．
+
+\begin{Exmp}\label{DerivEx1}
+以下のPL2プログラムは$\tuple{\mathsf{proc\_decl}}$から生成される
+系列である．ここで，$\tuple{\mathsf{inblock}}\Rightarrow^\ast
+`\texttt{IDENT}' \texttt{:=} `\texttt{IDENT}' \texttt{+} `\texttt{NUMBER}'$
+とする．
+\begin{Verbatim}[frame=single]
+  procedure main(x,y):
+    x:=y+1
+\end{Verbatim}
+\end{Exmp}
+
+\subsubsection{BNF定義}
+
+形式的にはプログラミング言語は文脈自由文法で定義されるが，文脈自由文法では
+生成規則の集合を記述すれば十分であることが多い．このため，生成規則の集合で
+プログラミング言語を定義する．その際に一般にBNF(Backus-Nauer Form)定義と
+と呼ばれる記法が用いられる．BNFは生成規則とほぼ同じであるが，$\rightarrow$
+の代わりに$\mathtt{::=}$を用いる．また，同じ左辺をもつ規則をまとめて，
+右辺を$\texttt{|}$で並べて記載する．$\tuple{\mathsf{proc\_decl}}$についての
+BNF定義は以下のようになる．
+
+\[\begin{array}{l}
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_decl}} & \mathtt{::=} & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ `\texttt{(}'\ `\texttt{)}'\ `\texttt{;}'\ \tuple{\mathsf{inblock}}\\
+  & | & `\texttt{procedure}'\ \tuple{\mathsf{proc\_name}}\ '\texttt{(}'\ \tuple{\mathsf{id\_list}}\ `\texttt{;}'\ \tuple{\mathsf{inblock}}\\ 
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{proc\_name}} & \mathtt{::=} & `\texttt{IDENT}'
+\end{array}\\[5pt]
+\begin{array}{rcl}
+  \tuple{\mathsf{id\_list}} & \mathtt{::=} & `\texttt{IDENT}'\\
+  & | & \tuple{\mathsf{id\_list}}\ `\texttt{,}'\ `\texttt{IDENT}'
+\end{array}
+\end{array}\]
+
+\subsubsection{最左導出と最右導出}
+
+導出の途中に現れる系列$\alpha\in(N\cup\Sigma)^\ast$において，$\alpha$が複数の非終端記号を含むとき
+どの非終端記号を置き換えて導出するかによって，複数の導出が存在する．
+例えば，$A,B$を非終端記号に含み，$\{a,b,c\}\subseteq\Sigma$, $A\rightarrow a$, $B\rightarrow b$
+という生成規則を持つとき，$ABc$に対する導出は$ABc\Rightarrow aBc$と
+$ABc\Rightarrow Abc$がある．$\alpha\in(N\cup\Sigma)^\ast$に対する導出のうち，
+最も左にある非終端記号を置き換える導出を{\bf 最左導出}，最も右にある非終端記号を
+置き換える導出を{\bf 最右導出}といい，それぞれ$\alpha\Rightarrow_{lm}\beta$,
+$\alpha\Rightarrow_{rm}\beta'$のように記述する．
+
+$\alpha$の$A\rightarrow\gamma$による最左導出$\alpha\Rightarrow_{lm}\beta$が
+存在するとき，$\alpha$は$\alpha_1 A\alpha_2$の形をしていて$\alpha_1\in\Sigma^\ast$
+である．すなわち，$\alpha$の$A$より左の$\alpha_1$は終端記号だけの系列か，$\varepsilon$
+であり，$\beta=\alpha_1\gamma\alpha_2$である．
+
+$\alpha$の$A\rightarrow\gamma$による最右導出$\alpha\Rightarrow_{rm}\beta$が
+存在するとき，$\alpha$は$\alpha_1 A\alpha_2$の形をしていて$\alpha_2\in\Sigma^\ast$
+である．すなわち，$\alpha$の$A$より右の$\alpha_2$は終端記号だけの系列か，$\varepsilon$
+であり，$\beta=\alpha_1\gamma\alpha_2$である．
+
+最左導出，最右導出の０回以上の繰り返しをそれぞれ$\Rightarrow_{lm}^\ast$，
+$\Rightarrow_{rm}^\ast$で表す．
+
+\begin{Exmp}
+PL2の$\tuple{\mathsf{proc\_decl}}$からの最左導出は以下のようになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{leftmost-crop.pdf}
+\end{figure}
+
+PL2の$\tuple{\mathsf{proc\_decl}}$からの最右導出は以下のようになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{rightmost-crop.pdf}
+\end{figure}
+
+
+
+\end{Exmp}
+
+開始記号$S$からの0回以上の導出によって得られる$\alpha\in(N\cup\Sigma)^\ast$
+(ここで，$S\Rightarrow^\ast\alpha$)のことを{\bf 文形式}(sential form)という．
+さらに，$S\Rightarrow_{lm}^\ast\beta$, $S\Rightarrow_{rm}^ast\gamma$となる
+$\beta,\gamma\in(N\cup\Sigma)^\ast$のことをそれぞれ左文形式，右文形式という．
+
+\subsection{解析木}
+
+導出の過程は木構造で表現することができる．非終端記号，終端記号を頂点として
+表し，$A\rightarrow\alpha$で導出したとき，$A$の頂点から
+$\alpha=\alpha_1\alpha_2\cdots\alpha_n$($\alpha_i\in N\cup\Sigma$)の$a_i$に
+有向辺を追加する．$S$からの導出をこのようにして表すと，$S$の頂点を根，
+$a\in\Sigma$の頂点を葉とする木構造が構成される．この木構造のことを{\bf 解析木}
+(parse tree)(あるいは{\bf 構文木}(syntax tree))という．
+
+例\ref{DerivEx1}の例の(最左)導出は以下のようになる．
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{derivation-crop.pdf}
+\end{figure}
+
+この導出から構成される木構造は以下のようになる．
+
+\begin{figure}[H]
+  \includegraphics[width=\textwidth]{derivation-tree-crop.pdf}
+\end{figure}
+
+解析木を構成するにあたって，最左導出では，開始記号は単一の記号なので，
+必ず最左の非終端記号であり，以下のような木を構成する．
+
+\begin{figure}[H]
+\centering
+\includegraphics{derivation-tree-01-crop.pdf}
+\end{figure}
+
+次に最左の非終端記号である$\NTerm{id\_list}$を導出すると
+以下の木が得られる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{derivation-tree-02-crop.pdf}
+\end{figure}
+
+このように最左導出によって構文木は根から下向きに構成される．このような構文解析を{\bf 下降型構文解析}という．
+
+入力系列に対して引数リスト$\NTerm{id\_list}$を構成する$\Term{IDENT}$に$\NTerm{id\_list}\rightarrow\Term{IDENT}$を
+逆向きに適用し，木を構成する．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{derivation-tree-up01-crop.pdf}
+\end{figure}
+
+次に，$\NTerm{id\_list}\rightarrow\NTerm{id\_list}\Term{,}\Term{IDENT}$を逆向き
+に適用する．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{derivation-tree-up02-crop.pdf}
+\end{figure}
+
+以下，右辺にマッチする生成規則を適用し，$\NTerm{inblock}$の部分木を生成する．
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics{derivation-tree-up03-crop.pdf}
+% \end{figure}
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up04-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up05-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up06-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up07-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up08-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up09-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up10-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up11-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up12-crop.pdf}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \includegraphics{derivation-tree-up13-crop.pdf}
+% \end{figure}
+
+\begin{figure}[H]
+  \includegraphics{derivation-tree-up14-crop.pdf}
+\end{figure}
+
+最後に$\NTerm{proc\_decl}$を左辺に持つ規則によって木が構成される．
+
+\begin{figure}[H]
+  \includegraphics{derivation-tree-up15-crop.pdf}
+\end{figure}
+
+このように構文解析する系列に対して生成規則の右辺をマッチさせて，
+解析木を構成すると木は葉から根の方向に構成される．このような構文解析を
+{\bf 上昇型構文解析}という．
+
+\subsection{文法の曖昧性}
+
+$\NTerm{proc\_decl}$の例においては，どのような順番で生成規則を適用しても
+構成される解析木は同じである．文法によっては，生成規則の適用の順番によって
+同じ終端記号系列に対して複数の解析木が構成できることがある．
+
+CF文法$G_1=\langle \{E\},\{\mathtt{or},\mathtt{and},eqt\},P_1,E\rangle$を
+考える．ここで，
+\[P_1=\left\{\begin{array}{l}E\rightarrow E\,\mathtt{or}\,E\\
+  E\rightarrow E\,\mathtt{and}\,E\\
+  E\rightarrow eqt\end{array}\right\}
+\]
+とする．$eqt$は等式のトークンであるとする．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \includegraphics[width=0.3\textwidth]{ambiguous-tree-a-crop.pdf}
+    & &
+    \includegraphics[width=0.3\textwidth]{ambiguous-tree-b-crop.pdf}\\
+    (a) & & (b)\\
+  \end{tabular}
+  \caption{複数の解析木}\label{two-interpretations}
+\end{figure}
+
+$L(G_1)$に属する$eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,eqt$という系列に対して図\ref{two-interpretations}
+のような２つの解析木が存在する．導出において，$\underline{E}$を
+置き換えの対象となった$E$とすると，
+(a)は$\underline{E}\Rightarrow \underline{E}\,\mathtt{or}\,E
+\Rightarrow eqt\,\mathtt{or}\,\underline{E}\Rightarrow
+eqt\,\mathtt{or}\,\underline{E}\,\mathtt{and}\,E\Rightarrow 
+eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,\underline{E}\Rightarrow
+eqt\mathtt{or}eqt\mathtt{and}eqt$,
+(b)は$\underline{E}\Rightarrow \underline{E}\,\mathtt{and}\,E
+\Rightarrow \underline{E}\,\mathtt{or}\,E\,\mathtt{and}\,E
+\Rightarrow eqt\,\mathtt{or}\,\underline{E}\mathtt{and}\,E
+\Rightarrow eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,\underline{E}
+\Rightarrow eqt\,\mathtt{or}\,eqt\,\mathtt{and}\,eqt$,
+という導出に対する解析木となる．
+
+このように１つのトークン系列に対して２つ以上の異なる解析木が存在するとき
+文法は曖昧であるという．
+
+３つの$eqt$のトークンが具体的にそれぞれ$x=1$, $y=2$, $z=3$であるとする．
+$x,y,z$がすべて$1$であるとすると，$x=1$は真，$y=2$, $z=3$は偽となる．
+$\mathtt{and}$, $\mathtt{or}$がそれぞれ論理積，論理和を表すとすると，
+(a)の解釈では，最初のeqt($x=1$)が真となるので，全体の論理式は真であるが，(b)の解釈では
+最後のeqt($z=3$)が偽であるので論理式は偽となる．
+
+曖昧な文法では入力トークンの系列の意味が定まらないため，
+プログラミング言語の文法は曖昧でないことが望まれる．
+
+論理和と論理積の場合，一般には和が積が優先されると解釈されるため，
+(a)の解釈をとる．これにそって$G_1$の曖昧さを除去した文法$G_2$を
+以下に示す．
+
+\[G_2=\langle\{E,A\},\{\mathtt{or},\mathtt{and},eqt\},P_2,E\rangle\]
+
+ここで，$P_2=\left\{\begin{array}{l}
+  E\rightarrow E\,\mathtt{or}\,A\\
+  E\rightarrow A\\
+  A\rightarrow A\,\mathtt{and}\,eqt\\
+  A\rightarrow eqt\end{array}\right\}$
+
+$L(G_1)=L(G_2)$であり，$G_2$は曖昧ではない．これは，$\mathtt{and}$を$\mathtt{or}$より
+優先するために，新たな非終端記号$A$を導入して，$\mathtt{and}$が解析木で$\mathtt{or}$
+よりも葉に近いように解釈されるようにしたためである．$G_2$では，{\bf 単一生成規則}
+(single production)``$E\rightarrow A$''を導入したため解析木のサイズが増大する．
+$n$レベルの優先度の導入のために$n$個の非終端記号が導入され，$n$個の単一生成規則が
+必要になる．曖昧性を除去するトレードオフとして，解析木が大きくなり，解析により長い時間が
+かかることになる．
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\textwidth]{unambigous-tree-crop.pdf}
+\end{figure}
+
+このため，生成規則の適用順序を決めて解析の曖昧性を除去する場合もある．C言語などの
+条件分岐は $\mathtt{else}$つきの場合と$\mathtt{if}\sim\mathtt{then}\sim\mathtt{else}\sim$，
+$\mathtt{else}$なしの場合$\mathtt{if}\sim\mathtt{then}\sim$の場合がある．
+
+\[\begin{array}{rcl}
+  \NTerm{statement} & \mathtt{::=} & \NTerm{conditional}\,|\, \cdots\\
+  \NTerm{conditional} & \mathtt{::=} & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\\
+  & | & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\,\Term{else}\,\NTerm{statement}
+\end{array}\]
+
+$b_1,b_2$を$\NTerm{expression}$から導出されるトークン列, $s_1,s_2$を$\NTerm{statement}$
+から導出されるトークン列とする．
+$\mathtt{if}\,\mathtt{(}\,b_1\,\mathtt{)}\,\mathtt{if}\,\mathtt{(},b_2\,\mathtt{)}\,s_1\,\mathtt{else}\,s_2$に
+対して図\ref{dangling-if}のような２つの解析木が存在する．
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \includegraphics[width=.4\textwidth]{dangling-if-crop.pdf}
+    & &
+    \includegraphics[width=.4\textwidth]{dangling-if-2-crop.pdf}\\
+    (a) & & (b)
+  \end{tabular}
+\end{figure}
+
+C言語では，$\mathtt{else}$は最も近い条件に対するものであると解釈するので，解析木として
+(b)であると決め，曖昧さを除去している．したがって，$b_1$が真で，$b_2$が偽であると
+評価された場合に実行される．構文解析における曖昧性は望ましいものとは言えないので，
+プログラム言語を定義する場合は無曖昧なCF文法で定義することを基本とする．
+
+上記の場合は，新たな予約語$\mathtt{fi}$を導入することで，曖昧さを解消できる．
+
+\[\begin{array}{rcl}
+  \NTerm{statement} & \mathtt{::=} & \NTerm{conditional}\,|\, \cdots\\
+  \NTerm{conditional} & \mathtt{::=} & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\,\Term{fi}\\
+  & | & \Term{if}\,\Term{(}\,\NTerm{expression}\,\Term{)}\,\NTerm{statement}\,\Term{else}\,\NTerm{statement}\,\Term{fi}
+\end{array}\]
+
+\subsection{解析木の表現}
+
+木の頂点の出力次数がわかているとき解析木をトラバースする方法に基づいて，
+木構造を１次元的に表現することができる．
+木$T$の根頂点を$root(T)$と書くことにする．$root(T)$の次数が$n$であるとき
+$root(T)$からの子を根頂点とする木を左から$T_1,T_2,\cdots,T_n$とする．
+
+\begin{itemize}
+  \item {\bf プリオーダー} $root(T)$の次に$T_1$のプリオーダー系列
+  $\mathsf{pre}(T_1)$を連結し，その次に$\mathsf{pre}(T_2)$を連結し，
+  というのを再帰的に$T_n$まで繰り返す．
+  \item {\bf インオーダー} $T_1$のインオーダーの系列$\mathsf{in}(T_1)$
+  に$root(T)$を連結し，その次に$\mathsf{in}(T_2), \cdots, \mathsf{in}(T_n)$
+  を連結する．
+  \item {\bf ポストオーダー}　$T_1$のポストオーダー$\mathsf{post}(T_1)$
+  , $\cdots \mathsf{post}(T_n)$を連結し，最後に$root(T)$を連結する．
+\end{itemize}
+
+関数を表す式$f(g(a,h(x,y,z)),b)$に対して，関数名とその引数を
+親子関係として木構造で表すと，以下のようになる．
+
+\begin{tikzpicture}
+  \node (N0) at (0,0) {$f$};
+  \node (N1) at (-1,-1) {$g$};
+  \node (N2) at (1,-1) {$b$};
+  \node (N3) at (-1.5,-2) {$a$};
+  \node (N4) at (0,-2) {$h$};
+  \node (N5) at (-1,-3) {$x$};
+  \node (N6) at (0,-3) {$y$};
+  \node (N7) at (1,-3) {$z$};
+  \path[->] (N0) edge (N1) (N0) edge (N2) (N1) edge (N3) (N1) edge (N4)
+            (N4) edge (N5) (N4) edge (N6) (N4) edge (N7);
+\end{tikzpicture}
+この木構造はプリオーダーで表すと $fgahxyzb$となる．
+
+$f$が2引数，$g$が2引数，
+$h$が3引数であることが既知であれば，この系列から関数の形を再現できる．
+
+四則演算の算術式$(4+8\times 9)\times 3-2$は以下のような構造を持つ．
+
+  \begin{tikzpicture}
+    \node (Nroot) at (0,0) {$-$};
+    \node (N1) at (-1,-1) {$\times$};
+    \node (N2) at (1,-1) {$2$};
+    \node (N11) at (-2,-2) {$+$};
+    \node (N111) at (-3,-3) {$4$};
+    \node (N12) at (0,-2) {$3$};
+    \node (N112) at (-1,-3) {$\times$};
+    \node (N1121) at (-2,-4) {$8$};
+    \node (N1122) at (0,-4) {$9$};
+    \path[->] (Nroot) edge (N1) (Nroot) edge (N2)
+              (N1) edge (N11) (N1) edge (N12)
+              (N11) edge (N111) (N11) edge (N112)
+              (N112) edge (N1121) (N112) edge (N1122);
+  \end{tikzpicture}
+  これをポストオーダー系列で表すと
+  $489\times +3\times 2-$となる．
+
+  この記法は{\bf 逆ポーランド記法}と呼ばれる．それぞれの演算の引数が
+  決まっていればスタックに対するルールに従って計算すれば式の評価が行われる．
+
+  逆ポーランド記法における評価の方法は以下のとおりである．
+  \begin{enumerate}
+    \item 数字がきたらスタックに積む
+    \item 演算がきたら引数の数だけスタックからポップして演算を施し，その結果をスタックにプッシュする．
+    \item 入力を全部読んだあとにスタックトップのあるのが評価値
+  \end{enumerate}
+
+  $489\times +3\times 2-$をスタックと対にしてこの方法で評価すると以下のようになる．
+
+  \[\begin{array}{rcl}
+    (489\times +3\times 2-,[]) & \rightarrow &(89\times +3\times 2-,[4])\\
+    & \rightarrow & (9\times +3\times 2-,[4,8])\\
+    & \rightarrow & (\times +3\times 2-,[4,8,9])\\
+    & \rightarrow & (+3\times 2-,[4,72])\\
+    & \rightarrow & (3\times 2-,[76])\\
+    & \rightarrow & (\times 2-,[76,3])\\
+    & \rightarrow & (2-,[228])\\
+    & \rightarrow & (-,[228,2])\\
+    & \rightarrow & (\varepsilon,[226])
+  \end{array}\]
+
+  プリオーダーは，木の根を開始記号とする最左導出の規則適用に相当し，
+  ポストオーダーは，木の根を開始記号とする最右導出の逆順の規則適用に
+  相当する．
+
+% \subsection{FirstとFollow}
+
+% \section{下降型構文解析}
+% \section{上昇型構文解析}
+\end{document}

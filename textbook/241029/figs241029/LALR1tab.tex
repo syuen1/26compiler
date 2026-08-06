@@ -1,0 +1,19 @@
+\documentclass{jarticle}
+\usepackage{tabularx}
+\pagestyle{empty}
+\begin{document}
+\begin{tabular}{|c||c|c|c|c|c|c|c|}\hline
+      & \multicolumn{4}{c|}{{\sf action}} & \multicolumn{3}{c|}{{\sf goto}}\\\cline{2-8}
+      & $i$ & $=$ & $+$ & $\#$ & S & E & T \\\hline\hline
+  0   & s4  &     &     &      & 1 & 2 & (3,13) \\\hline
+  1   &     &     &     & acc  &   &   &        \\\hline
+  2   &     & s5  & s(6,10) &  &   &   &        \\\hline
+(3,13)&     & r4  & r4  & r4   &   &   &        \\\hline
+  4   &     & r5  & r5  & r2   &   &   &        \\\hline
+  5   & s(9,12)   &     &     &      &   & 7 & (3,13) \\\hline
+(6,10)& s(9,12) & &     &      &   &   & (8,11) \\\hline
+  7   &     &     & s(6,10) & r1 & &   &        \\\hline
+(8,11)&     & r3  & r3  & r3   &   &   &        \\\hline
+(9,12)&     & r5  & r5  & r5   &   &   &        \\\hline
+\end{tabular}
+\end{document}

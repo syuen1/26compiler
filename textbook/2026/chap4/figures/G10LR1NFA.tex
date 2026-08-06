@@ -1,0 +1,87 @@
+\documentclass[dvipdfmx]{jarticle}
+\hoffset=-30mm
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\begin{document}
+\begin{tikzpicture}
+\node (Sd=*S_e) at (0,0) {$[S'\rightarrow\bullet S\#,\varepsilon]$};
+\node (Sd=S*_e) at ($(Sd=*S_e)+(4,0)$) {$[S'\rightarrow S\bullet\#,\varepsilon]$};
+
+\node (S=*E=E_e) at ($(Sd=*S_e)+(0,-1)$) {$[S\rightarrow\bullet E\texttt{=}E,\#]$};
+\node (S=E*=E_e) at ($(S=*E=E_e)+(4,0)$) {$[S\rightarrow E\bullet\texttt{=}E,\#]$};
+\node (S=E=*E_e) at ($(S=E*=E_e)+(4,0)$) {$[S\rightarrow E\texttt{=}\bullet E,\#]$};
+\node (S=E=E*_e) at ($(S=E=*E_e)+(4,0)$) {$[S\rightarrow E\texttt{=}E\bullet,\#]$};
+\node (E=*E+T_e) at ($(S=E=E*_e)+(0,-1)$) {$[E\rightarrow\bullet E\texttt{+}T,\#]$};
+\node (E=E*+T_e) at ($(E=*E+T_e)+(-1,-1)$) {$[E\rightarrow E\bullet\texttt{+}T,\#]$};
+\node (E=*T_e) at ($(S=E*=E_e)+(-1,-2)$) {$[E\rightarrow\bullet T,\#]$};
+\node (E=T*_e) at ($(E=*T_e)+(3,0)$) {$[E\rightarrow T\bullet,\#]$};
+\node (T=*i_e) at ($(E=*T_e)+(0,-1)$) {$[T\rightarrow\bullet i,\#]$};
+\node (T=i*_e) at ($(T=*i_e)+(3,0)$) {$[T\rightarrow i\bullet,\#]$};
+\node (E=E+*T_e) at ($(E=E*+T_e)+(0,-1)$) {$[E\rightarrow E\texttt{+}\bullet T,\#]$};
+\node (E=E+T*_e) at ($(E=E+*T_e)+(0,-1)$) {$[E\rightarrow E\texttt{+}T\bullet,\#]$};
+\node (S=*i_e) at ($(S=*E=E_e)+(0,-4)$) {$[S\rightarrow\bullet i,\#]$};
+\node (S=i*_e) at ($(S=*i_e)+(4,0)$) {$[S\rightarrow i\bullet,\#]$};
+\node (E=*E+T_=) at ($(S=*i_e)+(0,-1)$) {$[E\rightarrow\bullet E\texttt{+}T,\texttt{=}]$};
+\node (E=E*+T_=) at ($(E=*E+T_=)+(4,0)$) {$[E\rightarrow E\bullet\texttt{+}T,\texttt{=}]$};
+\node (E=E+*T_=) at ($(E=E*+T_=)+(4,0)$) {$[E\rightarrow E\texttt{+}\bullet T,\texttt{=}]$};
+\node (E=E+T*_=) at ($(E=E+*T_=)+(4,0)$) {$[E\rightarrow E\texttt{+}T\bullet,\texttt{=}]$};
+\node (E=*T_=) at ($(E=*E+T_=)+(0,-1)$) {$[E\rightarrow\bullet T,\texttt{=}]$};
+\node (E=T*_=) at ($(E=*T_=)+(4,0)$) {$[E\rightarrow T\bullet,\texttt{=}]$};
+\node (T=*i_=) at ($(E=*T_=)+(4,-1)$) {$[T\rightarrow\bullet i,\texttt{=}]$};
+\node (T=i*_=) at ($(T=*i_=)+(4,0)$) {$[T\rightarrow i\bullet,\texttt{=}]$};
+\node (E=*E+T_+) at ($(E=*T_=)+(0,-2)$) {$[E\rightarrow\bullet E\texttt{+}T,\texttt{+}]$};
+\node (E=E*+T_+) at ($(E=*E+T_+)+(4,0)$) {$[E\rightarrow E\bullet\texttt{+}T,\texttt{+}]$};
+\node (E=E+*T_+) at ($(E=E*+T_+)+(4,0)$) {$[E\rightarrow E\texttt{+}\bullet T,\texttt{+}]$};
+\node (E=E+T*_+) at ($(E=E+*T_+)+(4,0)$) {$[E\rightarrow E\texttt{+}T\bullet,\texttt{+}]$};
+\node (E=*T_+) at ($(E=*E+T_+)+(0,-1)$) {$[E\rightarrow\bullet T,\texttt{+}]$};
+\node (E=T*_+) at ($(E=*T_+)+(4,0)$) {$[E\rightarrow T\bullet,\texttt{+}]$};
+\node (T=*i_+) at ($(E=*T_+)+(4,-1)$) {$[T\rightarrow\bullet i,\texttt{+}]$};
+\node (T=i*_+) at ($(T=*i_+)+(4,0)$) {$[T\rightarrow i\bullet,\texttt{+}]$};
+%\node[inner sep=-2pt] (n0) at ($(E=E+T*_+)+(1,0.5)$) {};
+%\node[inner sep=-2pt] (n1) at ($(E=*E+T_+)+(1,0.5)$) {};
+
+\path[->] (Sd=*S_e) edge [above] node {$S$} (Sd=S*_e);
+\path[->] (S=*E=E_e) edge [above] node {$E$} (S=E*=E_e)
+          (S=E*=E_e) edge [above] node {$\texttt{=}$} (S=E=*E_e)
+          (S=E=*E_e) edge [above] node {$E$} (S=E=E*_e);
+\path[->] (S=E=*E_e) [out=270,in=180] edge [above] node {$\varepsilon$} (E=*E+T_e);
+\path[->] (E=*E+T_e) edge [left] node {$E$} (E=E*+T_e);
+\path[->] (S=E=*E_e) edge [left] node {$\varepsilon$} (E=*T_e)
+          (E=*T_e) edge [above] node {$T$} (E=T*_e);
+\path[->] (E=*T_e) edge [left] node {$\varepsilon$} (T=*i_e)
+          (T=*i_e) edge [above] node {$i$} (T=i*_e);
+\path[->] (E=E*+T_e) edge [left] node {$\texttt{+}$} (E=E+*T_e)
+          (E=E+*T_e) edge [left] node {$T$} (E=E+T*_e);          
+\path[->] (Sd=*S_e) [out=180,in=180] edge [right] node {$\varepsilon$} (S=*i_e);
+\path[->] (S=*i_e) edge [above] node {$i$} (S=i*_e);
+\path[->] (S=*E=E_e) [out=315,in=30] edge [right] node {$\varepsilon$} (E=*E+T_=);
+\path[->] (E=*E+T_=) edge [above] node {$E$} (E=E*+T_=)
+          (E=E*+T_=) edge [above] node {$\texttt{+}$} (E=E+*T_=)
+          (E=E+*T_=) edge [above] node {$T$} (E=E+T*_=);
+\path[->] (E=E+*T_=) edge [above] node {$\varepsilon$} (T=*i_=);
+\path[->] (S=*E=E_e) [out=225,in=180] edge [left] node {$\varepsilon$} (E=*T_=);
+\path[->] (E=*T_=) edge [above] node {$T$} (E=T*_=);
+\path[->] (E=*T_=) edge [above] node {$\varepsilon$} (T=*i_=);
+\path[->] (T=*i_=) edge [above] node {$i$} (T=i*_=);
+
+\path[->] (E=*E+T_=) [out=180,in=180] edge [right] node {$\varepsilon$} (E=*E+T_+);
+\path[->] (E=*E+T_=) [out=180,in=180] edge [left] node {$\varepsilon$} (E=*T_+);
+\path[->] (E=*E+T_+) edge [above] node {$E$} (E=E*+T_+)
+          (E=E*+T_+) edge [above] node {$\texttt{+}$} (E=E+*T_+)
+          (E=E+*T_+) edge [above] node {$T$} (E=E+T*_+);
+\path[->] (E=*T_+) edge [above] node {$T$} (E=T*_+);
+\path[->] (E=*T_+) edge [above] node {$\varepsilon$} (T=*i_+);
+\path[->] (T=*i_+) edge [above] node {$i$} (T=i*_+);
+\path[->] (E=E+*T_+) edge [above] node {$\varepsilon$} (T=*i_+);
+\path[->] (E=E+*T_e) [out=170,in=340] edge [above] node {$\varepsilon$} (E=*T_e);
+%\path[-] (E=*E+T_e) [out=0,in=0] edge (n0);
+%\path[-] (n0) edge [above] node {$\varepsilon$} (n1);
+%\path[->] (n1) [out=180,in=90] edge (E=*E+T_+);
+\coordinate (n0) at ($(E=E+T*_+)+(1,0.5)$) {};
+\coordinate (n1) at ($(E=*E+T_+)+(1,0.5)$) {};
+\draw (E=*E+T_e) edge [out=0,in=0] [left] node {$\varepsilon$} (n0);
+\draw (n0) to (n1);
+\draw[->] (n1) to [out=180,in=90] (E=*E+T_+);
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,104 @@
+\documentclass[dvipdfmx]{jarticle}
+\hoffset=-50mm
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\begin{document}
+\begin{tikzpicture}
+  \node[draw,rectangle,label={150:$I_0$}] (I0) at (0,0) {$\begin{array}{ll}
+    [S'\rightarrow\bullet E\texttt{\#}] & [T\rightarrow\bullet F]\\\relax
+    [E\rightarrow\bullet E\texttt{+}T] & [F\rightarrow\bullet\texttt{(}E\texttt{)}]\\\relax
+    [E\rightarrow\bullet T] & [F\rightarrow\bullet i]\\\relax
+    [T\rightarrow\bullet T\texttt{*}F] & 
+  \end{array}$};
+  \node[draw,rectangle,label={135:$I_1$}] (I1) at (-6,-3) {$
+  \begin{array}{l}
+    [S'\rightarrow E\bullet\texttt{\#}]\\\relax
+    [E\rightarrow E\bullet\texttt{+}T]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={135:$I_2$}] (I2) at (-3,-3) {$
+  \begin{array}{l}
+    [E\rightarrow T\bullet]\\\relax
+    [T\rightarrow T\bullet\texttt{*}F]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={135:$I_3$}] (I3) at (0,-3) {$
+  \begin{array}{l}
+    [T\rightarrow F\bullet]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={160:$I_4$}] (I4) at (4,-3.5) {$
+  \begin{array}{ll}
+    [F\rightarrow\texttt{(}\bullet E\texttt{)}]\\\relax
+    [E\rightarrow\bullet E\texttt{+}T] & [T\rightarrow\bullet F]\\\relax
+    [E\rightarrow\bullet T] & [F\rightarrow\bullet\texttt{(}E\texttt{)}]\\\relax
+    [T\rightarrow\bullet T\texttt{*}F] & [F\rightarrow\bullet i]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={45:$I_5$}] (I5) at (4.5,0) {$
+  \begin{array}{l}
+    [F\rightarrow i\bullet]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={155:$I_6$}] (I6) at (-6,-6) {$
+  \begin{array}{ll}
+    [E\rightarrow E\texttt{+}\bullet T] & [F\rightarrow\bullet\texttt{(}E\texttt{)}]\\\relax
+    [T\rightarrow\bullet T\texttt{*}F] & [F\rightarrow\bullet i]\\\relax
+    [T\rightarrow\bullet F] &
+  \end{array}
+  $};
+  \node[draw,rectangle,label={155:$I_7$}] (I7) at (-1,-6) {$
+  \begin{array}{l}
+    [T\rightarrow T\texttt{*}\bullet F]\\\relax
+    [F\rightarrow\bullet\texttt{(}E\texttt{)}]\\\relax
+    [F\rightarrow\bullet i]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={25:$I_8$}] (I8) at (3,-6.5) {$
+  \begin{array}{l}
+    [E\rightarrow E\bullet\texttt{+}T]\\\relax
+    [F\rightarrow \texttt{(}E\bullet\texttt{)}]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={155:$I_9$}] (I9) at (-6,-9) {$
+  \begin{array}{l}
+    [E\rightarrow E\texttt{+}T\bullet]\\\relax
+    [T\rightarrow T\bullet\texttt{*}F]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={155:$I_{10}$}] (I10) at (-2,-9) {$
+  \begin{array}{l}
+    [T\rightarrow T\texttt{*}F\bullet]
+  \end{array}
+  $};
+  \node[draw,rectangle,label={155:$I_{11}$}] (I11) at (2,-9) {$
+  \begin{array}{l}
+    [F\rightarrow \texttt{(}E\texttt{)}\bullet]
+  \end{array}
+  $};
+
+  \path[->] (I0) [bend right] edge [above] node {$E$} (I1);
+  \path[->] (I0) [bend right] edge [left] node {$T$} (I2);
+  \path[->] (I0) edge [left] node {$F$} (I3);
+  \path[->] (I0) edge [left] node {$\texttt{(}$} (I4);
+  \path[->] (I0) edge [above] node {$i$} (I5); 
+  \path[->] (I1) edge [left] node {$\texttt{+}$} (I6);
+  \path[->] (I2) edge [left,pos=0.15] node {$\texttt{*}$} (I7);
+  \path[->] (I4) [bend left] edge [below] node {$F$} (I3);
+  \path[->] (I4) edge [right] node {$E$} (I8);
+  \path[->] (I4) [bend left] edge [above,pos=0.3] node {$T$} (I2);
+  \path[->] (I4) [loop above] edge [above] node {$\texttt{(}$} ();
+  \path[->] (I4) [bend right] edge [right] node {$i$} (I5);
+  \path[->] (I6) edge [left] node {$T$} (I9);
+  \path[->] (I6) [out=45,in=210] edge [above,pos=0.2] node {$F$} (I3);
+  \path[->] (I6) [out=130,in=140,looseness=1.5] edge [left,pos=0.1] node {$i$} (I5);
+  \path[->] (I6) [out=30,in=190] edge [below,pos=0.2] node {$\texttt{(}$} (I4);
+  \path[->] (I7) edge [left] node {$F$} (I10);
+  \path[->] (I7) [out=20,in=225] edge [below,pos=0.3] node {$\texttt{(}$} (I4);
+  \path[->] (I7) [out=280,in=330,looseness=2.5] edge [left,pos=0.05] node {$i$} (I5);
+  \path[->] (I8) [out=200,in=340] edge [below,pos=0.1] node {$\texttt{+}$} (I6);
+  \path[->] (I8) edge [right] node {$\texttt{)}$} (I11);
+  \path[->] (I9) edge [below] node {$\texttt{*}$} (I7);
+\end{tikzpicture}
+\end{document}

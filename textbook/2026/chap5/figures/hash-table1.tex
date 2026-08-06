@@ -1,0 +1,24 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+\node at (0.75,0.25) {\bf ハッシュ表};
+\node at (8,0.25) {\bf 記号表};
+\draw (0,0) rectangle (1.5,-5);
+\draw (0,-2) -- (1.5,-2) (0,-2.5) -- (1.5,-2.5);
+\node at (-0.3,-2.25) {25};
+\draw (2,-2) rectangle +(1.5,-0.5);
+\draw (2.5,-2) -- (2.5,-2.5) (3,-2) -- (3,-2.5) (3.5,-2) -- (3,-2.5);
+\draw[->] (0.75,-2.25) -- +(1.25,0);
+\node at (2.25,-2.25) {\texttt{x}};\node at (2.75,-2.25) {1};
+
+\draw[style=dashed] (2.75,-2) -- (2.75,-0.25);
+\draw[->,style=dashed] (2.75,-0.25) -- (7,-0.25);
+
+\draw (7,0) rectangle +(2,-0.5);
+\draw (7.5,0) -- (7.5,-0.5) (8,0) -- (8,-0.5);
+\node at (7.25,-0.25) {1}; \node at (7.75,-0.25) {\texttt{x}};
+\end{tikzpicture}
+\end{document}

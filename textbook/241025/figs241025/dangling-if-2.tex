@@ -1,0 +1,45 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\pagestyle{empty}
+\include{mymacros}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node (N0) at (0,0) {$\NTerm{conditional}$};
+  \node (N1) at (-4.5,-3) {$\Term{if}$};
+  \node (N2) at (-4,-3) {$\Term{(}$};
+  \node (N3) at (-2.75,-3) {$\NTerm{expression}$};
+  \node (N4) at (-1.5,-3) {$\Term{)}$};
+  \node (N5) at (-0.75,-3) {$\Term{if}$};
+  \node (N6) at (-0.25,-3) {$\Term{(}$};
+  \node (N7) at (1,-3) {$\NTerm{expression}$};
+  \node (N8) at (2.25,-3) {$\Term{)}$};
+  \node (N9) at (3.5,-3) {$\NTerm{statement}$};
+  \node (N10) at (5,-3) {$\Term{else}$};
+  \node (N11) at (6.5,-3) {$\NTerm{statement}$};
+  \node (N20) at (0.5,-2) {$\NTerm{conditional}$};
+  \node (N21) at (0.5,-1) {$\NTerm{statement}$};
+
+  \draw (3.5,-3.2) -- (2.5,-4) -- (4.5,-4) -- (3.5,-3.2);
+  \node at (3.5,-4.2) {$s_1$};
+  \draw (6.5,-3.2) -- (5.5,-4) -- (7.5,-4) -- (6.5,-3.2);
+  \node at (6.5,-4.2) {$s_2$};
+
+  \draw (-2.75,-3.2) -- (-3.75,-4) -- (-1.75,-4) -- (-2.75,-3.2);
+  \node at (-2.75,-4.2) {$b_1$};
+  \draw (1,-3.2) -- (0,-4) -- (2,-4) -- (1,-3.2);
+  \node at (1,-4.2) {$b_2$};
+
+  \path[-] (N0) edge ($(N1)+(0,2)$) (N0) edge ($(N2)+(0,2)$) (N0) edge ($(N3)+(0,2)$);
+  \path[->] ($(N1)+(0,2)$) edge (N1) ($(N2)+(0,2)$) edge (N2) ($(N3)+(0,2)$) edge (N3);
+  \path[-] (N0) edge ($(N4)+(0,1.5)$);
+  \path[->] ($(N4)+(0,1.5)$) edge (N4) (N0) edge (N21);
+  \path[->] (N21) edge (N20);
+
+  \path[-] (N20) edge ($(N5)+(0,0.5)$) (N20) edge ($(N6)+(0,0.5)$) (N20) edge ($(N7)+(0,0.5)$);
+  \path[->] ($(N5)+(0,0.5)$) edge (N5) ($(N6)+(0,0.5)$) edge (N6) ($(N7)+(0,0.5)$) edge (N7);
+  \path[->] (N20) edge (N8) (N20) edge (N9);
+  \path[-] (N0) edge ($(N10)+(0,2)$) (N0) edge ($(N11)+(0,2)$);
+  \path[->] ($(N10)+(0,2)$) edge (N10) ($(N11)+(0,2)$) edge (N11);
+\end{tikzpicture}
+\end{document}

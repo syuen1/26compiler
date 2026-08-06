@@ -1,0 +1,126 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+%\usepackage{pst-all}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\hoffset=-40mm
+\begin{document}
+\begin{tikzpicture}
+	\node (N00) at (0,0) {\small $[S'\rightarrow\bullet E\#]$};
+	\node (N01) at ($(N00)+(4,0)$) {\small $[S'\rightarrow E\bullet\#]$};
+	\node (N10) at ($(N00)+(0,-2)$) {\small $[E\rightarrow\bullet E+T]$};
+	\node (N11) at ($(N10)+(4,0)$) {\small $[E\rightarrow E\bullet + T]$};
+	\node (N12) at ($(N11)+(4,0)$) {\small $[E\rightarrow E+\bullet T]$};
+	\node (N13) at ($(N12)+(4,0)$) {\small $[E\rightarrow E+T\bullet]$};
+	\node (N20) at ($(N10)+(0,-2)$) {\small $[E\rightarrow\bullet T]$};
+	\node (N21) at ($(N20)+(4,0)$) {\small $[E\rightarrow T\bullet]$};
+	\node (N30) at ($(N20)+(0,-2)$) {\small $[T\rightarrow\bullet T\ast F]$};
+	\node (N31) at ($(N30)+(4,0)$) {\small $[T\rightarrow T\bullet\ast F]$};
+	\node (N32) at ($(N31)+(4,0)$) {\small $[T\rightarrow T\ast\bullet F]$};
+	\node (N33) at ($(N32)+(4,0)$) {\small $[T\rightarrow T\ast F\bullet]$};
+	\node (N40) at ($(N30)+(0,-2)$) {\small $[T\rightarrow\bullet F]$};
+	\node (N41) at ($(N40)+(4,0)$) {\small $[T\rightarrow F\bullet]$};
+	\node (N50) at ($(N40)+(0,-2)$) {\small $[F\rightarrow\bullet (E)]$};
+	\node (N51) at ($(N50)+(4,0)$) {\small $[F\rightarrow (\bullet E)]$};
+	\node (N52) at ($(N51)+(4,0)$) {\small $[F\rightarrow (E\bullet )]$};
+	\node (N53) at ($(N52)+(4,0)$) {\small $[F\rightarrow (E)\bullet ]$};
+	\node (N60) at ($(N50)+(0,-2)$) {\small $[F\rightarrow\bullet i]$};
+	\node (N61) at ($(N60)+(4,0)$) {\small $[F\rightarrow i\bullet ]$};
+	
+	\path[->] (N00) edge [above] node {$E$} (N01);
+	\path[->] (N10) edge [above] node {$E$} (N11)
+	          (N11) edge [above] node {$+$} (N12)
+	          (N12) edge [above] node {$T$} (N13);
+	\path[->] (N20) edge [above] node {$T$} (N21);
+	\path[->] (N30) edge [above] node {$T$} (N31)
+	          (N31) edge [above] node {$\ast$} (N32)
+	          (N32) edge [above] node {$F$} (N33);
+	\path[->] (N40) edge [above] node {$F$} (N41);
+	\path[->] (N50) edge [above] node {$($} (N51)
+	          (N51) edge [above] node {$E$} (N52)
+	          (N52) edge [above] node {$)$} (N53);
+	\path[->] (N60) edge [above] node {$i$} (N61);
+	\path[->] (N00) edge [right] node {$\varepsilon$} (N10)
+	          (N00) edge [out=180,in=180] [left] node {$\varepsilon$} (N20)
+	          (N10) edge [right] node {$\varepsilon$} (N20);
+	\path[->] (N20) edge [right] node {$\varepsilon$} (N30)
+	          (N20) edge [out=180,in=180] [left] node {$\varepsilon$} (N40)
+	          (N30) edge [right] node {$\varepsilon$} (N40);
+	\path[->] (N40) edge [right] node {$\varepsilon$} (N50)
+	          (N40) edge [out=180,in=180] [left] node {$\varepsilon$} (N60)
+	          (N50) edge [right] node {$\varepsilon$} (N60);
+	\path[-] (N12) edge [out=270,in=0] [above] node {$\varepsilon$} ($(N21)+(0,-1)$);
+	\path[->] ($(N21)+(0,-1)$) edge [out=180,in=45] (N30);
+	\path[-] (N12) edge [out=270,in=0] ($(N31)+(0,-1)$);
+	\path[->] ($(N31)+(0,-1)$) edge [out=180,in=30] [above] node {$\varepsilon$} (N40);
+	\path[-] (N32) edge [out=270,in=0] [above] node {$\varepsilon$} ($(N41)+(0,-1)$);
+	\path[->] ($(N41)+(0,-1)$) edge [out=180,in=45] (N50);
+	\path[-] (N32) edge [out=270,in=0] ($(N51)+(0,-1)$);
+	\path[->] ($(N51)+(0,-1)$) edge [out=180,in=30] [above] node {$\varepsilon$} (N60);
+	\path[-] (N51) edge [out=330,in=0] ($(N61)+(0,-0.8)$)
+	         ($(N61)+(0,-0.8)$) edge ($(N60)+(-1,-0.8)$);
+	\path[->] ($(N60)+(-1,-0.8)$) edge [out=180,in=180] [right] node {$\varepsilon$} (N20);
+	\path[-] (N51) edge [out=340,in=0] ($(N61)+(0,-1)$)
+	         ($(N61)+(0,-1)$) edge ($(N60)+(-1.5,-1)$);
+	\path[->] ($(N60)+(-1.5,-1)$) edge [out=180,in=180] [right] node {$\varepsilon$} (N10);
+\end{tikzpicture}
+%\begin{pspicture}(0,0)(12,12)
+% \rput(1,12){\rnode{R11}{$[E'\rightarrow\bullet E\#]$}}
+% \rput(4,12){\rnode{R12}{$[E'\rightarrow E\bullet\#]$}}
+% \rput(1,10){\rnode{R21}{$[E \rightarrow \bullet E\ +\ T]$}}
+% \rput(4,10){\rnode{R22}{$[E \rightarrow E\bullet +\ T]$}}
+% \rput(7,10){\rnode{R23}{$[E \rightarrow E\ +\bullet\ T]$}}
+% \rput(10,10){\rnode{R24}{$[E\rightarrow E\ +\ T\bullet]$}}
+% \rput(1,8){\rnode{R31}{$[E \rightarrow\bullet T]$}}
+% \rput(4,8){\rnode{R32}{$[E \rightarrow T\bullet]$}}
+% \rput(1,6){\rnode{R41}{$[T \rightarrow\bullet T\ \ast\ F]$}}
+% \rput(4,6){\rnode{R42}{$[T \rightarrow T\bullet \ast\ F]$}}
+% \rput(7,6){\rnode{R43}{$[T \rightarrow T\ \ast\bullet F]$}}
+% \rput(10,6){\rnode{R44}{$[T \rightarrow T\ \ast\ F'\bullet]$}}
+% \rput(1,4){\rnode{R51}{$[T \rightarrow\bullet F]$}}
+% \rput(4,4){\rnode{R52}{$[T \rightarrow F\bullet]$}}
+% \rput(1,2){\rnode{R61}{$[F \rightarrow\bullet (E)]$}}
+% \rput(4,2){\rnode{R62}{$[F \rightarrow (\bullet E)]$}}
+% \rput(7,2){\rnode{R63}{$[F \rightarrow (E\bullet )]$}}
+% \rput(10,2){\rnode{R64}{$[F \rightarrow (E)\bullet]$}}
+% \rput(1,0){\rnode{R71}{$[F \rightarrow\bullet i]$}}
+% \rput(4,0){\rnode{R72}{$[F \rightarrow i\bullet]$}}
+%
+% \ncline{->}{R11}{R12}\Aput{$E$}
+% \ncline{->}{R21}{R22}\Aput{$E$}
+% \ncline{->}{R22}{R23}\Aput{$+$}
+% \ncline{->}{R23}{R24}\Aput{$T$}
+% \ncline{->}{R31}{R32}\Aput{$T$}
+% \ncline{->}{R41}{R42}\Aput{$T$}
+% \ncline{->}{R42}{R43}\Aput{$\ast$}
+% \ncline{->}{R43}{R44}\Aput{$F$}
+% \ncline{->}{R51}{R52}\Aput{$F$}
+% \ncline{->}{R61}{R62}\Aput{$($}
+% \ncline{->}{R62}{R63}\Aput{$E$}
+% \ncline{->}{R63}{R64}\Aput{$)$}
+% \ncline{->}{R71}{R72}\Aput{$i$}
+%
+% \ncline{->}{R11}{R21}\Aput{$\varepsilon$}
+% \ncline{->}{R21}{R31}\Aput{$\varepsilon$}
+% \nccurve[angleA=180,angleB=180]{->}{R11}{R31}\Bput{$\varepsilon$}
+% \ncline{->}{R31}{R41}\Aput{$\varepsilon$}
+% \ncline{->}{R41}{R51}\Aput{$\varepsilon$}
+% \nccurve[angleA=180,angleB=180]{->}{R31}{R51}\Bput{$\varepsilon$}
+% \ncline{->}{R51}{R61}\Aput{$\varepsilon$}
+% \ncline{->}{R61}{R71}\Aput{$\varepsilon$}
+% \nccurve[angleA=180,angleB=180]{->}{R51}{R71}\Bput{$\varepsilon$}
+%
+% \ncline{->}{R23}{R31}\Bput{$\varepsilon$}
+% \nccurve[angleA=270,angleB=10]{->}{R23}{R41}\Bput{$\varepsilon$}
+% \ncline{->}{R43}{R51}\Bput{$\varepsilon$}
+% \nccurve[angleA=270,angleB=10]{->}{R43}{R61}\Bput{$\varepsilon$}
+% 
+% \pnode(11.5,6){P0}
+% \pnode(12,6){P1}
+% \nccurve[angleA=45,angleB=270]{-}{R62}{P0}\Aput{$\varepsilon$}
+% \nccurve[angleA=90,angleB=330]{->}{P0}{R31}
+% \nccurve[angleA=30,angleB=270]{-}{R62}{P1}
+% \nccurve[angleA=90,angleB=300]{->}{P1}{R21}\Bput{$\varepsilon$}
+% 
+%\end{pspicture}
+\end{document}

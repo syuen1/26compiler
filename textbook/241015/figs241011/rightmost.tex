@@ -1,0 +1,15 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\include{mymacros}
+\begin{document}
+\[
+  \begin{array}{rcl}
+    \NTerm{proc\_decl} & \Rightarrow_{rm} & \Term{procedure}\ \NTerm{proc\_name}\ \Term{(}\ \NTerm{id\_list}\ \Term{)}\ \Term{:}\ \NTerm{inblock}\\
+    \multicolumn{3}{l}{\mbox{ここで}\,\NTerm{inblock}\Rightarrow_{rm}^\ast \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \Term{NUMBER}\,\mbox{であるとき}}\\
+    & \Rightarrow_{rm}^\ast & \Term{procedure}\ \NTerm{proc\_name}\ \Term{(}\ \NTerm{id\_list}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \Term{NUMBER}\\
+    & \Rightarrow_{rm} & \Term{procedure}\ \NTerm{proc\_name}\ \Term{(}\ \NTerm{id\_list}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \Term{NUMBER}\\
+    & \Rightarrow_{rm} & \Term{procedure}\ \NTerm{proc\_name}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \Term{NUMBER}\\
+    & \Rightarrow_{rm} & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \Term{NUMBER}\\
+  \end{array}
+\]
+\end{document}

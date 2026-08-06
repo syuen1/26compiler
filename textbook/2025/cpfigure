@@ -1,0 +1,9 @@
+#! /usr/bin/bash
+for x in chap?/figures
+do
+cp $x/*.pdf figures
+done
+for x in chap?/src
+do
+cp $x/* src
+done

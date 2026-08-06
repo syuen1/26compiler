@@ -1,0 +1,13 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node[draw,rectangle,inner sep=5pt] (N1) at (0,0) {\parbox{5zw}{原始プログラム}};
+  \node[draw,rectangle,inner sep=5pt] (N2) at (4,0) {\parbox{5zw}{中間言語プログラム}};
+  \node[draw,rectangle,inner sep=5pt] (N3) at (8,0) {\parbox{5zw}{目的プログラム}};
+  \path[->,thick,color=red] (N1) edge [above] node {変換} (N2);
+  \path[->,thick,color=red] (N2) edge [above] node {変換} (N3);
+\end{tikzpicture}
+\end{document}

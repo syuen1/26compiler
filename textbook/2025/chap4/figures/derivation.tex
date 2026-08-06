@@ -1,0 +1,24 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\include{mymacros}
+\begin{document}
+\[\begin{array}{rcl}
+  \NTerm{proc\_decl} & \Rightarrow & \Term{procedure}\ \NTerm{proc\_name}\ \Term{(}\ \NTerm{id\_list}\ \Term{)}\ \Term{:}\ \NTerm{inblock}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \NTerm{id\_list}\ \Term{)}\ \Term{:}\ \NTerm{inblock}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \NTerm{id\_list}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \NTerm{inblock}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \NTerm{inblock}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \NTerm{var\_decl\_part}\ \NTerm{statement}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \NTerm{statement}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \NTerm{assignment\_statement}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \NTerm{expression}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \NTerm{expression}\ \Term{+}\ \NTerm{term}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \NTerm{term}\ \Term{+}\ \NTerm{term}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \NTerm{factor}\ \Term{+}\ \NTerm{term}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \NTerm{var\_name}\ \Term{+}\ \NTerm{term}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \NTerm{term}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \NTerm{factor}\\
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \NTerm{number}\\  
+  & \Rightarrow & \Term{procedure}\ \Term{IDENT}\ \Term{(}\ \Term{IDENT}\ \Term{,}\ \Term{IDENT}\ \Term{)}\ \Term{:}\ \Term{IDENT}\ \Term{:=}\ \Term{IDENT}\ \Term{+}\ \Term{NUMBER}\\
+\end{array}
+\]
+\end{document}
