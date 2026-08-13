@@ -43,18 +43,19 @@
 によって定義される．
 
 \paragraph{{\bf 構文解析}(parsing)}
-{\bf 構文解析}は，字句解析の結果出力をプログラミング言語を定義する文脈自由に従って
+{\bf 構文解析}は，字句解析の結果出力をプログラミング言語を定義する文脈自由文法に従って
 プログラムの基本的意味を表現する{\bf 解析木}(parse tree)を構成する．解析木は
 構文木(syntax tree)ともいう．解析木は，プログラムが構文的に持つ情報を表現する．
+文法に従わない入力を，文脈自由文法が生成しない文字列として検出する．文脈自由文法が
+生成する文字列い対して解析木を構成する．
 
 \paragraph{{\bf 中間コード生成}(intermediate code generation)}
 構文木はプログラミング言語が記述するプログラムの意味を表し，構文木をトラバースする
 ことによってプログラムが記述する操作を抽出することができる．計算機ハードウェアに依存しない
 制御構造とデータフローを中間コード言語のプログラムで表す．中間コードとして，
-スタックマシンの命令であるバイトコードや３番地コードが用いられる．中間コードは
-機械語の目的コードを生成するための前段階であり，{\bf フロントエンド}(front end)
-と呼ばれる．
-  
+スタックマシンの命令であるバイトコードや３番地コードが用いられる．構文木から意味を
+表現する抽象構文木(Abstract Syntax Tree)を構成して中間言語とする場合もある．
+
 \paragraph{{\bf コード最適化}(code optimization)}
 解析木から生成される中間コードはプログラムの持つ意味を直接的に表す．
 しかし，重複した操作が繰り返し実行されるなどの冗長な操作を含む．計算の意味を
@@ -63,12 +64,19 @@
 計算の意味を保たれる範囲でより効率的なコードを発見的に生成する．このため，
 最適化されたコードが必ずしも最も効率的であることは保証されない．最も効率的な
 コードを得ることは計算理論の結果から不可能であることが示される．
-  
+コード最適化では，プログラムの振舞いをプログラムから決定することによってより高速な
+命令コードを生成する．ここでは，中間コードのおいて，変数が使われ始めるてどこまで
+用いられるかというったデータフロー解析や，静的単一代入(SSA;Static Single Assignment)
+という解析が容易な形式のコードに変換することによってプログラムの実行の流れを追跡する
+ことで，より効率的なコードを生成する．このような解析はプログラムの意味を表現する
+上でも非常に有用であり，最適化のみならずプログラムの正しさを検証するためにも
+重要であり，非常に興味深い技法である．
+
 \paragraph{{\bf 目的コード生成}(object code generation)}
 目的コード生成では，最適化された中間コード言語のプログラムを機械語のプログラムに
 変換する．このフェーズでは，中間コードが表す制御フローとデータフローに従って
 目的コードを実行する計算機の資源を効率的に利用する機械語コードを生成する．
-計算機ハードウェアでは，演算を実施するためのデータの主記憶からの転送をできるだけ
+計算機アーキテクチャに従って，演算を実施するためのデータの主記憶からの転送をできるだけ
 少なくする必要がある．演算のためのレジスタの数はプロうグラムで利用できるメモリの
 数は非常に少ないため，プログラムを解析することで効率駅にレジスタを利用する機械語
 プログラムを生成する必要がある．プログラムの操作に対してハードウェアで用意されている
@@ -79,7 +87,6 @@
 コンパイラにおけるいくつかのフェーズは一つのパスにまとめることができ，例えば，
 字句解析と構文解析は一つのフェーズにまとめることができる．目的コードを原始プログラムを
 一度だけ読んで生成するコンパイラのことを１パスコンパイラ(one-pass compiler)という．
-実際的なコンパイラは多パスであるものがほとんどである．
 
 \section{字句解析の概要}
 
@@ -89,43 +96,41 @@
 
 \begin{list}{$\bullet$}{\setlength{\leftmargin}{10pt}}
   \item {\bf 予約語(keyword)}: プログラミング言語によって特別な意味を持つ単語．
-  条件分岐を構成する，\texttt{if}, \texttt{then}, \texttt{else}や，繰返し構造を
-  構成する \texttt{while}, \texttt{do}などのほかに，変数に対する組み込みのデータ型を
-  表す\texttt{int}, \texttt{char}がある．これらの語はプログラミング言語が決まった
-  意味で用いるために特に区別して認識する．
+        条件分岐を構成する，\texttt{if}, \texttt{then}, \texttt{else}や，繰返し構造を
+        構成する \texttt{while}, \texttt{do}などのほかに，変数に対する組み込みのデータ型を
+        表す\texttt{int}, \texttt{char}がある．これらの語はプログラミング言語が決まった
+        意味で用いるために特に区別して認識する．
   \item {\bf 識別子(identifier)}: プログラムで用いる変数名，関数名などに用いる文字系列である．
-  通常，英数字と一部の記号の系列で構成される．
+        通常，英数字と一部の記号の系列で構成される．
   \item {\bf 定数(constant)}: 先頭の符号と数字および小数点で構成される数(例：\texttt{-123.4})や浮動小数点表現
-  (例：\texttt{3.14E1})．一つの文字\texttt{'A'}も定数として認識する． 
+        (例：\texttt{3.14E1})．一つの文字\texttt{'A'}も定数として認識する．
   \item {\bf 文字列リテラル(string literal)}: ダブル引用\texttt{"}で囲った文字の並び．\texttt{"Hello World"}のように
-  空白も含めることも可能．
+        空白も含めることも可能．
   \item {\bf 区切り子(delimiter)}:プログラムの構文要素を区切る記号．セミコロン \texttt{;} は逐次に実行する
-  命令の区切りを表す．このほか，並びの区切りを表すカンマ \texttt{,} や括弧 \texttt{()},
-  \texttt{\{\}}, \texttt{[]}がある．数式，論理式において数字や記号を区切る記号 
-  \texttt{+}, \texttt{-}, \texttt{\&\&}, \texttt{=}, \texttt{>=}がある．
+        命令の区切りを表す．このほか，並びの区切りを表すカンマ \texttt{,} や括弧 \texttt{()},
+        \texttt{\{\}}, \texttt{[]}がある．数式，論理式において数字や記号を区切る記号
+        \texttt{+}, \texttt{-}, \texttt{\&\&}, \texttt{=}, \texttt{>=}がある．
 \end{list}
 
-トークンは，正規表現を用いて定義することができる．このため，字句解析を行うため
-には，トークンを受理する有限オートマトンを構成して，有限オートマトンの
-受理系列をトークンとして出力する．
+トークンは，正規表現を用いて定義することができる．このため，字句解析では，トークンを受理する
+有限オートマトンを構成し，有限オートマトンの受理系列をトークンとして出力する．
 
 \section{構文解析の概要}
 
-一般にプログラミング言語は文脈自由言語として定義される．このため，プログラミング
-言語を与える文脈自由文法$G$が存在し，原始プログラムをトークン列に変換した
-語$w$が$G$の生成する言語に属するかどうか$w\in L(G)$を判定する．
+一般にプログラミング言語は文脈自由言語として定義される．プログラミング
+言語では文脈自由文法$G$が生成する文字列の集合として定義される．
+入力したソースプログラムはトークン列に変換され，その語$w$が$G$の生成する
+言語に属するかどうか$w\in L(G)$を判定する．
 
-$w\in L(G)$のとき，原始プログラムはプログラミング言語としては誤りがない．
-このとき，$G$の開始記号$S$から$w$に至る導出が存在し，文脈自由言語の特徴から
-導出の過程は木構造で表すことができる．この木構造は，プログラムの基本的な意味を
-表現する．例えば，以下のように文脈自由文法$G$を与える．
+ソースプログラムに対する導出の過程は生成規則の左辺を親，右辺を子とした木構造で表すことができる．
+この木構造は，プログラムの基本的な意味を表現する．例えば，以下のように文脈自由文法$G$を与える．
 
 \[G=\langle\{\texttt{+},n\},\{S,E\},\left\{\begin{array}{l}
-  S\rightarrow E\\E\rightarrow E\texttt{+}E\\E\rightarrow n\end{array}\right\},S\rangle\]
+    S\rightarrow E \\E\rightarrow E\texttt{+}E\\E\rightarrow n\end{array}\right\},S\rangle\]
 
 このとき，$n\texttt{+}n\texttt{+}n\in L(G)$である．これは，$S\Rightarrow E\texttt{+}E
-\Rightarrow n\texttt{+}E\Rightarrow n\texttt{+}E\texttt{+}E\Rightarrow
-n\texttt{+}n\texttt{+}E\Rightarrow n\texttt{+}n\texttt{+}n$という導出系列が
+  \Rightarrow n\texttt{+}E\Rightarrow n\texttt{+}E\texttt{+}E\Rightarrow
+  n\texttt{+}n\texttt{+}E\Rightarrow n\texttt{+}n\texttt{+}n$という導出系列が
 存在するためである．ここで$n$は自然数に対するトークンであり，
 実際には1,12,30などの数字を字句解析した結果である．
 
@@ -134,29 +139,29 @@ n\texttt{+}n\texttt{+}E\Rightarrow n\texttt{+}n\texttt{+}n$という導出系列
 \begin{figure}[H]
   \centering
   \begin{tabular}{ccc}
-\begin{tikzpicture}
-  \node (N0) at (0,0) {$S$}; \node (N1) at (-1,-1) {$n$};
-  \node (N2) at (0,-1) {$\texttt{+}$}; \node (N3) at (1,-1) {$E$};
-  \node (N4) at (0,-2) {$n$}; \node (N5) at (1,-2) {$\texttt{+}$}; \node (N6) at (2,-2) {$n$};
-  \path[->] (N0) edge (N1) (N0) edge (N2) (N0) edge (N3) (N3) edge (N4) (N3) edge (N5)
-  (N3) edge (N6); 
-\end{tikzpicture}
-& \qquad &
-\begin{tikzpicture}
-  \node (M0) at (0,0) {$S$}; \node (M1) at (-1,-1) {$E$};
-  \node (M2) at (0,-1) {$\texttt{+}$}; \node (M3) at (1,-1) {$n$};
-  \node (M4) at (-2,-2) {$n$}; \node (M5) at (-1,-2) {$\texttt{+}$};
-  \node (M6) at (0,-2) {$n$};
-  \path[->] (M0) edge (M1) (M0)edge (M2) (M0) edge (M3)
-            (M1) edge (M4) (M1) edge (M5) (M1) edge (M6);
-\end{tikzpicture}\\
-(a) 解析木１ & & (b) 解析木２
-\end{tabular}
-\caption{導出に対する解析木}\label{parsetree}
+    \begin{tikzpicture}
+      \node (N0) at (0,0) {$S$}; \node (N1) at (-1,-1) {$n$};
+      \node (N2) at (0,-1) {$\texttt{+}$}; \node (N3) at (1,-1) {$E$};
+      \node (N4) at (0,-2) {$n$}; \node (N5) at (1,-2) {$\texttt{+}$}; \node (N6) at (2,-2) {$n$};
+      \path[->] (N0) edge (N1) (N0) edge (N2) (N0) edge (N3) (N3) edge (N4) (N3) edge (N5)
+      (N3) edge (N6);
+    \end{tikzpicture}
+             & \qquad &
+    \begin{tikzpicture}
+      \node (M0) at (0,0) {$S$}; \node (M1) at (-1,-1) {$E$};
+      \node (M2) at (0,-1) {$\texttt{+}$}; \node (M3) at (1,-1) {$n$};
+      \node (M4) at (-2,-2) {$n$}; \node (M5) at (-1,-2) {$\texttt{+}$};
+      \node (M6) at (0,-2) {$n$};
+      \path[->] (M0) edge (M1) (M0)edge (M2) (M0) edge (M3)
+      (M1) edge (M4) (M1) edge (M5) (M1) edge (M6);
+    \end{tikzpicture} \\
+    (a) 解析木１ &        & (b) 解析木２
+  \end{tabular}
+  \caption{導出に対する解析木}\label{parsetree}
 \end{figure}
 $n\texttt{+}n\texttt{+}n$には，別の導出
 $S\Rightarrow E+E\Rightarrow E\texttt{+}n\Rightarrow E\texttt{+}E\texttt{+}n
-\Rightarrow E\texttt{+}n\texttt{+}n\Rightarrow n\texttt{+}n\texttt{+}n$
+  \Rightarrow E\texttt{+}n\texttt{+}n\Rightarrow n\texttt{+}n\texttt{+}n$
 も存在する．この導出に対応する解析木は(b)のようになる．
 この導出は$E\texttt{+}E$において，右の$E$を$n$に置き換えてから，
 左の$E$を$E+E$に置き換えている．(a)では$E+E$の左の$E$を$n$に置き換えてから，
@@ -167,7 +172,7 @@ $S\Rightarrow E+E\Rightarrow E\texttt{+}n\Rightarrow E\texttt{+}E\texttt{+}n
 $w\notin L(G)$であれば，$w$は文法エラーを含む．通常の言語処理系の構文解析では，
 単にエラーであることを通知するだけでなく，部分的な構文木を作成して，エラーを
 起こしている理由をプログラムに提示する．例えば，$n\texttt{+}\texttt{+}n\notin
-L(G)$である．最初の$\texttt{+}$に対して木を構成しようとすると
+  L(G)$である．最初の$\texttt{+}$に対して木を構成しようとすると
 $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができないため，
 エラーが生じ，$\texttt{+}$の右辺が間違っているといったエラーメッセージが
 出力される．
@@ -181,20 +186,23 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 答えが定まらない．このため，通常は解析木(b)のように解釈することが決められている．
 \texttt{3-2-1}は通常0と評価される．解析木(a)のように解釈すると2と評価される．
 
-文脈自由文法$G$に対して，$w\in G$は決定可能な問題であり，入力の長さに対して$\mathcal{O}(n^3)$
-で決定することができるアルゴリズムが知られている．コンパイラの構成上，より早い構文解析が
-必要であり，より高速な構文解析アルゴリズムに合わせてプログラミング言語を定義する
-文脈自由文法を決定する．決定的に構文解析するための文法のクラスが定義される．
+文脈自由文法$G$に対して，$w\in L(G)$は決定可能な問題であり，任意の文脈自由文法
+において入力の長さに対して$\mathcal{O}(n^3)$
+で決定することができるアルゴリズムが知られている\footnote{CYK(Cook-Young-Kasami)の
+  アルゴリズムとして知られている}．コンパイラの構成上，より早い構文解析が
+必要であり，文脈自由文法のクラスを限定して
+より高速な構文解析アルゴリズムに合わせてプログラミング言語を定義する
+文脈自由文法を設計するのが普通である．決定的に構文解析するための文法のクラスが定義される．
 
 \section{中間コード生成の概要}
 
-中間コードは原始プログラムが持つ基本的な振舞いを抽象的に表現する．中間コードは
-原始プログラムの手順を表す実行制御フローとデータに対する演算とメモリの更新を表す
-データフローを表す．中間言語として，{\bf 逆ポーランド記法}(postfix Polish notation
-あるいは reverse Polish notation)，{\bf 抽象構文木}(abstract syntax tree), 
+中間コードは原始プログラムが持つ基本的な振舞いを命令の系列として表現する．中間コードは
+原始プログラムの手順を表す実行制御フローとデータに対する演算およびメモリの更新を表す
+データフローで構成される．中間言語として，{\bf 逆ポーランド記法}(postfix Polish notation
+あるいは reverse Polish notation)，{\bf 抽象構文木}(abstract syntax tree),
 {\bf ３番地コード}(three-address code)，バイトコードなどが用いられる．
 
-中間言語が表す振舞いは，プログラムが表す計算手順を標準的な命令単位で並べたもの
+中間言語が表す振舞いは，プログラムが表す計算手順を標準的な命令単位で並べた系列
 であり，計算機ハードウェアから独立している．中間言語に一旦変換することで，
 目的プログラムが持つ本質的な動作意味を単純に表現することができる．このことから
 異なるアーキテクチャの目的コードは中間コードを変換して生成することができ，
@@ -202,7 +210,7 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 
 中間言語プログラムでは，変数は{\bf 記号表}を作成して実際に割り当てるメモリ番地に
 変換する．中間言語プログラムの実行環境では，{\bf 駆動レコード}とよばれるスタック
-によって，変数の値を格納する番地を決定する．逆ポーランド記法やバイトコードでは
+構造によって，変数の値を格納する番地を決定する．逆ポーランド記法やバイトコードでは
 データスタックによってメモリの格納番地を決定する．
 
 このフェーズでは変数の格納番地の決定を行うとともに，データ型など解析木に対して
@@ -212,9 +220,9 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 
 \section{コード最適化の概要}
 
-{\bf コード最適化}(code optimization)は計算の意味を変化させない範囲で
-より短くて高速な命令系列を
-導くことである．コード最適化は中間言語プログラムに対して行われるものと
+ {\bf コード最適化}(code optimization)は計算の意味を保持しながら
+より高速で省メモリの命令系列を導くことである．
+コード最適化は中間言語プログラムに対して行われるものと
 目的プログラムに対して行われるものがある．コード最適化は命令を制御が
 分割したり合流したりしない{\bf 基本ブロック}に対して行う{\bf 局所最適化}
 (local optimization)(あるいは{\bf 覗き穴最適化}(peep hole optimization)と
@@ -236,9 +244,9 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
   \centering
   \begin{tabular}{ccc}
     \includegraphics{figures/prog-il-1-crop.pdf}
-    & \hspace*{5zw} &
-    \includegraphics{figures/prog-il-2-crop.pdf}\\[10pt]
-    (a) 最適化前 & & (b) 最適化後
+             & \hspace*{5zw} &
+    \includegraphics{figures/prog-il-2-crop.pdf} \\[10pt]
+    (a) 最適化前 &               & (b) 最適化後
   \end{tabular}
   \caption{簡単な最適化の例}\label{il-ex}
 \end{figure}
@@ -257,10 +265,10 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 ３番地コードの並び
 
 \begin{center}
-\begin{tabular}{l}
-\verb|t1=i2-i3|\\
-\verb|t2=i1+t1|
-\end{tabular}
+  \begin{tabular}{l}
+    \verb|t1=i2-i3| \\
+    \verb|t2=i1+t1|
+  \end{tabular}
 \end{center}
 
 を機械語に対応するアセンブリコードに
@@ -269,17 +277,17 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 \begin{center}
   \begin{tabular}{l}
     $\left .\begin{array}{ll}
-      \texttt{Load}  & \texttt{i2}\\
-      \texttt{Sub}   & \texttt{i3}\\
-      \texttt{Store} & \texttt{t1}
-    \end{array}\right\}
-    {\color{blue}\texttt{t1=i2-i3}}$\\
+                \texttt{Load}  & \texttt{i2} \\
+                \texttt{Sub}   & \texttt{i3} \\
+                \texttt{Store} & \texttt{t1}
+              \end{array}\right\}
+    {\color{blue}\texttt{t1=i2-i3}}$ \\
     $\left .\begin{array}{ll}
-      \texttt{Load} & \texttt{i1}\\
-      \texttt{Add} & \texttt{t1}\\
-      \texttt{Store} & \texttt{t2}
-    \end{array}\right\}
-    {\color{blue}\texttt{t2=i2+t1}}$\\
+                \texttt{Load}  & \texttt{i1} \\
+                \texttt{Add}   & \texttt{t1} \\
+                \texttt{Store} & \texttt{t2}
+              \end{array}\right\}
+    {\color{blue}\texttt{t2=i2+t1}}$ \\
   \end{tabular}
 \end{center}
 
@@ -290,22 +298,22 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 \begin{center}
   \begin{tabular}{l}
     $\begin{array}{ll}
-      \texttt{Load}  & \texttt{i2}\\
-      \texttt{Sub}   & \texttt{i3}\\
-      \texttt{Store} & \texttt{t1}\\
-      \texttt{Add} & \texttt{i1}\\
-      \texttt{Store} & \texttt{t2}
-    \end{array}$\\
+         \texttt{Load}  & \texttt{i2} \\
+         \texttt{Sub}   & \texttt{i3} \\
+         \texttt{Store} & \texttt{t1} \\
+         \texttt{Add}   & \texttt{i1} \\
+         \texttt{Store} & \texttt{t2}
+       \end{array}$ \\
   \end{tabular}
 \end{center}
 
 さらに\verb|t1|がこのあと参照されないことがわかればさらに命令を省略できる．
 
 \begin{center}
-    $\begin{array}{ll}
-      \texttt{Load}  & \texttt{i2}\\
-      \texttt{Sub}   & \texttt{i3}\\
-      \texttt{Add} & \texttt{i1}\\
+  $\begin{array}{ll}
+      \texttt{Load}  & \texttt{i2} \\
+      \texttt{Sub}   & \texttt{i3} \\
+      \texttt{Add}   & \texttt{i1} \\
       \texttt{Store} & \texttt{t2}
     \end{array}$
 \end{center}
