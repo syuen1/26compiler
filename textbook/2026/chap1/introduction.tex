@@ -251,7 +251,7 @@ BNFでは右辺に$\ast$を含めた正規表現を許す．$\ast$が用いら�
 拡張バッカス・ナウア形式(EBNF)と呼ばれることが多い．文脈自由文法において
 はメンバーシップ問題$w\in L(G)$は決定可能であることから，
 文脈自由文法で定義することにより，構文エラーは多項式時間$\mathcal{O}(n^3)$
-でチェック可能である．
+でチェック可能である\footnote{CYKアルゴリズムと呼ばれる．}．
 
 \section{中間言語}
 
@@ -342,11 +342,44 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
 (undirected graph)という．頂点$u$から出る辺の本数を$u$の{\bf 次数}(degree)
 という．$I\subseteq V$に対して，$I^2\cap E=\varnothing$であるとき，
 すなわち$I$に含まれる任意の頂点の間に辺が存在しないとき，$I$を
-{\bf 独立集合}(independent set)という．有向グラフにおいて，辺$(u,v)\in E$
+{\bf 独立集合}(independent set)という．
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+    node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+    indep/.style={circle, draw=red, fill=red!20, minimum size=8mm, font=\sffamily\large, very thick},
+    edge/.style={-, thick}
+  ]
+    % 頂点の配置
+    \node[indep] (v1) at (0,2) {$v_1$};
+    \node[node]  (v2) at (2,2) {$v_2$};
+    \node[node]  (v3) at (1,0) {$v_3$};
+    \node[indep] (v4) at (3,0) {$v_4$};
+    \node[node]  (v5) at (4,2) {$v_5$};
+    \node[indep] (v6) at (5,0.5) {$v_6$};
+
+    % 辺の描画
+    \draw[edge] (v1) -- (v2);
+    \draw[edge] (v1) -- (v3);
+    \draw[edge] (v2) -- (v3);
+    \draw[edge] (v2) -- (v4);
+    \draw[edge] (v3) -- (v4);
+    \draw[edge] (v4) -- (v5);
+    \draw[edge] (v5) -- (v6);
+
+    % 凡例や注釈
+    \node[anchor=west, font=\small] at (6, 1.5) {独立集合の例: $I = \{v_1, v_4, v_6\}$};
+    \node[anchor=west, font=\small, color=red!80!black] at (6, 0.9) {(赤色の頂点同士の間には辺がない)};
+  \end{tikzpicture}
+  \caption{無向グラフと独立集合の例}
+  \label{fig:independent_set}
+\end{figure}
+
+有向グラフにおいて，辺$(u,v)\in E$
 に対して，$u$を$v$の{\bf 先行頂点}(predecessor), $v$を$u$の{\bf 後続頂点}
 (successor)という．頂点の系列$v_1,\cdots,v_k$に対して，$(v_i,v_{i+1})\in E$
 が$1\leq i\leq k-1$に対して成り立つとき，グラフの{\bf 路}(path)という．
-
 
 
 空でない頂点集合を持つ有向グラフ$G=(V,E)$において，$v\in V$で先行頂点を
@@ -357,4 +390,61 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
 頂点を{\bf 葉}(leaf)という．木の条件を満たす有向グラフの頂点に対して，
 先行頂点を{\bf 親}(parent), 後続頂点を{\bf 子}(child)という．
 根は親頂点を持たず，葉は子頂点を持たない．
+
+\begin{figure}[htbp]
+  \centering
+  \subfloat[有向グラフの例]{
+    \begin{tikzpicture}[
+      node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+      edge/.style={->, >=stealth, thick}
+    ]
+      \node[node] (v1) at (0,2.5) {$v_1$};
+      \node[node] (v2) at (2,2.5) {$v_2$};
+      \node[node] (v3) at (2,0.5) {$v_3$};
+      \node[node] (v4) at (0,0.5) {$v_4$};
+      \node[node] (v5) at (3.5,1.5) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v4);
+      \draw[edge] (v4) -> (v1); % サイクル
+      \draw[edge] (v2) -> (v4);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v5) -> (v2); % サイクル
+    \end{tikzpicture}
+  }
+  \qquad\qquad
+  \subfloat[木の例]{
+    \begin{tikzpicture}[
+      node/.style={circle, draw=black, fill=green!10, minimum size=8mm, font=\sffamily\large},
+      edge/.style={->, >=stealth, thick},
+      label style/.style={font=\small, color=red!70!black}
+    ]
+      \node[node] (r) at (2,3.5) {$r$};
+      \node[node] (a) at (0.5,2.0) {$a$};
+      \node[node] (b) at (3.5,2.0) {$b$};
+      \node[node] (c) at (-0.5,0.5) {$c$};
+      \node[node] (d) at (1.5,0.5) {$d$};
+      \node[node] (e) at (3.5,0.5) {$e$};
+
+      \draw[edge] (r) -> (a);
+      \draw[edge] (r) -> (b);
+      \draw[edge] (a) -> (c);
+      \draw[edge] (a) -> (d);
+      \draw[edge] (b) -> (e);
+
+      % 補助線と階層ラベル
+      \draw[dashed, gray!50] (-1.2, 3.5) -- (4.3, 3.5);
+      \draw[dashed, gray!50] (-1.2, 2.0) -- (4.3, 2.0);
+      \draw[dashed, gray!50] (-1.2, 0.5) -- (4.3, 0.5);
+
+      \node[label style, anchor=west] at (4.5, 3.5) {根 (root)};
+      \node[label style, anchor=west] at (4.5, 2.0) {親・子 (parent / child)};
+      \node[label style, anchor=west] at (4.5, 0.5) {葉 (leaf)};
+    \end{tikzpicture}
+  }
+  \caption{有向グラフと木の例}
+  \label{fig:graph_and_tree}
+\end{figure}
+
 \end{document}
