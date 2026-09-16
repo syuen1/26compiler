@@ -6,6 +6,10 @@
 
 \chapter{字句解析}
 
+字句解析は，文字記号の系列である入力ファイルから，プログラムの構文を解析するために
+不要な文字を取り除いて，意味のある単語(トークン,token)の系列に変換する．単語は，
+正規言語として定義され，切り分けは有限状態オートマトンを用いる．
+
 \section{正規表現}
 
 正規表現は指定された語の集合（言語）を指定する．コンパイラにおいては，トークンの
@@ -17,17 +21,17 @@
 識別子は$\mathsf{ID}$は次の正規表現で定義することができる．
 
 \[\begin{array}{rcl}
-  \mathsf{Dec} & \mathtt{::=} & \texttt{0}|\texttt{1}\cdots|\texttt{9}\\
-  \mathsf{NDec} & \mathtt{::=} & \texttt{\_}|\texttt{a}|\cdots|\texttt{z}|\texttt{A}|\cdots|\texttt{Z}\\
-  \mathsf{ID} & \mathtt{::=} & \mathsf{NDec}(\mathsf{NDec}\,|\,\mathsf{Dec})^\ast
-\end{array}\]
+    \mathsf{Dec}  & \mathtt{::=} & \texttt{0}|\texttt{1}\cdots|\texttt{9}                                \\
+    \mathsf{NDec} & \mathtt{::=} & \texttt{\_}|\texttt{a}|\cdots|\texttt{z}|\texttt{A}|\cdots|\texttt{Z} \\
+    \mathsf{ID}   & \mathtt{::=} & \mathsf{NDec}(\mathsf{NDec}\,|\,\mathsf{Dec})^\ast
+  \end{array}\]
 
 10進数定数$\mathsf{Decimal}$は以下のように定義できる．
 
 \[\begin{array}{rcl}
-  \mathsf{NZDec} &\mathtt{::=}& \texttt{1}|\cdots|\texttt{9}\\
-  \mathsf{Decimal}&\mathtt{::=}&\mathsf{NZDec}\,\mathsf{Dec}^\ast
-\end{array}\]
+    \mathsf{NZDec}   & \mathtt{::=} & \texttt{1}|\cdots|\texttt{9}      \\
+    \mathsf{Decimal} & \mathtt{::=} & \mathsf{NZDec}\,\mathsf{Dec}^\ast
+  \end{array}\]
 
 正規表現は次のように定義される．
 
@@ -61,7 +65,7 @@ $b\in\Sigma$なので正規表現である．したがって，$a|(b^\ast)$は�
     \item $[\![\varepsilon]\!]=\{\varepsilon\}$, $[\![\varnothing]\!]=\varnothing$
     \item $a\in\Sigma$に対して$[\![a]\!]=\{a\}$
     \item $[\![R_1\,R_2]\!]=[\![R_1]\!]\cdot[\![R_2]\!]$, $[\![R_1\,|\,R_2]\!]=
-    [\![R_1]\!]\cup[\![R_2]\!]$
+            [\![R_1]\!]\cup[\![R_2]\!]$
     \item $[\![R^\ast]\!]=[\![R]\!]^\ast$
   \end{list}
   ここで右辺に現れる$\cdot$,$\ast$は\ref{vdefinition}節で定義した集合に対する
@@ -70,11 +74,11 @@ $b\in\Sigma$なので正規表現である．したがって，$a|(b^\ast)$は�
 
 従って，$ab|b^\ast$という正規表現が表す$\Sigma$の系列の集合は以下のようになる．
 
-\[\begin{array}{rcl}[\![ab|b^\ast]\!] & = & [\![ab]\!]\cup[\![b^\ast]\!]\\
-  & = & [\![a]\!][\![b]\!]\cup [\![b]\!]^\ast\\
-  & = & (\{a\}\cdot\{b\})\cup\{b\}^\ast\\
-  & = & \{ab\}\cup\{\varepsilon,b,bb,bbb,\cdots\}
-\end{array}\]
+\[\begin{array}{rcl}[\![ab|b^\ast]\!] & = & [\![ab]\!]\cup[\![b^\ast]\!]              \\
+                                    & = & [\![a]\!][\![b]\!]\cup [\![b]\!]^\ast     \\
+                                    & = & (\{a\}\cdot\{b\})\cup\{b\}^\ast           \\
+                                    & = & \{ab\}\cup\{\varepsilon,b,bb,bbb,\cdots\}
+  \end{array}\]
 
 プログラミング言語のトークンは正規表現で定義される．
 
@@ -97,178 +101,178 @@ $q_{n_1}\xrightarrow{a_n}q_n$という遷移があり，$q_n$が受理状態で�
   $F\subseteq Q$は受理状態集合である．
 \end{Def}
 
-  $\delta$は３つ組$(q,a,q')$の集合であり，$q$から$a$を読んで$q'$に
-  遷移することを示す．遷移関係は$(q,a,q')\in\delta$を
-  $q\xrightarrow{a}q'$のように表す．遷移関係$\delta$を$\Sigma^\ast$に
-  以下のように拡張した関係$q\stackrel{s}{\Rightarrow}q'$に拡張する．
+$\delta$は３つ組$(q,a,q')$の集合であり，$q$から$a$を読んで$q'$に
+遷移することを示す．遷移関係は$(q,a,q')\in\delta$を
+$q\xrightarrow{a}q'$のように表す．遷移関係$\delta$を$\Sigma^\ast$に
+以下のように拡張した関係$q\stackrel{s}{\Rightarrow}q'$に拡張する．
 
-  \[\begin{array}{ll}
-    q\stackrel{\varepsilon}{\Rightarrow}q & \\
-    q\stackrel{as}{\Rightarrow}q' & \mbox{ここで，$q\xrightarrow{a}q''$,
-    $q''\stackrel{s}{\Rightarrow}q'$}
+\[\begin{array}{ll}
+    q\stackrel{\varepsilon}{\Rightarrow}q &                                  \\
+    q\stackrel{as}{\Rightarrow}q'         & \mbox{ここで，$q\xrightarrow{a}q''$,
+      $q''\stackrel{s}{\Rightarrow}q'$}
   \end{array}\]
 
-  \begin{Def}
-    有限オートマトン$A=\langle Q,\Sigma,\delta,q_0,F\rangle$に対して
-    $L(A)=\{w\,|\,q_0\stackrel{w}{\Rightarrow}q_f, q_f\in F\}$
-    を$A$の受理言語という．
-  \end{Def}
+\begin{Def}
+  有限オートマトン$A=\langle Q,\Sigma,\delta,q_0,F\rangle$に対して
+  $L(A)=\{w\,|\,q_0\stackrel{w}{\Rightarrow}q_f, q_f\in F\}$
+  を$A$の受理言語という．
+\end{Def}
 
-  有限オートマトンの受理言語と正規表現が表す言語には以下のような
-  よく知られた関係がある．
+有限オートマトンの受理言語と正規表現が表す言語には以下のような
+よく知られた関係がある．
 
-  \begin{Thm}
-    \begin{list}{$\bullet$}{}
+\begin{Thm}
+  \begin{list}{$\bullet$}{}
     \item 正規表現$R$に対して$[\![R]\!]$を受理する有限オートマトン$A_R$が存在する．
     \item 有限オートマトン$A$に対して$L(A)=[\![R]\!]$となる正規表現$R$が存在する．
-    \end{list}
-  \end{Thm}
+  \end{list}
+\end{Thm}
 
-  このことから，正規表現と有限オートマトンは表現能力が等しいことがわかる．
-  また，有限オートマトンは，受理言語の積，和，否定に関して閉じていることが知られている．
+このことから，正規表現と有限オートマトンは表現能力が等しいことがわかる．
+また，有限オートマトンは，受理言語の積，和，否定に関して閉じていることが知られている．
 
-  \begin{Thm}
-    \begin{list}{$\bullet$}{}
-      \item 有限オートマトン$A_1$, $A_2$に対して，$L(A_3)=L(A_1)\cap L(A_2)$，
-      $L(A_4)=L(A_1)\cup L(A_2)$を満たす有限オートマトン$A_3$, $A_4$が存在する．
-      \item 有限オートマトン$A$に対して，$L(A_c)=\Sigma^\ast\backslash L(A)$を満たす
-      有限オートマトン$A_c$が存在する．
-    \end{list}
-  \end{Thm}
+\begin{Thm}
+  \begin{list}{$\bullet$}{}
+    \item 有限オートマトン$A_1$, $A_2$に対して，$L(A_3)=L(A_1)\cap L(A_2)$，
+          $L(A_4)=L(A_1)\cup L(A_2)$を満たす有限オートマトン$A_3$, $A_4$が存在する．
+    \item 有限オートマトン$A$に対して，$L(A_c)=\Sigma^\ast\backslash L(A)$を満たす
+          有限オートマトン$A_c$が存在する．
+  \end{list}
+\end{Thm}
 
-  上記定理の証明については，オートマトンの教科書\footnote{J.ホップクロフト/J.ウルマン：
+上記定理の証明については，オートマトンの教科書\footnote{J.ホップクロフト/J.ウルマン：
   「オートマトン言語理論 計算論１」訳：野崎昭弘ら　2.5および3.2}を参照してほしい．
 
-  \section{字句解析の仕組み}
+\section{字句解析の仕組み}
 
-  字句解析では，原始プログラムを$\Sigma$の系列として受取り，トークンごとに切り分けて
-  出力する．トークンの種類に応じてオートマトンを構成する．それぞれのオートマトンを
-  $A_{kw}$, $A_{id}$, $A_{cnst}$, $A_{str}$. $A_{del}$とする．
+字句解析では，原始プログラムを$\Sigma$の系列として受取り，トークンごとに切り分けて
+出力する．トークンの種類に応じてオートマトンを構成する．それぞれのオートマトンを
+$A_{kw}$, $A_{id}$, $A_{cnst}$, $A_{str}$. $A_{del}$とする．
 
-  字句解析はこれらのオートマトンを図\ref{lexanalizer}のように組み合わせて構成される．
+字句解析はこれらのオートマトンを図\ref{lexanalizer}のように組み合わせて構成される．
 
-  \begin{figure}[H]
-    \centering
-    \includegraphics{figures/lex-analysis-crop.pdf}
-    \caption{字句解析器の構成}
-  \end{figure}
+\begin{figure}[H]
+  \centering
+  \includegraphics{figures/lex-analysis-crop.pdf}
+  \caption{字句解析器の構成}
+\end{figure}
 
-  \begin{list}{{\bf ステップ\,\arabic{coffee}:}}{\usecounter{coffee}}
-    \item\label{whitespace} 空白，タブコード，改行などの空白文字を読み飛ばす．
-    \item\label{inputchar} 次の文字を$A_{kw}$, $A_{id}$, $A_{cnst}$, $A_{str}$, $A_{del}$に入力する．
-    \item いずれかのオートマトンが受理状態に達するまで，ステップ\ref{inputchar}を繰り返す．
-    \item いずれかのオートマトンが受理状態に達したらそのオートマトンの種類と受理した系列を
-    出力し，すべてのオートマトンの状態を初期状態に戻す．
-    \item 入力の最後に達していなければ，ステップ\ref{whitespace}に戻る．入力の最後に達したら終了
-  \end{list}
+\begin{list}{{\bf ステップ\,\arabic{coffee}:}}{\usecounter{coffee}}
+  \item\label{whitespace} 空白，タブコード，改行などの空白文字を読み飛ばす．
+  \item\label{inputchar} 次の文字を$A_{kw}$, $A_{id}$, $A_{cnst}$, $A_{str}$, $A_{del}$に入力する．
+  \item いずれかのオートマトンが受理状態に達するまで，ステップ\ref{inputchar}を繰り返す．
+  \item いずれかのオートマトンが受理状態に達したらそのオートマトンの種類と受理した系列を
+        出力し，すべてのオートマトンの状態を初期状態に戻す．
+  \item 入力の最後に達していなければ，ステップ\ref{whitespace}に戻る．入力の最後に達したら終了
+\end{list}
 
-  字句解析の実現においては，トークンの全体の和集合を受理するオートマトンを作成し，
-  受理状態がどのトークンによるものかを区別しておくことで字句解析が実現ができる．
-  有限オートマトンが和集合について閉じていることからこのような構成はいつも可能
-  であることが保証されている．
+字句解析の実現においては，トークンの全体の和集合を受理するオートマトンを作成し，
+受理状態がどのトークンによるものかを区別しておくことで字句解析が実現ができる．
+有限オートマトンが和集合について閉じていることからこのような構成はいつも可能
+であることが保証されている．
 
-  受理状態が２つ以上のオートマトンによる場合は，受理の優先順位を決めておくことで
-  字句解析を行う．予約語と識別子は一般に同じ文字列を受理する可能性がある．その場合は，
-  予約語を優先させる．
+受理状態が２つ以上のオートマトンによる場合は，受理の優先順位を決めておくことで
+字句解析を行う．予約語と識別子は一般に同じ文字列を受理する可能性がある．その場合は，
+予約語を優先させる．
 
-  \paragraph{字句解析器のプログラミング}
+\paragraph{字句解析器のプログラミング}
 
-  字句解析を行うオートマトンを構成するために，正規表現を用いる．
-  正規表現$R$を$[\![R]\!]$を受理する有限オートマトンに変換して，字句解析器に
-  組み込む．有限オートマトンからプログラムへの自動変換は比較的容易に実現
-  できる．字句解析器は，トークンの集合を正規表現で記述するだけで，
-  自動生成することが可能である．
+字句解析を行うオートマトンを構成するために，正規表現を用いる．
+正規表現$R$を$[\![R]\!]$を受理する有限オートマトンに変換して，字句解析器に
+組み込む．有限オートマトンからプログラムへの自動変換は比較的容易に実現
+できる．字句解析器は，トークンの集合を正規表現で記述するだけで，
+自動生成することが可能である．
 
-  図\ref{lexautomata}に識別子と自然数定数を受理するオートマトンを示す．
-  いずれかを受理するオートマトン$A_{id\cup cnst}$は(c)のようになる．
-  $s_1$が受理状態であった場合は識別子，$s_2$が受理状態であった場合は
-  自然数定数である．
+図\ref{lexautomata}に識別子と自然数定数を受理するオートマトンを示す．
+いずれかを受理するオートマトン$A_{id\cup cnst}$は(c)のようになる．
+$s_1$が受理状態であった場合は識別子，$s_2$が受理状態であった場合は
+自然数定数である．
 
-  \begin{figure}[t]
-    \centering
-    \includegraphics{figures/id-automata-crop.pdf}
-    \caption{字句解析の正規表現とオートマトン}\label{lexautomata}
-  \end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics{figures/id-automata-crop.pdf}
+  \caption{字句解析の正規表現とオートマトン}\label{lexautomata}
+\end{figure}
 
-  \section{字句解析器の生成}
+\section{字句解析器の生成}
 
-  \subsection{正規表現の記法}
+\subsection{正規表現の記法}
 
-  オートマトンに対応する動作をさせるために計算機上で正規表現は以下のように記述される．
+オートマトンに対応する動作をさせるために計算機上で正規表現は以下のように記述される．
 
-  \begin{list}{$\bullet$}{}
-    \item $\varepsilon$, $\varnothing$を直接表現する記法はない．
-    \item $a\in\Sigma$については，$\texttt{"a"}$のように引用符で囲む．
-    $s\in\Sigma^+$についてはまとめて$\texttt{"abc"}$のように引用符で囲む．
-    \item $R_1|R_2$については，$R_1$の記法\,\texttt{|}\,$R_2$の記法．
-    連続した文字コードを持つ場合には，$\texttt{[X-Y]}$のように途中を省略できる．
-    $s=\texttt{a1}\texttt{a2}\cdots\texttt{an}\in\Sigma^+$に対して$\texttt{[}s\texttt{]}$は$\texttt{a1|a2|}\cdots\texttt{|an}$を表す．
-    例えば$\texttt{[0-9]}$は$\texttt{0|1|2|3|4|5|6|7|8|9}$を表す．
-    \item Kleene閉包は$\texttt{*}$を後ろにつける．$\texttt{[ab]*}$など
-    \item ラベルの後ろに正規表現を書いて名前をつけることができる．
-    $\texttt{NZDEC}\ \texttt{[1-9]}$や
-    $\texttt{DEC}\ \texttt{[0-9]}$など．ラベルの参照時は\verb|{|\verb|}|をつける．
-  \end{list}
+\begin{list}{$\bullet$}{}
+  \item $\varepsilon$, $\varnothing$を直接表現する記法はない．
+  \item $a\in\Sigma$については，$\texttt{"a"}$のように引用符で囲む．
+        $s\in\Sigma^+$についてはまとめて$\texttt{"abc"}$のように引用符で囲む．
+  \item $R_1|R_2$については，$R_1$の記法\,\texttt{|}\,$R_2$の記法．
+        連続した文字コードを持つ場合には，$\texttt{[X-Y]}$のように途中を省略できる．
+        $s=\texttt{a1}\texttt{a2}\cdots\texttt{an}\in\Sigma^+$に対して$\texttt{[}s\texttt{]}$は$\texttt{a1|a2|}\cdots\texttt{|an}$を表す．
+        例えば$\texttt{[0-9]}$は$\texttt{0|1|2|3|4|5|6|7|8|9}$を表す．
+  \item Kleene閉包は$\texttt{*}$を後ろにつける．$\texttt{[ab]*}$など
+  \item ラベルの後ろに正規表現を書いて名前をつけることができる．
+        $\texttt{NZDEC}\ \texttt{[1-9]}$や
+        $\texttt{DEC}\ \texttt{[0-9]}$など．ラベルの参照時は\verb|{|\verb|}|をつける．
+\end{list}
 
-  ラベルの機能を使うと自然数定数は \verb:{NZDEC}{DEC}*:と記述できる．
+ラベルの機能を使うと自然数定数は \verb:{NZDEC}{DEC}*:と記述できる．
 
-  $\texttt{NDEC}$ \verb:[_a-zA-Z]:とすると，識別子名を表す系列は
-  \verb;{NDEC}({NDEC}|{DEC})*;となる．
-
-
-  \subsection{字句解析器生成ツール}
-
-  \subsubsection{lex}
-
-  lexでは正規表現とアクション(C言語)の対を並べて記述し，入力文字列から正規表現で構成される
-  オートマトンが受理する系列を抽出して，対応するアクションを実行するようなC言語プログラムを
-  生成する．受理した入力系列は\texttt{yytext}という文字列に格納される．
-
-  例えば，以下のような仕様ファイル\texttt{lex1.l}を用意したとする．
-
-  \begin{Verbatim}[frame=single]
-    %%
-    [A-Za-z]+ {printf("String found:%s\n",yytext);}
-    [0-9]+    {printf("Digits found:%s\n",yytext);}
-    .         {printf("Other character:%d\n",yytext[0]);}
-    %%
-  \end{Verbatim}
-
-  lexでは，ピリオド\texttt{"."}は$\Sigma$の任意の文字のいずれかであることを示す．
-  受理の優先度は上に書かれるほど高い．入力の"A"は１番めと３番めの両方に受理されるが，
-  アクションは１番めが実行される．\texttt{lex}は，上のような仕様を受け取って，
-  正規表現にマッチする系列が入力されたとき，アクションを実行するC言語プログラムを
-  生成する．
-
-  \begin{Verbatim}[frame=single]
-    % lex -o lex1.c lex1.l
-    % cc -o lex1 lex1.c -ll
-  \end{Verbatim}
+$\texttt{NDEC}$ \verb:[_a-zA-Z]:とすると，識別子名を表す系列は
+\verb;{NDEC}({NDEC}|{DEC})*;となる．
 
 
-  １行目で仕様\texttt{lex1.l}から\texttt{lex1.c}を生成し，これを２行目で実行形式に
-  変換している．
+\subsection{字句解析器生成ツール}
 
-  より複雑なプログラムを書くために最初の\verb|%%|の前にC言語の\texttt{include}文や
-  \texttt{define}マクロまたはプロトタイプ宣言，最後の\verb|%%|の後にC言語の関数を記述することができる．
+\subsubsection{lex}
 
-  \begin{Verbatim}[frame=single]
-    %{
-      #include <stdio.h>
-      void pp(char*);
-    %}
-    %%
-    [A-Za-z]+ {pp("String");}
-    [0-9]+    {pp("Digits");}
-    .         {printf("Other character:%d\n",yytext[0]);}
-    %%
-    int main(void)
-    {
+lexでは正規表現とアクション(C言語)の対を並べて記述し，入力文字列から正規表現で構成される
+オートマトンが受理する系列を抽出して，対応するアクションを実行するようなC言語プログラムを
+生成する．受理した入力系列は\texttt{yytext}という文字列に格納される．
+
+例えば，以下のような仕様ファイル\texttt{lex1.l}を用意したとする．
+
+\begin{Verbatim}[frame=single]
+  %%
+  [A-Za-z]+ {printf("String found:%s\n",yytext);}
+  [0-9]+    {printf("Digits found:%s\n",yytext);}
+  .         {printf("Other character:%d\n",yytext[0]);}
+  %%
+\end{Verbatim}
+
+lexでは，ピリオド\texttt{"."}は$\Sigma$の任意の文字のいずれかであることを示す．
+受理の優先度は上に書かれるほど高い．入力の"A"は１番めと３番めの両方に受理されるが，
+アクションは１番めが実行される．\texttt{lex}は，上のような仕様を受け取って，
+正規表現にマッチする系列が入力されたとき，アクションを実行するC言語プログラムを
+生成する．
+
+\begin{Verbatim}[frame=single]
+  % lex -o lex1.c lex1.l
+  % cc -o lex1 lex1.c -ll
+\end{Verbatim}
+
+
+１行目で仕様\texttt{lex1.l}から\texttt{lex1.c}を生成し，これを２行目で実行形式に
+変換している．
+
+より複雑なプログラムを書くために最初の\verb|%%|の前にC言語の\texttt{include}文や
+\texttt{define}マクロまたはプロトタイプ宣言，最後の\verb|%%|の後にC言語の関数を記述することができる．
+
+\begin{Verbatim}[frame=single]
+  %{
+  #include <stdio.h>
+  void pp(char*);
+  %}
+  %%
+  [A-Za-z]+ {pp("String");}
+  [0-9]+    {pp("Digits");}
+  .         {printf("Other character:%d\n",yytext[0]);}
+  %%
+  int main(void)
+  {
       yylex();
       return 0;
     }
-    void pp(char *s) {
+  void pp(char *s) {
       printf("%s found:%s\n",s,yytext);
     }
-  \end{Verbatim}
+\end{Verbatim}
 \end{document}

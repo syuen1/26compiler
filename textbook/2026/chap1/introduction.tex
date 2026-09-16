@@ -69,10 +69,10 @@ BASIC, C, Java, Python などがよく用いられる．計算の手順を適切
 \begin{figure}[H]
   \begin{center}
     \begin{tabular}{ccc}
-    \includegraphics[width=0.45\textwidth]{figures/compiler-crop.pdf}
-    & \qquad &
-    \includegraphics[width=0.45\textwidth]{figures/interpreter-crop.pdf}\\
-    (a) コンパイラ && (b) インタプリタ
+      \includegraphics[width=0.45\textwidth]{figures/compiler-crop.pdf}
+                & \qquad &
+      \includegraphics[width=0.45\textwidth]{figures/interpreter-crop.pdf} \\
+      (a) コンパイラ &        & (b) インタプリタ
     \end{tabular}
   \end{center}
   \caption{プログラミング言語処理系}
@@ -135,80 +135,80 @@ BASIC, C, Java, Python などがよく用いられる．計算の手順を適切
 
 \begin{list}{例\arabic{coffee}}{\usecounter{coffee}}
   \item (図\ref{LangTrans}(a)):
-C言語のプログラムをArm計算機の目的プログラムに
-変換するコンパイラがPythonで記述されているとする．X64計算機で
-実行するPythonインタプリタがあるとき，C言語プログラムを
-X64計算機でArmの目的プログラムに変換することができる．
+        C言語のプログラムをArm計算機の目的プログラムに
+        変換するコンパイラがPythonで記述されているとする．X64計算機で
+        実行するPythonインタプリタがあるとき，C言語プログラムを
+        X64計算機でArmの目的プログラムに変換することができる．
   \item (図\ref{LangTrans}(b)):
-C言語のプログラムをArm計算機の目的プログラムに変換する
-コンパイラがC言語で記述されているとする．X64計算機で
-動作するC言語をX64の目的プログラムに変換するコンパイラがあるとき，
-X64計算機でC言語のプログラムをArm計算機の目的プログラムに変換する
-コンパイラを構成することができる．
-さらにこのコンパイラを最初のT図式に適用すると，Arm計算機上で
-動作するコンパイラを構成することができる．
+        C言語のプログラムをArm計算機の目的プログラムに変換する
+        コンパイラがC言語で記述されているとする．X64計算機で
+        動作するC言語をX64の目的プログラムに変換するコンパイラがあるとき，
+        X64計算機でC言語のプログラムをArm計算機の目的プログラムに変換する
+        コンパイラを構成することができる．
+        さらにこのコンパイラを最初のT図式に適用すると，Arm計算機上で
+        動作するコンパイラを構成することができる．
 \end{list}
 
 \begin{figure}[t]
-\begin{center}
-  \begin{tabular}{ccc}
-  \begin{tikzpicture}
-    \draw (0,0) -- (3,0) -- (3,-1) -- (2,-1) -- (2,-2) -- (1,-2) -- (1,-1) -- (0,-1) -- (0,0);
-    \node at (0.5,-0.5) {$L_1$};
-    \node at (1.5,-0.5) {$\rightarrow$};
-    \node at (2.5,-0.5) {$L_2$};
-    \node at (1.5,-1.5) {$M$};
-  \end{tikzpicture}
-  & \vspace*{5zw} &
-  \begin{tikzpicture}
-    \draw (0,0) -- (1,0) -- (1,-2) -- (0,-2) -- (0,0);
-    \node at (0.5,-0.3) {$L$};
-    \node at (0.5,-1) {$\downarrow$};
-    \node at (0.5,-1.7) {$M$};
-  \end{tikzpicture}\\[-40pt]
-  (a) コンパイラ & & (b) インタプリタ
-\end{tabular}
-\end{center}
-\caption{T図形}\label{T-scheme}
+  \begin{center}
+    \begin{tabular}{ccc}
+      \begin{tikzpicture}
+        \draw (0,0) -- (3,0) -- (3,-1) -- (2,-1) -- (2,-2) -- (1,-2) -- (1,-1) -- (0,-1) -- (0,0);
+        \node at (0.5,-0.5) {$L_1$};
+        \node at (1.5,-0.5) {$\rightarrow$};
+        \node at (2.5,-0.5) {$L_2$};
+        \node at (1.5,-1.5) {$M$};
+      \end{tikzpicture}
+                & \vspace*{5zw} &
+      \begin{tikzpicture}
+        \draw (0,0) -- (1,0) -- (1,-2) -- (0,-2) -- (0,0);
+        \node at (0.5,-0.3) {$L$};
+        \node at (0.5,-1) {$\downarrow$};
+        \node at (0.5,-1.7) {$M$};
+      \end{tikzpicture} \\[-40pt]
+      (a) コンパイラ &               & (b) インタプリタ
+    \end{tabular}
+  \end{center}
+  \caption{T図形}\label{T-scheme}
 \end{figure}
 
 \begin{figure}[H]
   \begin{center}
-  \begin{tabular}{ccc}
-  \begin{tikzpicture}
-    \draw (0,0) -- (3,0) -- (3,-1) -- (2.2,-1) -- (2.2,-2) -- (0.8,-2) -- (0.8,-1) -- (0,-1) -- (0,0);
-    \node at (0.5,-0.5) {$\mathsf{C}$};
-    \node at (2.5,-0.5) {$\mathsf{Arm}$};
-    \node at (1.5,-1.5) {$\mathsf{Python}$};
-    \node at (1.5,-0.5) {$\rightarrow$};
+    \begin{tabular}{ccc}
+      \begin{tikzpicture}
+        \draw (0,0) -- (3,0) -- (3,-1) -- (2.2,-1) -- (2.2,-2) -- (0.8,-2) -- (0.8,-1) -- (0,-1) -- (0,0);
+        \node at (0.5,-0.5) {$\mathsf{C}$};
+        \node at (2.5,-0.5) {$\mathsf{Arm}$};
+        \node at (1.5,-1.5) {$\mathsf{Python}$};
+        \node at (1.5,-0.5) {$\rightarrow$};
 
-    \draw (0.8,-2.1) -- (2.2,-2.1) -- (2.2,-4.4) -- (0.8,-4.4) -- (0.8,-2.1);
-    \node at (1.5,-2.4) {$\mathsf{python}$};
-    \node at (1.5,-3.8) {$\mathsf{X64}$};
-    \node at (1.5,-3.1) {$\downarrow$};
-  \end{tikzpicture}
-& \vspace*{5zw} &
-  \begin{tikzpicture}
-    \draw (0,0) -- (3,0) -- (3,-1) -- (2,-1) -- (2,-2) -- (1,-2) -- (1,-1) -- (0,-1) -- (0,0);
-    \node at (0.5,-0.5) {$\mathsf{C}$};
-    \node at (2.5,-0.5) {$\mathsf{Arm}$};
-    \node at (1.5,-1.5) {$\mathsf{C}$};
-    \node at (1.5,-0.5) {$\rightarrow$};
-    \draw (2,-1) -- (5,-1) -- (5,-2) -- (4,-2) -- (4,-3) -- (3,-3) -- (3,-2) -- (2,-2) -- (2,-1);
-    \node at (2.5,-1.5) {$\mathsf{C}$};
-    \node at (4.5,-1.5) {$\mathsf{Arm}$};
-    \node at (3.5,-2.5) {$\mathsf{X64}$};
-    \node at (3.5,-1.5) {$\rightarrow$};
-    \draw[thick,color=red,style=double] (4,0) -- (7,0) -- (7,-1) -- (6,-1) -- (6,-2) -- (5,-2) -- (5,-1) -- (4,-1) -- (4,0);
-    \node at (4.5,-0.5) {$\mathsf{C}$};
-    \node at (6.5,-0.5) {$\mathsf{Arm}$};
-    \node at (5.5,-1.5) {$\mathsf{Arm}$};
-    \node at (5.5,-0.5) {$\rightarrow$};
-  \end{tikzpicture}\\[-30pt]
-  (a) 例1 & & (b) 例2
-\end{tabular}
-\end{center}
-\caption{変換過程}\label{LangTrans}
+        \draw (0.8,-2.1) -- (2.2,-2.1) -- (2.2,-4.4) -- (0.8,-4.4) -- (0.8,-2.1);
+        \node at (1.5,-2.4) {$\mathsf{python}$};
+        \node at (1.5,-3.8) {$\mathsf{X64}$};
+        \node at (1.5,-3.1) {$\downarrow$};
+      \end{tikzpicture}
+             & \vspace*{5zw} &
+      \begin{tikzpicture}
+        \draw (0,0) -- (3,0) -- (3,-1) -- (2,-1) -- (2,-2) -- (1,-2) -- (1,-1) -- (0,-1) -- (0,0);
+        \node at (0.5,-0.5) {$\mathsf{C}$};
+        \node at (2.5,-0.5) {$\mathsf{Arm}$};
+        \node at (1.5,-1.5) {$\mathsf{C}$};
+        \node at (1.5,-0.5) {$\rightarrow$};
+        \draw (2,-1) -- (5,-1) -- (5,-2) -- (4,-2) -- (4,-3) -- (3,-3) -- (3,-2) -- (2,-2) -- (2,-1);
+        \node at (2.5,-1.5) {$\mathsf{C}$};
+        \node at (4.5,-1.5) {$\mathsf{Arm}$};
+        \node at (3.5,-2.5) {$\mathsf{X64}$};
+        \node at (3.5,-1.5) {$\rightarrow$};
+        \draw[thick,color=red,style=double] (4,0) -- (7,0) -- (7,-1) -- (6,-1) -- (6,-2) -- (5,-2) -- (5,-1) -- (4,-1) -- (4,0);
+        \node at (4.5,-0.5) {$\mathsf{C}$};
+        \node at (6.5,-0.5) {$\mathsf{Arm}$};
+        \node at (5.5,-1.5) {$\mathsf{Arm}$};
+        \node at (5.5,-0.5) {$\rightarrow$};
+      \end{tikzpicture} \\[-30pt]
+      (a) 例1 &               & (b) 例2
+    \end{tabular}
+  \end{center}
+  \caption{変換過程}\label{LangTrans}
 \end{figure}
 
 \section{プログラミング言語の種類}
@@ -217,28 +217,28 @@ X64計算機でC言語のプログラムをArm計算機の目的プログラム�
 
 \begin{list}{}{}
   \item {\bf 手続き型言語}:計算の手順を順番に沿って命令の列として記述する
-  プログラミング言語として最も標準的な記述を与える．条件分岐，ループといった
-  制御構造の他に，再帰呼び出し，データ局所化，データ型定義などプログラムの
-  対象に応じた命令，データ型を持つ．
+        プログラミング言語として最も標準的な記述を与える．条件分岐，ループといった
+        制御構造の他に，再帰呼び出し，データ局所化，データ型定義などプログラムの
+        対象に応じた命令，データ型を持つ．
   \item {\bf 関数型言語}: ML(Meta Language)をはじめとする関数定義に沿って
-  プログラムを記述する言語である．関数は，入出力の対応を直接的に表す数学の
-  モデルであり，プログラムの最も基本的な意味を表現する．コンパイラは
-  関数の定義に従った計算方法を構築して目的コードに変換する．関数型言語では
-  変換する際に，関数の型の無矛盾性について厳密にチェックすることが多い．
-  厳密な型チェックによって矛盾した定義による不具合の発生を抑えることが
-  できる．関数の合成に基づいて，小規模な関数を合成して全体の関数を
-  構成するという考え方に基づく．
+        プログラムを記述する言語である．関数は，入出力の対応を直接的に表す数学の
+        モデルであり，プログラムの最も基本的な意味を表現する．コンパイラは
+        関数の定義に従った計算方法を構築して目的コードに変換する．関数型言語では
+        変換する際に，関数の型の無矛盾性について厳密にチェックすることが多い．
+        厳密な型チェックによって矛盾した定義による不具合の発生を抑えることが
+        できる．関数の合成に基づいて，小規模な関数を合成して全体の関数を
+        構成するという考え方に基づく．
   \item {\bf 論理型言語}: 論理における証明が計算に対応するというアイデアに
-  基づいて，ホーン節の反駁によってプログラムを計算する．Prologが代表的な
-  論理型言語である．証明という概念に基づいていることから，不具合が
-  発生すること＝証明ができず正しくない，という考え方で設計される．
+        基づいて，ホーン節の反駁によってプログラムを計算する．Prologが代表的な
+        論理型言語である．証明という概念に基づいていることから，不具合が
+        発生すること＝証明ができず正しくない，という考え方で設計される．
   \item {\bf オブジェクト指向言語}: 計算の実行主体をオブジェクトとし，
-  オブジェクトにメッセージを送ることで計算が進行するというモデルに
-  基づく．Javaがこのアプローチをとっている．オブジェクトという概念は
-  他の概念とは直交したモデルであるので，他の種類の言語でもオブジェクト
-  に基づいた記述を導入している．(Pythonやcamlなど) オブジェクト指向モデル
-  によって，データのフローを局所化でき，継承に基づいた合成的な記述が
-  可能となる．Smalltalkが本格的なオブジェクト指向言語として提案された．
+        オブジェクトにメッセージを送ることで計算が進行するというモデルに
+        基づく．Javaがこのアプローチをとっている．オブジェクトという概念は
+        他の概念とは直交したモデルであるので，他の種類の言語でもオブジェクト
+        に基づいた記述を導入している．(Pythonやcamlなど) オブジェクト指向モデル
+        によって，データのフローを局所化でき，継承に基づいた合成的な記述が
+        可能となる．Smalltalkが本格的なオブジェクト指向言語として提案された．
 \end{list}
 
 プログラミング言語は，構文(syntax)の定義として文脈自由文法を用いることが
@@ -296,23 +296,23 @@ $\Sigma\cdot\Gamma=\{xy\;|\;x\in\Sigma,y\in\Gamma\}$と定義する．ここで�
 $xy$を$x$と$y$の{\bf 連接}(concatenation)という．記号の連接を語(word)と呼ぶ．
 $n$個の記号の連接$w$の長さを$|w|=n$と書く．長さ0の語を$\varepsilon$と書く．
 $\varepsilon$に対する語$w$の連接は$w$そのものである．すなわち，$w\cdot\varepsilon
-=\varepsilon\cdot w=w$である．
+  =\varepsilon\cdot w=w$である．
 
 集合$\Sigma$の
 要素を$i$個連続して連接することによって得られる集合を$\Sigma^i$と書き，
 以下のように定められる．
-\[\Sigma^i=\begin{cases}\{\varepsilon\} & \mbox{$i=0$のとき}\\
-  \Sigma\cdot\Sigma^{i-1} & \mbox{$i\geq 1$のとき}\end{cases}\]
+\[\Sigma^i=\begin{cases}\{\varepsilon\}         & \mbox{$i=0$のとき}     \\
+             \Sigma\cdot\Sigma^{i-1} & \mbox{$i\geq 1$のとき}\end{cases}\]
 
 $\cap$, $\cup$, $\backslash$ は，２つの集合$\Sigma$, $\Gamma$に対して
 以下のようにそれぞれ積集合，和集合，差集合を構成する．
 
 \begin{center}
   \begin{tabular}{lcl}
-  $\Sigma\cap\Gamma=\{x\;|\;x\in\Sigma\ \mbox{かつ}\ x\in\Gamma\}$
-  & &
-  $\Sigma\cup\Gamma=\{x\;|\;x\in\Sigma\ \mbox{または}\ x\in\Gamma\}$\\
-  $\Sigma\backslash\Gamma=\{x\;|\;x\in\Sigma\ \mbox{かつ}\ x\notin\Gamma\}$
+    $\Sigma\cap\Gamma=\{x\;|\;x\in\Sigma\ \mbox{かつ}\ x\in\Gamma\}$
+     &  &
+    $\Sigma\cup\Gamma=\{x\;|\;x\in\Sigma\ \mbox{または}\ x\in\Gamma\}$ \\
+    $\Sigma\backslash\Gamma=\{x\;|\;x\in\Sigma\ \mbox{かつ}\ x\notin\Gamma\}$
   \end{tabular}
 \end{center}
 
@@ -329,7 +329,7 @@ $\varepsilon\cdot u=u$であることから，語$u$は自身の接頭語でも�
 空集合は$\varnothing$と記述する．$\varnothing\cup\Sigma=\Sigma\cup\varnothing=\Sigma$,
 $\varnothing\cap\Sigma=\Sigma\cap\varnothing=\varnothing$である．
 連接の定義から，任意の$L\subseteq\Sigma^\ast$に対して，$\varnothing\cdot L=
-L\cdot\varnothing=\varnothing$, $\varnothing^\ast=\{\varepsilon\}$である．
+  L\cdot\varnothing=\varnothing$, $\varnothing^\ast=\{\varepsilon\}$である．
 
 \subsection{グラフと木}
 
@@ -347,10 +347,10 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
 \begin{figure}[htbp]
   \centering
   \begin{tikzpicture}[
-    node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
-    indep/.style={circle, draw=red, fill=red!20, minimum size=8mm, font=\sffamily\large, very thick},
-    edge/.style={-, thick}
-  ]
+      node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+      indep/.style={circle, draw=red, fill=red!20, minimum size=8mm, font=\sffamily\large, very thick},
+      edge/.style={-, thick}
+    ]
     % 頂点の配置
     \node[indep] (v1) at (0,2) {$v_1$};
     \node[node]  (v2) at (2,2) {$v_2$};
@@ -376,10 +376,15 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
   \label{fig:independent_set}
 \end{figure}
 
-有向グラフにおいて，辺$(u,v)\in E$
+有向グラフ$G=(V,E)$において，辺$(u,v)\in E$
 に対して，$u$を$v$の{\bf 先行頂点}(predecessor), $v$を$u$の{\bf 後続頂点}
 (successor)という．頂点の系列$v_1,\cdots,v_k$に対して，$(v_i,v_{i+1})\in E$
 が$1\leq i\leq k-1$に対して成り立つとき，グラフの{\bf 路}(path)という．
+また，頂点の系列$v_1,\cdots,v_k$に対して，$(v_i,v_{i+1})\in E$または$(v_{i+1},v_i)$
+が$1\leq i\leq k-1$に対して成り立つとき，グラフの{\bf 半路}(semipath)という．
+任意の異なる頂点$v_1,v_2\in V$に対して，$v_1$から$v_2$あるいは$v_1$から$v_2$
+に路が存在するとき, $G$は{\bf 強連結}であるといい，半路が存在するとき，
+$G$は{\bf 弱連結}であるという．
 
 
 空でない頂点集合を持つ有向グラフ$G=(V,E)$において，$v\in V$で先行頂点を
@@ -395,9 +400,9 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
   \centering
   \subfloat[有向グラフの例]{
     \begin{tikzpicture}[
-      node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
-      edge/.style={->, >=stealth, thick}
-    ]
+        node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+        edge/.style={->, >=stealth, thick}
+      ]
       \node[node] (v1) at (0,2.5) {$v_1$};
       \node[node] (v2) at (2,2.5) {$v_2$};
       \node[node] (v3) at (2,0.5) {$v_3$};
@@ -417,10 +422,10 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
   \qquad\qquad
   \subfloat[木の例]{
     \begin{tikzpicture}[
-      node/.style={circle, draw=black, fill=green!10, minimum size=8mm, font=\sffamily\large},
-      edge/.style={->, >=stealth, thick},
-      label style/.style={font=\small, color=red!70!black}
-    ]
+        node/.style={circle, draw=black, fill=green!10, minimum size=8mm, font=\sffamily\large},
+        edge/.style={->, >=stealth, thick},
+        label style/.style={font=\small, color=red!70!black}
+      ]
       \node[node] (r) at (2,3.5) {$r$};
       \node[node] (a) at (0.5,2.0) {$a$};
       \node[node] (b) at (3.5,2.0) {$b$};
@@ -448,4 +453,121 @@ $v_1\rightarrow v_2$で表す．$v_1$は$e$の始点，$v_2$は$e$の終点と�
   \label{fig:graph_and_tree}
 \end{figure}
 
+グラフ$G_s=(V_s,E_s)$がグラフ$G=(V,E)$の{\bf 部分グラフ}であるとは，
+$G_s=(V_s,E_s)$とは，$V_s\subseteq V$,
+$E_s\subseteq E\cap V_s^2$が成り立つことである．
+さらに，部分グラフ$G_s$が弱連結であるとき，$G_s$は，{\bf 弱連結部分グラフ}であるという．
+
+木の条件を満たす有向グラフ$T$の弱結合部分グラフを$T$の{\bf 部分木}という．
+$T$の部分木の集合$\{S_1,\cdots,S_n\}$の{\bf 交差グラフ(intersection graph)}は，
+以下のように定義される無向グラフ$(V_g,E_g)$である．
+\begin{itemize}
+  \item $V_g=\{v_1,\cdots,v_n\}$．ここで，$v_i$は$S_i$に対応する．
+  \item $E_g=\{(v_i,v_j)\;|\;i\not=j,V(S_i)\cap V(S_j)\not=\varnothing\}$
+\end{itemize}
+
+図\ref{fig:subgraphs}に，図\ref{fig:graph_and_tree}にあげたグラフの部分グラフ，部分木集合，および，部分木集合に対する交差グラフの例を示す．(a)については，１つの部分グラフである．部分グラフは必ずしも弱連結である必要はない．これに対して，部分木の場合は，木構造の条件を満たすために弱連結である必要がある．
+
+\begin{figure}[htbp]
+  \centering
+  \subfloat[部分グラフの例]{
+    \begin{tikzpicture}[
+        node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+        edge/.style={->, >=stealth, thick}
+      ]
+      \node[node] (v1) at (0,2.5) {$v_1$};
+      \node[node] (v2) at (2,2.5) {$v_2$};
+      \node[node] (v3) at (2,0.5) {$v_3$};
+      %\node[node] (v4) at (0,0.5) {$v_4$};
+      \node[node] (v5) at (3.5,1.5) {$v_5$};
+
+      %  \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      %  \draw[edge] (v3) -> (v4);
+      %  \draw[edge] (v4) -> (v1); % サイクル
+      %  \draw[edge] (v2) -> (v4);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v5) -> (v2); % サイクル
+    \end{tikzpicture}
+  }
+
+  \subfloat[部分木集合の例]{
+    \begin{tabular}{ccccccc}
+      $\{$                                 &
+      \begin{tikzpicture}[
+          node/.style={circle, draw=black, fill=green!10, minimum size=8mm, font=\sffamily\large},
+          edge/.style={->, >=stealth, thick},
+          label style/.style={font=\small, color=red!70!black}
+        ]
+        \node[node] (r) at (2,3.5) {$r$};
+        \node[node] (a) at (0.5,2.0) {$a$};
+        %  \node[node] (b) at (3.5,2.0) {$b$};
+        \node[node] (c) at (-0.5,0.5) {$c$};
+        \node[node] (d) at (1.5,0.5) {$d$};
+        %  \node[node] (e) at (3.5,0.5) {$e$};
+
+        \draw[edge] (r) -> (a);
+        %  \draw[edge] (r) -> (b);
+        \draw[edge] (a) -> (c);
+        \draw[edge] (a) -> (d);
+        %  \draw[edge] (b) -> (e);
+      \end{tikzpicture}
+                                           & ,     &
+      \begin{tikzpicture}[
+          node/.style={circle, draw=black, fill=green!10, minimum size=8mm, font=\sffamily\large},
+          edge/.style={->, >=stealth, thick},
+          label style/.style={font=\small, color=red!70!black}
+        ]
+        \node[node] (r) at (2,3.5) {$r$};
+        %%\node[node] (a) at (0.5,2.0) {$a$};
+        \node[node] (b) at (3.5,2.0) {$b$};
+        %\node[node] (c) at (-0.5,0.5) {$c$};
+        %\node[node] (d) at (1.5,0.5) {$d$};
+        \node[node] (e) at (3.5,0.5) {$e$};
+
+        %  \draw[edge] (r) -> (a);
+        \draw[edge] (r) -> (b);
+        %  \draw[edge] (a) -> (c);
+        %  \draw[edge] (a) -> (d);
+        \draw[edge] (b) -> (e);
+      \end{tikzpicture}
+                                           & ,     &
+      \begin{tikzpicture}[
+          node/.style={circle, draw=black, fill=green!10, minimum size=8mm, font=\sffamily\large},
+          edge/.style={->, >=stealth, thick},
+          label style/.style={font=\small, color=red!70!black}
+        ]
+        %\node[node] (r) at (2,3.5) {$r$};
+        \node[node] (a) at (0.5,2.0) {$a$};
+        %\node[node] (b) at (3.5,2.0) {$b$};
+        \node[node] (c) at (-0.5,0.5) {$c$};
+        \node[node] (d) at (1.5,0.5) {$d$};
+        %%\node[node] (e) at (3.5,0.5) {$e$};
+
+        %\draw[edge] (r) -> (a);
+        %\draw[edge] (r) -> (b);
+        \draw[edge] (a) -> (c);
+        \draw[edge] (a) -> (d);
+        %\draw[edge] (b) -> (e);
+      \end{tikzpicture} & $\}$                                   \\
+                                           & $S_1$ &   & $S_2$ &  & $S_3$ &
+    \end{tabular}
+  }
+
+  \subfloat[交差グラフ]{
+    \begin{tikzpicture}[
+        node/.style={circle, draw=black, fill=red!10, minimum size=8mm, font=\sffamily\large},
+        edge/.style={->, >=stealth, thick},
+        label style/.style={font=\small}
+      ]
+      \node[node] (s1) at (0,0) {$v_1$};
+      \node[node] (s2) at (2,1) {$v_2$};
+      \node[node] (s3) at (2,-1) {$v_3$};
+      \path[-] (s1) edge (s2) (s1) edge (s3);
+    \end{tikzpicture}
+  }
+  \caption{図\ref{fig:graph_and_tree}の部分構造，交差グラフの例}\label{fig:subgraphs}
+\end{figure}
+
+これらのグラフの概念は，主にレジスタ割り当ての際に用いる．
 \end{document}
