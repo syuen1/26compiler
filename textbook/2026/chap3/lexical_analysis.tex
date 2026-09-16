@@ -275,4 +275,72 @@ lexでは，ピリオド\texttt{"."}は$\Sigma$の任意の文字のいずれか
       printf("%s found:%s\n",s,yytext);
     }
 \end{Verbatim}
+
+\subsubsection{sly(python)}
+
+Pythonではslyパッケージ\footnote{\url{https://sly.readthedocs.io/en/latest/sly.html#writing-a-lexer}}で字句解析器を生成できる．正規表現は，\texttt{r}に続けて記載する．
+正規表現で制御に使う文字はバックスラッシュでエスケープする．pythonにおける正規表現については
+\url{https://docs.python.org/ja/3/howto/regex.html}などを参照せよ．
+
+\begin{Verbatim}[frame=single]
+  int x;
+  int f(int y){
+      r=3; return x+y;
+    }
+  int main(void) {
+  int x,y; x=6;
+  {int x; x=7;
+  y=f(x);}
+  printf("%02d",x+y);
+  }
+\end{Verbatim}
+
+上記のC言語風のプログラムを字句解析をすると以下のようになる．
+
+\begin{Verbatim}[frame=single]
+  from sly import Lexer
+
+  class CalcLexer(Lexer):
+  # Set of token names.   This is always required
+  tokens = { ID, STRING, KWORD, NUMBER, PLUS, MINUS, TIMES,
+  DIVIDE, ASSIGN, LPAREN, RPAREN, LBRACE, RBRACE,SEMICOLON, COMMA }
+
+  # String containing ignored characters between tokens
+  ignore = ' \t\n'
+
+  # Regular expression rules for tokens
+  ID      = r'[a-zA-Z_][a-zA-Z0-9_]*'
+  STRING  = r'\".*?\"'
+  KWORD   = r'int|return|printf|void'
+  NUMBER  = r'\d+'
+  PLUS    = r'\+'
+  MINUS   = r'-'
+  TIMES   = r'\*'
+  DIVIDE  = r'/'
+  ASSIGN  = r'='
+  LPAREN  = r'\('
+  RPAREN  = r'\)'
+  LBRACE  = r'{'
+  RBRACE  = r'}'
+  SEMICOLON = r';'
+  COMMA = r','
+
+  if __name__ == '__main__':
+  data = '''
+  int x;
+  int f(int y){
+      r=3; return x+y;
+    }
+  int main(void) {
+  int x,y; x=6;
+  {int x; x=7;
+  y=f(x);}
+  printf("%02d",x+y);
+  }
+  '''
+  lexer = CalcLexer()
+  for tok in lexer.tokenize(data):
+  print('type=%r, value=%r' % (tok.type, tok.value))
+\end{Verbatim}
+
 \end{document}
