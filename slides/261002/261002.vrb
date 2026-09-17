@@ -1,0 +1,21 @@
+\frametitle{Lexプログラム}
+ \begin{list}{}{}
+  \item {\tt lex1.l}\\
+ \begin{center}
+  \includegraphics[width=.8\textwidth]{lexprog.pdf}
+ \end{center}
+  \item {\bf 実行方法}\\
+^^I\begin{tabular}{ll}
+^^I\verb*|lex -o lex1.c lex1.l| & (学科計算機(ICE))\\
+^^I\verb*|flex -o lex1.c lex1.l| & (それ以外)\\
+^^I\verb*|cc -o lex1 lex1.c -ll|\\
+^^I\end{tabular}
+^^I\begin{minipage}{.8\textwidth}
+^^I \verb|lex1.c|という字句解析プログラムを正規表現と対
+^^I 応動作さから生成
+^^I \begin{list}{}{}
+^^I  \item [1.] 正規表現を受理するDFAを生成
+^^I  \item [2.] 受理状態に達したとき動作を実行する
+^^I \end{list}
+^^I\end{minipage}
+ \end{list}

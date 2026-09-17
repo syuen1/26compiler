@@ -1,0 +1,24 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node at (-1,0) {\bf 抽象度};
+  \path[->] (0,0) edge (10,0);
+  \node at (0.5,0.25) {\bf 低};
+  \node at (9.5,0.25) {\bf 高};
+  \node at (5,0.5) {\bf モデル};
+  \node at (4,-0.25) {\bf\color{green}{OS}};
+  \node at (7.5,-0.25) {\bf\color{green}{アプリケーション}};
+  \node at (1.5,-0.6) {\bf デジタル計算機};
+  \node at (8.5,-0.6) {\bf 数式の計算};
+  \node at (2,-1.2) {\bf\color{red}アセンブリ言語};
+  \node at (5,-1.2) {\bf\color{red}C言語};
+  \node at (8,-1) {\bf\color{red}perl};
+  \node at (5.5,-1.6) {\bf\color{red}Java};
+  \node at (8.5,-1.5) {\bf プラント制御};
+  \node at (7,-2) {\bf\color{red}Python};
+  \node at (9,-2) {\bf ゲーム};
+\end{tikzpicture}
+\end{document}

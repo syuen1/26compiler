@@ -1,0 +1,25 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\include{mymacros}
+\begin{document}
+\begin{tikzpicture}
+  \node (N0) at (0,0) {$\NTerm{proc\_decl}$};
+  \node (N01) at (-4,-2) {$\Term{procedure}$};
+  \node (N02) at (-2,-2) {$\Term{IDENT}$};
+  \node (N03) at (-1,-2) {$\Term{(}$};
+  \node (N04) at (0,-2) {$\NTerm{id\_list}$};
+  \node (N05) at (1,-2) {$\Term{)}$};
+  \node (N06) at (1.5,-2) {$\Term{:}$};
+  \node (N07) at (3,-2) {$\NTerm{inblock}$};
+
+  \path[->] (N0) edge (N01);
+  \path[->] (N0) edge (N02);
+  \path[->] (N0) edge (N03);
+  \path[->] (N0) edge (N04);
+  \path[->] (N0) edge (N05);
+  \path[->] (N0) edge (N06);
+  \path[->] (N0) edge (N07);
+\end{tikzpicture}
+\end{document}
