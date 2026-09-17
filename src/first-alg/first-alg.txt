@@ -1,0 +1,20 @@
+文脈自由文法をyaccに準じた形で与える．
+epsilon は空列
+T は終端記号の集合
+PO_p は 各生成規則の右辺の接尾語全体の集合とする．
+さらにX := N\cup PO_p とする
+
+First は Xから T\cup{epsilon} の部分集合への関数で以下のように計算される．
+
+１．First(epsilon)={epsilon}
+2. \alpha\in X において，\alpha = a\alpha' となる a\in T が存在するとき，
+   First(\alpha)=\{a\} とする
+3. \alpha=A\alpha'\in X となる A\in Nが存在するとき，
+   First(\alpha)=\{\}
+4. Firstに新たな要素が加わらなくなるまで以下を繰り返す．
+  (a) \alpha = A\alpha' (A\in N)を満たす\alpha\in PO_pを選び，
+     First(\alpha) に以下の集合の要素を追加する．
+       epsilon\notin First(A) のとき，First(A)を追加
+       epsilon\in First(A) のとき (First(A)-epsilon)\cup First(\alpha')
+  (b) 生成規則 A\rightarrow\beta を選び，First(A) に First(\beta) の要素を追加
+

@@ -1,0 +1,5 @@
+expression,['(',ID,NUM]
+expression_tail,['+',%empty]
+term,['(',ID,NUM]
+term_tail,['*',%empty]
+factor,['(',ID,NUM]

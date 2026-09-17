@@ -1,0 +1,8 @@
+
+%%
+/* 入力例：算術式 */
+E : T E_tail ;
+E_tail : '+' T E_tail | %empty ;
+T : F T_tail ;
+T_tail : '*' F T_tail | %empty ;
+F : '(' E ')' | id ;
