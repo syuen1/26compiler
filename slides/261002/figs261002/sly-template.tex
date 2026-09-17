@@ -2,8 +2,27 @@
 \pagestyle{empty}
 \usepackage{tikz}
 \usetikzlibrary{calc,shapes}
+\usepackage{fancyvrb}
 \begin{document}
-\begin{tikzpicture}
+\begin{Verbatim}[frame=single]
+from sly import Lexer
 
-\end{tikzpicture}
+class SimpleLexer(Lexer):
+    # Set of token names.   This is always required
+    tokens = {  トークンの集合 }
+
+    # 無視する文字
+    ignore = ' \t'
+
+    # Regular expression rules for tokens
+    トークン = r'正規表現'
+　　　．．．．．
+
+if __name__ == '__main__':
+    data = 'x = 3 + 42 * (s - t)'
+    lexer = SimpleLexer()
+    for tok in lexer.tokenize(data):
+        print('type=%r, value=%r' % (tok.type, tok.value))
+
+\end{Verbatim}
 \end{document}
