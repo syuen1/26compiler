@@ -1,0 +1,16 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{minipage}{0.65\textwidth}
+\begin{Verbatim}[frame=single]
+  void Literal() :
+  { Token t; }
+  {
+    t=<LITERAL>
+      { jjtThis.litValue 
+        = Integer.parseInt(t.image); }
+  }  
+\end{Verbatim}
+\end{minipage}
+\end{document}

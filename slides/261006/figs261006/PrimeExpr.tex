@@ -1,0 +1,15 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{minipage}{0.6\textwidth}
+\begin{Verbatim}[frame=single]
+void PrimExpr() #void :
+{}
+{
+    Literal()
+  | <LP> AddExpr() <RP>
+}
+\end{Verbatim}
+\end{minipage}
+\end{document}

@@ -1,0 +1,47 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\include{mymacros}
+\begin{document}
+\begin{tikzpicture}
+  \node (N01) at (-6,0) {$\Term{procedure}$};
+  \node (N02) at (-4,0) {$\Term{IDENT}$};
+  \node (N03) at (-3,0) {$\Term{(}$};
+  \node (N0411) at (-2,0) {$\Term{IDENT}$};
+  \node (N042) at (-1,0) {$\Term{,}$};
+  \node (N043) at (0,0) {$\Term{IDENT}$};
+  \node (N05) at (1,0) {$\Term{)}$};
+  \node (N06) at (1.5,0) {$\Term{:}$};
+  \node (N07211) at (2.5,0) {$\Term{IDENT}$};
+  \node (N07212) at (3.5,0) {$\Term{:=}$};
+  \node (N0721311111) at (5,0) {$\Term{IDENT}$};
+  \node (N072132) at (6.25,0) {$\Term{+}$};
+  \node (N072133111) at (7.6,0) {$\Term{NUMBER}$};
+  
+  \node (N041) at (-2,1) {$\NTerm{id\_list}$};
+  
+  \node (N04) at (-1,2) {$\NTerm{id\_list}$};
+
+  \path[->] (N041) edge (N0411);
+  \path[->] (N04) edge (N041) (N04) edge (N042) (N04) edge (N043);
+
+  \node (N072131111) at (5,1) {$\NTerm{var\_name}$};
+  \path[->] (N072131111) edge (N0721311111);
+
+  \node (N07213111) at (5,2) {$\NTerm{factor}$};
+  \path[->] (N07213111) edge (N072131111);  
+
+  \node (N0721311) at (5,3) {$\NTerm{term}$};
+  \path[->] (N0721311) edge (N07213111);  
+
+  \node (N072131) at (5,4) {$\NTerm{expression}$};
+  \path[->] (N072131) edge (N0721311);  
+
+  \node (N07213311) at (7.6,1) {$\NTerm{number}$};
+  \path[->] (N07213311) edge (N072133111);
+
+  \node (N0721331) at (7.6,2) {$\NTerm{factor}$};
+  \path[->] (N0721331) edge (N07213311);
+\end{tikzpicture}
+\end{document}

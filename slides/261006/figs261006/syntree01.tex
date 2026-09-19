@@ -1,0 +1,19 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node (I0) at (0,0) {関数定義};
+  \node (I1) at (-6,-1) {型名};
+  \node (I2) at (-2,-1) {名前};
+  \node (I3) at (4,-1) {複文};
+  \node (I4) at (-6,-2) {\textsf{INT}};
+  \node (I5) at (-2,-2) {\textsf{NAME}};
+  \node (I6) at (0,-2) {\textsf{(}};
+  \node (I7) at (1,-2) {\textsf{)}};
+  \node (I8) at (4,-2) {\textsf{COMPOUND}};
+  \path[-] (I0) edge (I1) (I0) edge (I2) (I0) edge (I3) 
+           (I1) edge (I4) (I2) edge (I5) (I3) edge (I8) (I0) edge (I6) (I0) edge (I7);
+\end{tikzpicture}
+\end{document}

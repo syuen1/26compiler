@@ -1,0 +1,40 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\begin{document}
+  \begin{tikzpicture}
+  \draw (0,0) node (v1) {IF};
+  \draw (1,0) node (v2) {'('};
+  \draw (1.5,0) node (v3) {式};
+  \draw (2,0) node (v4) {')'};
+  \draw (3,0) node (v5) {IF};
+  \draw (4,0) node (v6) {'('};
+  \draw (4.5,0) node (v7) {式};
+  \draw (5,0) node (v8) {')'};
+  \draw (6,0) node (v9) {文};
+  \draw (7,0) node (v10) {ELSE};
+  \draw (8,0) node (v11) {文};
+  \draw (4,1) node (v12) {選択文};
+  \draw (4,2) node (v13) {文};
+  \draw (4,3) node (v14) {選択文};
+  \draw (4,4) node (v15) {文};
+  
+  \path[-] (v12) edge (v5)
+           (v12) edge (v6)
+           (v12) edge (v7)
+           (v12) edge (v8)
+           (v12) edge (v9)
+           (v13) edge (v12)
+           (v14) edge (v13)
+           (v15) edge (v14);
+  \path[-] (v14) edge [bend right,looseness=1] (v1)
+           (v14) edge [bend right,looseness=1] (v2)
+           (v14) edge [bend right,looseness=1] (v3)
+           (v14) edge [bend right,looseness=1] (v4);
+% \only<1>{\path[-] (v14) edge [bend left,looseness=1] (v10)
+%            (v14) edge [bend left,looseness=1] (v11);}
+  \path[-] (v12) edge [bend left] (v10)
+                  (v12) edge [bend left] (v11);
+  \end{tikzpicture}
+\end{document}

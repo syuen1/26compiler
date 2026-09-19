@@ -1,0 +1,1681 @@
+\documentclass[dvipdfmx]{beamer}
+\usepackage{bxdpx-beamer}% dvipdfmxなので必要
+\usepackage{pxjahyper}% 日本語で'しおり'したい
+%\usepackage{etex}
+%\usetheme{Warsaw}
+\usetheme{Malmoe}
+%\usetheme{AnnArbor}
+%\usetheme{Hannover}
+%\usetheme{Bergen}
+%\usetheme{Berlin}
+%\usetheme{Singapore}
+%\usetheme{Montpellier}
+%\usetheme{Pittsburgh}
+\usepackage{graphicx}
+%\usepackage{multirow}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+%\usepackage{listings}
+\usepackage{fancybox}
+\usepackage{tabularx}
+%\usepackage{algorithmic}
+%\usepackage{multimedia}
+%\usepackage{pstricks}
+%\usepackage{pst-eps}
+%\usepackage{pst-node}
+%\usepackage{pst-plot}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc,automata}
+\usepackage{xcolor}
+%\usepackage{pst-all}
+%\include{prooftree}
+\usepackage{ascmac}
+\include{tscheme}
+\include{mymacros}
+%\lstloadlanguages{pascal}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\renewcommand{\familydefault}{\sfdefault}
+
+% \newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
+% \newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
+\newcommand{\lightbluetext}[1]{\color[rgb]{0.4,1,1}{#1}}
+
+%\newrgbcolor{lightblue}{0.4 1 1}
+%\newrgbcolor{darkgreen}{0 0.5 0}
+
+\cornersize{0.25}
+
+\graphicspath{{figs261006/}}
+
+\newcommand{\lecturedate}{2026/10/6}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\setbeamertemplate{frametitle}[default][center]
+\setbeamertemplate{footline}{\hfill
+コンパイラ\quad\lecturedate
+\hfill\insertframenumber/\inserttotalframenumber\hspace*{1zw}}
+\newcounter{coffee}
+\setbeamercovered{transparent=10}
+\title{コンパイラ(2)}
+\date{\lecturedate}
+\begin{document}
+\frame{\titlepage}
+
+\section{構文解析}
+
+\begin{frame}
+  \centering
+  {\Huge 構文解析}
+\end{frame}
+
+\subsection{構文解析概要}
+
+\begin{frame}
+  \frametitle{構文解析(Parsing)}
+
+  文字列のならびが規則通りにならんでいるかチェックすること。
+
+  \vspace*{.7cm}
+
+  \begin{tabular}{lcl}
+    字句解析                    & ： & 正規表現(Regular Expression)           \\[10pt]
+    \greentext{(トークンにまとめる)} &   & $FA$ : 有限オートマトン                    \\[5pt]
+                            &   & $w\stackrel{\mbox{?}}{\in} L(FA)$  \\[10pt]
+    構文解析                    & ： & 文脈自由文法(Context Free Language)      \\[10pt]
+    \greentext{(木構造を構成)}    &   & $PDA$ : プッシュダウンオートマトン              \\[5pt]
+                            &   & $w\stackrel{\mbox{?}}{\in} L(PDA)$ \\
+  \end{tabular}
+
+  \vspace*{.7cm}
+
+  木構造を出力：$PDT$ \greentext{プッシュダウントランスデューサー}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{構文解析の基礎}
+  \begin{list}{}{}
+    \item [\bluetext{{\bf 構文解析}}]\ \\
+          字句解析の出力トークン列から文法に従った木構造を構成\\[5pt]
+    \item [\bluetext{{\bf 文法}}] 文脈自由文法(CF文
+          法)\quad$(N,\Sigma,P,E)$\\
+          非終端記号:$N=\{E\}$,終端記号:$\Sigma=\{+,*,(,)\}\cup\mathtt{ID}$
+          \[
+            P=
+            \left\{
+            \begin{array}{ll}
+              E\rightarrow E+E,        &
+              E\rightarrow E*E,                              \\
+              E\rightarrow\mathtt{ID}, & E\rightarrow(\ E\ )
+            \end{array}
+            \right\}
+          \]
+          \begin{list}{(\arabic{coffee})}{\usecounter{coffee}\setlength{\itemsep}{5pt}}
+            \item ${\mathtt{ID}}$は式である。
+            \item $x$と$y$が式であれば、$x+y$,$x*y$,$(x)$は式である。
+            \item (1),(2)を有限回適用して得られる表現だけが式である。
+          \end{list}
+    \item {\bf BNF(Backus-Nauer-Form)}
+          \[
+            \tuple{S}::=\tuple{S}+\tuple{S}\ |\ \tuple{S}*\tuple{S}\ |
+            \ {\mathtt{ID}}\ |\ (\tuple{S})
+          \]
+  \end{list}
+\end{frame}
+
+\begin{frame}
+  \frametitle{導出と還元}
+  \begin{list}{}{\setlength{\itemsep}{5pt}}
+    \item [\bluetext{{\bf 導出}}]：$w_1\Rightarrow w_2$\\
+          $w_1,w_2\in (N\cup\Sigma)^\ast$
+          $w_1=wAw''$, $w_2=wvw'$ に対して $A\rightarrow v$
+    \item [\bluetext{{\bf 導出関係}}]\ \\
+          $v\stackrel{\ast}{\Rightarrow} v'$:$\Rightarrow$の0回以上の適
+          用
+          \[
+            v=v_0\Rightarrow v_1\Rightarrow\cdots\Rightarrow
+            v_{n-1}\Rightarrow v_n=v'
+          \]
+    \item [\bluetext{\bf 還元}] $w_1\Rightarrow w_2$\\
+          $w_2$は$w_1$に還元される。
+    \item [\bluetext{\bf 生成言語}]\ \\
+          $G=\tuple{N,\Sigma,P,S}$が生成する言語：$L(G)=\{w\ |\
+            S\stackrel{\ast}{\Rightarrow}w\}\subseteq \Sigma^\ast$
+  \end{list}
+  \greentext{\small
+    $w\in L(G)$のとき、文法に従った文、$w\notin L(G)$のとき、文法エラー}\\
+  構文解析=$w\in L(G)$をチェックし、$w\in L(G)$のとき解析木を生成
+\end{frame}
+
+\begin{frame}
+  \frametitle{最左導出、最右導出}
+  $A\rightarrow\alpha\in P$によって、$\beta A\gamma$を書き換える。
+  \[
+    \beta A\gamma\Rightarrow \beta\alpha\gamma
+  \]
+  \begin{list}{}{}
+    \item 最左導出：$\beta\in\Sigma^\ast$ \quad $\Rightarrow_{lm}$
+    \item 最右導出：$\gamma\in\Sigma^\ast$ \quad $\Rightarrow_{rm}$
+  \end{list}
+  \only<1>{
+    \begin{eqnarray*}
+      \mbox{関数定義} & \Rightarrow_{lm} & \mbox{型名}\ \mbox{名前}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mbox{複文}\\
+      & \Rightarrow_{lm} & \mathtt{INT}\ \mbox{名前}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mbox{複文}\\
+      & \Rightarrow_{lm} & \mathtt{INT}\ \mathtt{NAME}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mbox{複文}\\
+      & \Rightarrow_{lm} & \mathtt{INT}\ \mathtt{NAME}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mathtt{COMPOUND}\\
+    \end{eqnarray*}
+  }
+  \only<2>{
+    \begin{eqnarray*}
+      \mbox{関数定義} & \Rightarrow_{rm} & \mbox{型名}\ \mbox{名前}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mbox{複文}\\
+      & \Rightarrow_{rm} & \mbox{型名}\ \mbox{名前}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mathtt{COMPOUND}\\
+      & \Rightarrow_{rm} & \mbox{型名}\ \mathtt{NAME}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mathtt{COMPOUND}\\
+      & \Rightarrow_{rm} & \mathtt{INT}\ \mathtt{NAME}\
+      '\mathtt{(}'\ '\mathtt{)}'\ \mathtt{COMPOUND}\\
+    \end{eqnarray*}
+  }
+\end{frame}
+
+\subsection{解析木}
+
+\begin{frame}
+  \frametitle{解析木}
+
+  $G'=\tuple{N,T,P,\mbox{関数定義}}$
+
+  \begin{eqnarray*}
+    N & = & {\scriptsize \{\mbox{関数定義},\mbox{型名},\mbox{パラメータリス
+          ト},\mbox{名前},\mbox{パラメータ},\mbox{複文}\}}\\
+    T & = & {\scriptsize
+        \{'(',')',',',\mathtt{VOID},\mathtt{INT},\mathtt{NAME},\mathtt{PARAM},\mathtt{COMPOUND}\}}\\
+    P & = & {\scriptsize
+        \left\{\begin{array}{rcl}
+          \mbox{関数定義}       & \rightarrow & \mbox{型名}\ \mbox{名前}\ '('\
+          \mbox{パラメータリスト}\ ')'\ \mbox{複文}                              \\
+          \mbox{関数定義}       & \rightarrow & \mbox{型名}\ \mbox{名前}\
+          '('\ ')'\ \mbox{複文}                                          \\
+          \mbox{型名}\        & \rightarrow & \mathtt{VOID}              \\
+          \mbox{型名}\        & \rightarrow & \mathtt{INT}               \\
+          \mbox{型名}\        & \rightarrow & \varepsilon                \\
+          \mbox{パラメータリスト}\  & \rightarrow & \mbox{パラメータリ
+          スト}\ ','\ \mbox{パラメータ}                                       \\
+          \mbox{パラメータリスト}\  & \rightarrow & \mbox{パラメータ}               \\
+          \mbox{名前}\        & \rightarrow & \mathtt{NAME}              \\
+          \mbox{パラメータ}\     & \rightarrow & \mathtt{PARAM}             \\
+          \mbox{複文}\        & \rightarrow & \mathtt{COMPOUND}          \\
+        \end{array}
+        \right\}}
+  \end{eqnarray*}
+  % \begin{center}
+  %  \includegraphics[height=.2\textheight]{syntree01-crop.pdf}
+  % \end{center}
+\end{frame}
+
+\begin{frame}{解析木の導出}
+  \begin{tikzpicture}
+    \draw (0,3) node (root) {{\scriptsize 関数定義}};
+    \draw (-4,2) node (v1) {{\scriptsize 型名}};
+    \draw (-3,2) node (v2) {{\scriptsize 名前}};
+    \draw (0,2) node (v4) {{\scriptsize パラメータリスト}};
+    \draw (3.5,2) node (v6) {{\scriptsize 複文}};
+    \only<4->{\draw (-1,1.25) node (v41) {{\tiny パラメータリスト}};}
+    \only<4->{\draw (1,1.25) node (v43) {{\tiny パラメータ}};}
+    \only<2->{\draw (-4,1) node (v11) {{\scriptsize {\sf INT}}};}
+    \only<3->{\draw (-3,1) node (v21) {{\scriptsize {\sf NAME}}};}
+    \draw (-2,1) node (v3) {{\scriptsize {\sf '('}}};
+    \only<5->{\draw (-1,0.5) node (v411) {{\tiny パラメータ}};}
+    \draw (2,1) node (v5) {{\scriptsize {\sf ')'}}};
+    \only<8>{\draw (3.5,1) node (v61) {{\scriptsize {\sf COMPOUND}}};}
+    \only<6->{\draw (-1,0) node (v4111) {{\tiny {\sf PARAM}}};}
+    \only<4->{\draw (0,0) node (v42) {{\tiny {\sf ','}}};}
+    \only<7->{\draw (1,0) node (v431) {{\tiny {\sf PARAM}}};}
+
+    \path[-] (root) edge (v1);
+    \only<2->{\path[-] (v1) edge (v11);}
+    \path[-] (root) edge (v2);
+    \only<3->{\path[-] (v2) edge (v21);}
+    \path[-] (root) edge (-2,2);
+    \path[-] (-2,2) edge (v3)
+    (root) edge (v4);
+    \only<4->{\path[-] (v4) edge (v41)
+      (v4) edge (v42)
+      (v4) edge (v43);}
+    \only<5->{\path[-] (v41) edge (v411);}
+    \only<6->{\path[-] (v411) edge (v4111);}
+    \only<7->{\path[-] (v43) edge (v431);}
+    \path[-] (root) edge (2,2)
+    (2,2) edge (v5)
+    (root) edge (v6);
+    \only<8>{\path[-] (v6) edge (v61);}
+  \end{tikzpicture}
+  {\scriptsize
+  \begin{center}
+    \[
+      \begin{array}{rcl}
+        \mbox{関数定義} & \Rightarrow & \mbox{型名}\ \mbox{名前}\
+        \mbox{'('}\ \mbox{\scriptsize パラメータリスト}\ \mbox{')'}\ \mbox{複文} \\
+        \only<2->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{名前}\
+          \mbox{'('}\ \mbox{\scriptsize パラメータリスト}\ \mbox{')'}\
+          \mbox{複文}\\}
+        \only<3->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{NAME}\
+          \mbox{'('}\ \mbox{\scriptsize パラメータリスト}\ \mbox{')'}\
+          \mbox{複文}\\}
+        \only<4->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{NAME}\
+          \mbox{'('}\ \mbox{\scriptsize パラメータリスト}\ \mbox{','}\
+          \mbox{\scriptsize パラメータ}\ \mbox{')'}\ \mbox{複文}\\}
+        \only<5->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{NAME}\
+          \mbox{'('}\ \mbox{\scriptsize パラメータ}\ \mbox{','}\
+          \mbox{\scriptsize パラメータ}\ \mbox{')'}\ \mbox{複文}\\}
+        \only<6->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{NAME}\
+          \mbox{'('}\ \mbox{PARAM}\ \mbox{','}\
+          \mbox{\scriptsize パラメータ}\ \mbox{')'}\ \mbox{複文}\\}
+        \only<7->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{NAME}\
+          \mbox{'('}\ \mbox{PARAM}\  \mbox{','}\
+          \mbox{PARAM}\ \mbox{')'}\ \mbox{複文}\\}
+        \only<8->{
+                    & \Rightarrow & \mbox{INT}\ \mbox{NAME}\
+          \mbox{'('}\ \mbox{PARAM}\  \mbox{','}\
+          \mbox{PARAM}\ \mbox{')'}\ \mbox{COMPOUND}\\}
+      \end{array}
+    \]
+  \end{center}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{文法の曖昧性}
+  $G=\tuple{N,T,S,P}$
+  ある$w\in L(G)$に対して、$S\Rightarrow w$であって構成される解析木が唯
+  一でないとき、文法が曖昧である。
+
+  $\Rightarrow$意味が正確に定まらないことがある。
+
+  教科書$G_1$:曖昧な文法
+
+  \[
+    G_1=(\{\mbox{論理
+      式}\},\{\mathtt{OR},\mathtt{AND},\mathtt{EQT}\},P_1,\mbox{論理式})
+  \]
+  \[
+    P_1=\{\mbox{論理式}\rightarrow\mbox{論理式}\ \mathtt{OR}\ \mbox{論理
+      式}|\mbox{論理式} \mathtt{AND}\ \mbox{論理式}|\mathtt{EQT}\}
+  \]
+  %  \begin{center}
+  %   \includegraphics[height=.2\textheight]{fig4_1.pdf}
+  %  \end{center}
+  \begin{center}
+    \begin{tabular}{ccc}
+      \scalebox{0.5}{
+        \begin{tikzpicture}
+          \node (N0) at (0,1) {$\mathtt{EQT}$};
+          \node (N1) at (0,2) {論理式};
+          \node (N2) at (1,1) {論理式};
+          \node (N3) at (1,0) {$\mathtt{EQT}$};
+          \node (N4) at (3,0) {$\mathtt{EQT}$};
+          \node (N5) at (2,1) {$\mathtt{AND}$};
+          \node (N6) at (3,1) {論理式};
+          \node (N7) at (1,2) {$\mathtt{OR}$};
+          \node (N8) at (2,2) {論理式};
+          \node (N9) at (1,3) {論理式};
+          \path[-,color=blue,line width=2pt] (N0) edge (N1)
+          (N3) edge (N2)
+          (N4) edge (N6)
+          (N2) edge (N8)
+          (N5) edge (N8)
+          (N6) edge (N8)
+          (N1) edge (N9)
+          (N7) edge (N9)
+          (N8) edge (N9);
+        \end{tikzpicture}
+      }
+       & \quad &
+      \scalebox{0.5}{
+        \begin{tikzpicture}
+          \node (N1) at (2,3) {論理式};
+          \node (N2) at (1,2) {論理式};
+          \node (N3) at (2,2) {$\mathtt{AND}$};
+          \node (N4) at (3,2) {論理式};
+          \node (N5) at (0,1) {論理式};
+          \node (N6) at (1,1) {$\mathtt{OR}$};
+          \node (N7) at (2,1) {論理式};
+          \node (N8) at (3,1) {$\mathtt{EQT}$};
+          \node (N9) at (0,0) {$\mathtt{EQT}$};
+          \node (N10) at (2,0) {$\mathtt{EQT}$};
+          \path[-,color=blue,line width=2pt] (N1) edge (N2)
+          (N1) edge (N3) (N1) edge (N4) (N4) edge (N8)
+          (N2) edge (N5) (N2) edge (N6) (N2) edge (N7)
+          (N5) edge (N9) (N7) edge (N10);
+        \end{tikzpicture}
+      }
+    \end{tabular}
+  \end{center}
+
+  %  \begin{center}
+  %  \scalebox{.5}{
+  %      \begin{tikzpicture}
+  %      \node (R0) at (1.5,3) {論理式};
+  %      \node (T01) at (0,2) {論理式};
+  %      \node (T02) at (1.5,2) {$\mathtt{OR}$};
+  %      \node (T03) at (3,2) {論理式};
+  %      \node (R1) at (6.5,3) {論理式};
+  %      \end{tikzpicture}
+  %      }
+  %  \end{center}
+
+  トークン$EQT$を左からそれぞれ $x==0$, $y==0$, $z==0$として、
+  図4.1の解析木を、$x=0$,$y=1$,$z=1$としてみると、左の解釈では、論理式は
+  真であるが、右の解釈では偽
+\end{frame}
+
+\begin{frame}
+  \frametitle{無曖昧で等価な文法}
+
+  $G_2$は、$G_1$と等価な無曖昧な文法($L(G_1)=L(G_2)$)\\
+  \quad \greentext{解析木のサイズは大きくなる}
+
+  \[
+    G_2=(\{\mbox{論理式,AND式}\},\{\mathtt{OR},\mathtt{AND},\mathtt{EQT}\},P_1,\mbox{論理式})
+  \]
+  \[
+    P_2=\left\{\begin{array}{l}
+      \mbox{論理式}\rightarrow\mbox{論理式}\ \mathtt{OR}\ \mbox{AND
+      式}|\mbox{AND式} \\
+      \mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\
+      \mathtt{EQT}|\mathtt{EQT}
+    \end{array}
+    \right\}
+  \]
+  %  \begin{center}
+  %   \includegraphics[scale=0.8]{fig4_2.pdf}
+  %  \end{center}
+  \begin{center}
+    \scalebox{0.5}{
+      \begin{tikzpicture}
+        \node (N0) at (1.5,3) {論理式};
+        \node (N1) at (0,2) {論理式};
+        \node (N2) at (1.5,2) {$\mathtt{OR}$};
+        \node (N3) at (3,2) {AND式};
+        \node (N4) at (0,1) {AND式};
+        \node (N5) at (1.5,1) {AND式};
+        \node (N6) at (3,1) {$\mathtt{AND}$};
+        \node (N7) at (4.5,1) {$\mathtt{EQT}$};
+        \node (N8) at (0,0) {$\mathtt{EQT}$};
+        \node (N9) at (1.5,0) {$\mathtt{EQT}$};
+
+        \path[-,color=blue,line width=2pt] (N0) edge (N1)
+        (N0) edge (N2)  (N0) edge (N3)
+        (N1) edge (N4)  (N4) edge (N8)
+        (N3) edge (N5)  (N3) edge (N6)
+        (N3) edge (N7)  (N5) edge (N9);
+      \end{tikzpicture}
+    }
+  \end{center}
+
+  効率の面から、曖昧性を残して別のルールで一意に定めることもある。
+  $-$や$\div$の左結合性 ($x-y-z$は普通$(x-y)-z$と解釈)
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dangling IF}
+  \begin{eqnarray*}
+    \mbox{文} & \rightarrow & \mbox{選択文}\\
+    \mbox{選択文} & \rightarrow & IF\ '('\ \mbox{式}\ ')'\ \mbox{文}\\
+    \mbox{選択文} & \rightarrow & IF\ '('\ \mbox{式}\ ')'\ \mbox{文}\ ELSE\
+    \mbox{文}\\
+  \end{eqnarray*}
+
+  \begin{center}
+    \only<1>{\includegraphics[scale=0.9]{conditional-1-crop.pdf}}
+    \only<2>{\includegraphics[scale=0.9]{conditional-2-crop.pdf}}
+  \end{center}
+  %   {\scriptsize
+  %   \begin{tikzpicture}
+  %   \draw (0,0) node (v1) {IF};
+  %   \draw (1,0) node (v2) {'('};
+  %   \draw (1.5,0) node (v3) {式};
+  %   \draw (2,0) node (v4) {')'};
+  %   \draw (3,0) node (v5) {IF};
+  %   \draw (4,0) node (v6) {'('};
+  %   \draw (4.5,0) node (v7) {式};
+  %   \draw (5,0) node (v8) {')'};
+  %   \draw (6,0) node (v9) {式};
+  %   \draw (7,0) node (v10) {ELSE};
+  %   \draw (8,0) node (v11) {式};
+  %   \draw (4,1) node (v12) {選択文};
+  %   \draw (4,2) node (v13) {文};
+  %   \draw (4,3) node (v14) {選択文};
+  %   \draw (4,4) node (v15) {文};
+
+  %   \path[-] (v12) edge (v5)
+  %            (v12) edge (v6)
+  %            (v12) edge (v7)
+  %            (v12) edge (v8)
+  %            (v12) edge (v9)
+  %            (v13) edge (v12)
+  %            (v14) edge (v13)
+  %            (v15) edge (v14);
+  %   \path[-] (v14) edge [bend right,looseness=1] (v1)
+  %            (v14) edge [bend right,looseness=1] (v2)
+  %            (v14) edge [bend right,looseness=1] (v3)
+  %            (v14) edge [bend right,looseness=1] (v4);
+  % \only<1>{\path[-] (v14) edge [bend left,looseness=1] (v10)
+  %            (v14) edge [bend left,looseness=1] (v11);}
+  % \only<2>{\path[-] (v12) edge [bend left] (v10)
+  %                   (v12) edge [bend left] (v11);
+  % }
+  %   \end{tikzpicture}
+  %   }
+\end{frame}
+
+% \begin{frame}
+%   \frametitle{解析木の表現}
+
+%   解析木$T$を一次元的に表現：\\[1zw]
+%   $root(T)$:$T$の根のノード, $degree(t)$:子の数，$T[i]$:$i$番目の部分木，$T.data$:根ノードのデータ
+%   \begin{list}{$\bullet$}{}
+%     \item [{\bf プリオーダー系列}] \ \\
+%           \only<1>{
+%             \begin{tabular}{l}
+%               Tree preorder(Tree T) \{                           \\
+%               print T.data                                       \\
+%               \quad if degree(t) $>$ 0 then                      \\
+%               \qquad for i=1 to degree(t) do preorder(T[i]) done \\
+%               \quad fi                                           \\
+%               \quad retrun                                       \\
+%               \}
+%             \end{tabular}
+%           }
+%     \item [{\bf インオーダー系列}]\ \\
+%           \only<2>{
+%             \begin{tabular}{l}
+%               Tree inorder(Tree T) \{                      \\
+%               \quad if degree(t) $>$ 0 then                \\
+%               \qquad inorder(T[1])                         \\
+%               \qquad print T.data                          \\
+%               \qquad for i=2 to degree(t) do inorder(T[i]) \\
+%               \quad else                                   \\
+%               \qquad print T.data                          \\
+%               \quad fi                                     \\
+%               \quad return r                               \\
+%               \}
+%             \end{tabular}
+%           }
+%     \item [{\bf ポストオーダー系列}]
+%           \only<3-4>{
+%             \begin{tabular}{l}
+%               Tree postorder(Tree T) \{                          \\
+%               \quad for i=1 to degree(t) do postorder(T[i]) done \\
+%               \quad print T.root                                 \\
+%               \quad return r                                     \\
+%               \}
+%             \end{tabular}
+%           }
+%   \end{list}
+%   %  \begin{center}
+%   %   \includegraphics[height=.5\textheight]{figs/treeorders.pdf}
+%   %  \end{center}
+%   %  \only<4>{\greentext{
+%   %  ポストオーダー=逆ポーランド記法：スタックマシンの命令系列
+%   %  (POSTSCRIPTが有名)}
+%   %  }
+
+%   \only<4>{
+%     \bluetext{構文解析による解析木構成}：\\
+%     $s\in L(G)$のとき:ソースプログラム $s$ $\rightarrow$ 解析木系列 $t$
+%   }
+
+% \end{frame}
+
+% \begin{frame}{例}
+%   \[
+%     (A+B)\times(-C)+(D/(E-F))
+%   \]
+
+%   \vfill
+
+%   \begin{center}
+%     \begin{tikzpicture}
+%       \draw (0,0) node (v1) [circle,draw] {$A$};
+%       \draw (1,0) node (v2) [circle,draw] {$B$};
+%       \draw (2,0) node (v3) [circle,draw] {$C$};
+%       \draw (3,0) node (v4) [circle,draw] {$E$};
+%       \draw (4,0) node (v5) [circle,draw] {$F$};
+
+%       \draw (0.5,1) node (v12) [circle,draw] {$+$};
+%       \draw (1.5,1) node (v03) [circle,draw] {$-$};
+%       \draw (2.5,1) node (v00) [circle,draw] {$D$};
+%       \draw (3.5,1) node (v45) [circle,draw] {$-$};
+
+%       \draw (1,2) node (v1203) [circle,draw] {$\times$};
+%       \draw (3,2) node (v0045) [circle,draw] {$/$};
+%       \draw (2,3) node (root) [circle,draw] {$+$};
+
+%       \path[->] (v12) edge (v1)
+%       (v12) edge (v2)
+%       (v03) edge (v3)
+%       (v45) edge (v4)
+%       (v45) edge (v5)
+%       (v1203) edge (v12)
+%       (v1203) edge (v03)
+%       (v0045) edge (v00)
+%       (v0045) edge (v45)
+%       (root) edge (v1203)
+%       (root) edge (v0045);
+%     \end{tikzpicture}
+%   \end{center}
+
+%   \begin{center}
+%     {\small
+%       \begin{tabular}{rcl}
+%         プリオーダー  & : & $+\times + AB - C/D - EF$ \\
+%         インオーダー  & : & $A+B\times - C+D/E-F$     \\
+%         ポストオーダー & : & $AB+C-\times DEF - / +$
+%       \end{tabular}
+%     }
+%   \end{center}
+
+% \end{frame}
+
+\subsection{構文解析アルゴリズム}
+
+\begin{frame}
+  \frametitle{構文解析アルゴリズム}
+
+  プリオーダー、インオーダー、ポストオーダ：木構造に対する1次元表現
+
+  \begin{center}
+    \begin{tabular}{ll}
+      ソースコード$\rightarrow$ 木構造   & 構文解析  \\
+      木構造$\rightarrow$オブジェクトコード & コード生成
+    \end{tabular}
+  \end{center}
+
+  長さ$n$の入力：$CFG$に対して$O(n^3)$で構文解析可能\\
+  \greentext{標準形のCFGに対して組み合わせをかぞえあげる}
+
+  CFGによっては、もっと高速に構文解析が可能\\
+  \greentext{文法規則の適用可能性をできるだけ早く判断}
+
+  \vspace*{1zw}
+
+  \begin{tabular}{l}
+    解析木のプリオーダー：最左導出 \\
+    解析木のポストオーダー：最右導出の逆
+  \end{tabular}
+
+\end{frame}
+
+\subsection{FirstとFollow}
+
+\begin{frame}
+  \frametitle{$First$と$Follow$}
+
+  どの生成規則を適用できるか、生成規則の集合からあらかじめ計算して手掛か
+  りを得ておく。
+
+  {\small
+  \begin{itembox}[l]{定義4.2 $First_1$集合}
+    CF文法 $G=\tuple{N,\Sigma,P,S}$が与えられたとき、
+    $\alpha\in(N\cup\Sigma)^\ast$に対する$First_1(\alpha)$
+    を以下のように定義する。
+
+    \[
+      \begin{array}{l}
+        \alpha\Rightarrow^\ast\varepsilon\mbox{のとき}            \\
+        \quad First_1(\alpha)=\{a\in\Sigma|\alpha\Rightarrow^\ast
+        a\beta,\beta\in(N\cup\Sigma)^\ast\}\cup\{\varepsilon\} \\
+        \alpha\not\Rightarrow^\ast\varepsilon\mbox{のとき}        \\
+        \quad First_1(\alpha)=\{a\in\Sigma|\alpha\Rightarrow^\ast
+        a\beta,\beta\in(N\cup\Sigma)^\ast\}
+      \end{array}
+    \]
+  \end{itembox}}
+
+  \greentext{\small $First_1(\alpha)$: $\alpha$を導出するときの最初のシンボル}\\
+  \greentext{\small $\varepsilon\in First_1(\alpha)$:$\alpha$が$\varepsilon$に還元される}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$First_1$の計算}
+  {\scriptsize
+    \greentext{$PO_P$:$P$の右辺の接尾語集合}
+
+    $\gamma_1\gamma_2\cdots\gamma_n$の接尾語：$\gamma_1\cdots\gamma_n$,
+    $\gamma_2\cdots\gamma_n$,$\gamma_3\cdots\gamma_n$,$\cdots$,$\gamma_n$,$\varepsilon$
+  }
+
+  {\scriptsize
+    \begin{itembox}[l]{アルゴリズム4.1}
+
+      \begin{list}{{\bf ステップ}\,{\rm\arabic{coffee}:}}{\usecounter{coffee}}
+        \item $\mathsf{First}_1(\varepsilon)\leftarrow\{\varepsilon\}$
+        \item $\alpha\in (PO_P\backslash\{\varepsilon\})\cup N$に対して
+              \begin{list}{(\alph{bean})}{\usecounter{bean}}
+                \item $\mathsf{fst}(\alpha)\in\Sigma$ならば，
+                      $\mathsf{First}_1(\alpha)\leftarrow \{\mathsf{fst}(\alpha)\}$
+                \item $\mathsf{fst}(\alpha)\in N$ならば，
+                      $\mathsf{First}_1(\alpha)\leftarrow \varnothing$
+              \end{list}
+        \item すべての$\mathsf{First}_1(\alpha)$ ($\alpha\in PO_P\cup N$)に新たな要素が
+              追加されなくなるまで以下を繰り返す．
+              \begin{list}{(\alph{bean})}{\usecounter{bean}}
+                \item $\mathsf{fst}(\alpha)=A\in N$である$\alpha$に対して
+                      $\mathsf{First}_1(\alpha)$に以下の要素を追加する．
+                      \begin{list}{}{}
+                        \item $\varepsilon\notin\mathsf{First}_1(A)$のとき，$\mathsf{First}_1(A)$
+                        \item $\varepsilon\in\mathsf{First}_1(A)$のとき，$\mathsf{First}_1(A)\backslash\{\varepsilon\}\cup\mathsf{First}_1(\mathsf{fol}(\alpha))$
+                      \end{list}
+                \item $A\rightarrow\beta\in P$に対して$\mathsf{First}_1(\beta)$を$\mathsf{First}_1(A)$に追加する．
+              \end{list}
+      \end{list}
+      %  \begin{list}%
+      %   {(\arabic{coffee})} %default label
+      %   {\usecounter{coffee}} %formatting parameter
+      %   \item $First_1(\varepsilon)\leftarrow\{\varepsilon\}$
+      %   \item $\alpha=a\alpha'$, $\alpha'\in(N\cup\Sigma)^\ast$について、
+      %   $First_1(\alpha)\leftarrow\{a\}$
+      %   \item $\alpha=A\alpha'$, $\alpha'\in(N\cup\Sigma)^\ast$について
+      %   $First_1(\alpha)\leftarrow\emptyset$
+      %   \item すべての$\alpha\in N\cup PO_P$についてあらたに$First_1(\alpha)$が変化し
+      %   なくなるまで以下をくりかえす。
+      %   \begin{list}%
+      %    {} %default label
+      %    {\setlength{\itemsep}{3pt}} %formatting parameter
+      %    \item [(a)] $\alpha=A\alpha'$に対して
+
+      % 	 \begin{tabular}{lp{15zw}}
+      % 	  $\varepsilon\notin First_1(A)$のとき、& $First_1(A)$を
+      % 	  $First_1(\alpha)$に追加\\
+      % 	  $\varepsilon\in First_1(A)$のとき、&
+      % 	  $First_1(A)\backslash\{\varepsilon\}\cup
+      % 	  First_1(\alpha')$を
+      % 	  $First_1(\alpha)$に追加\\
+      % 	  \end{tabular}
+      %    \item [(b)] $A\rightarrow\beta$に対して、$First_1(A)$に
+      % 	 $First_1(\beta)$を追加
+      %   \end{list}
+      %  \end{list}
+    \end{itembox}}
+  \par\vspace*{-10pt}\par
+  \greentext{
+    {\scriptsize
+        \begin{trivlist}
+          \item $\mathsf{fst}(\alpha)$:系列$\alpha$の先頭の記号\\
+          \item $\mathsf{fol}(\alpha)$:系列$\alpha$の先頭の記号を除いた残りの系列
+        \end{trivlist}
+      }}
+\end{frame}
+
+% \begin{frame}
+%  \frametitle{First}
+%   \begin{center}
+%    \includegraphics[scale=0.6]{figs/def4_5.eps}
+%   \end{center}
+%   \begin{center}
+%    \includegraphics[scale=0.7]{figs/alg4_6.eps}
+%   \end{center}
+% \end{frame}
+
+\begin{frame}
+  \frametitle{$Follow_1$}
+
+  \greentext{
+    $A\in N$の$Follow$: $S\Rightarrow^\ast \beta Aa\gamma$
+    となる
+    $a\in\Sigma\cup\{\#\}$をすべて求める。
+  }
+
+  \begin{tabular}{l}
+    下向き構文解析:$A\Rightarrow^\ast\varepsilon$の場合の
+    $A\rightarrow\alpha$の適用 \\
+    上向き構文解析:$B\rightarrow\alpha A$となる規則の適用
+  \end{tabular}
+
+  {\small
+  \begin{itembox}[l]{定義4.3 $\mathsf{Follow}_1$}
+    CF文法$G=\langle N,\Sigma,P,S\rangle$に対して，$A\in N$に対する$\mathsf{Follow}_1(A)$
+    は以下のように定義される．
+    \[\begin{array}{rcl}
+        \mathsf{Follow}_1(A) & = & \{a\in\Sigma\,|\,S\Rightarrow^\ast\beta Aa\gamma,\beta,\gamma\in(N\cup\Sigma)^\ast\} \\
+                             &   & \cup\{\#\,|\,S\Rightarrow^\ast\beta A, \beta\in(N\cup\Sigma)^\ast\}
+      \end{array}
+    \]
+    ここで，$\#$は入力の終わりを示す記号である．
+
+
+    % \[
+    % \begin{array}{l}
+    %  Follow_1(A)=\\
+    %  \quad\{a\in\Sigma\cup\{\#\}|S\#\Rightarrow^\ast\beta Aa\gamma,\beta\in(N\cup\Sigma)^\ast,\gamma\in(N\cup\Sigma\cup\{\#\})^\ast\}
+    % \end{array}
+    % \]
+    % $\#$:入力の終りを示すシンボル
+  \end{itembox}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$Follow_1$の計算}
+
+  {\small
+    \begin{itembox}[l]{アルゴリズム4.2}
+      \begin{list}{{\bf ステップ}\,{\rm \arabic{coffee}:}}{\usecounter{coffee}}
+        \item $\mathsf{Follow}_1(S)\leftarrow\{\#\}$
+        \item $A\in N\backslash\{S\}$に対して$\mathsf{Follow}_1(A)\leftarrow\varnothing$
+        \item
+              $B\rightarrow\beta A\gamma\in P$を満たす$B,A\in N$, $\beta,\gamma\in(N\cup\Sigma)^\ast$
+              に対してすべての$\mathsf{Follow}_1(A)$($A\in N$)に新たな追加がなくなるまで追加する．
+              \begin{list}{(\alph{bean})}{\usecounter{bean}}
+                \item $\varepsilon\notin\mathsf{First}_1(\gamma)$のとき，$\mathsf{First}_1(\gamma)$
+                \item $\varepsilon\in\mathsf{First}_1({\gamma})$のとき，$\mathsf{First}_1(\gamma)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(B)$
+              \end{list}
+      \end{list}
+      %  \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
+      %   \item $Follow_1(S)=\{\#\}$
+      %   \item $A\in N\backslash\{S\}$について$Follow_1(A)\leftarrow\emptyset$
+      %   \item すべての$Follow(A)$に新たな要素が追加されなくなるまで以下をくり
+      % 	かえす。
+      % 	\begin{list}{}{}
+      %          \item [(a)] $A\rightarrow\beta B\gamma\in P$, $A,B\in N$,
+      %          $\beta,\gamma\in(N\cup\Sigma)^\ast$に対して以下を$Follow(B)$に
+      % 	       追加
+      %          \[
+      % 	 \begin{array}{lp{12zw}}
+      % 	  \varepsilon\notin First_1(\gamma)\mbox{のとき、} &
+      % 	   $First_1(\gamma)$\\
+      % 	  \varepsilon\in First_1(\gamma)\mbox{のとき} &
+      % 	   $First_1(\gamma)\backslash\{\varepsilon\}\cup
+      % 	   Follow_1(A)$
+      % 	 \end{array}
+      % 	 \]
+      %         \end{list}
+      %  \end{list}
+    \end{itembox}}
+\end{frame}
+
+% \begin{frame}
+%  \frametitle{Follow}
+%   \begin{center}
+%    \includegraphics[scale=0.6]{figs/def4_8.eps}
+%   \end{center}
+%   \begin{center}
+%    \includegraphics[scale=0.7]{figs/alg4_9.eps}
+%   \end{center}
+% \end{frame}
+
+\begin{frame}
+  \frametitle{例}
+  %\greentext{非常に人工的でややこしい例(教科書にはありません)}
+
+  \[
+    \begin{array}{l}
+      G=(\{X,Y,Z\},\{a,c,d\},P,Z) \\[10pt]
+      P=\left\{\begin{array}{ll}
+                 X\rightarrow a, & X\rightarrow Y,           \\
+                 Y\rightarrow c, & Y\rightarrow \varepsilon, \\
+                 Z\rightarrow d, & Z\rightarrow XYZ
+               \end{array}
+      \right\}
+    \end{array}
+  \]
+
+  %  \only<1>{
+  %  \begin{center}
+  %   \includegraphics[height=.6\textheight]{figs/example-first.eps}
+  %  \end{center}
+  %  }
+  %
+  %  \only<2>{
+  %  \begin{center}
+  %   \includegraphics[height=.3\textheight]{figs/example-follow.eps}
+  %  \end{center}
+  %  }
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{$First_1$の計算例}
+  \[
+    P=\left\{\begin{array}{ll}
+      X\rightarrow a, & X\rightarrow Y,           \\
+      Y\rightarrow c, & Y\rightarrow \varepsilon, \\
+      Z\rightarrow d, & Z\rightarrow XYZ
+    \end{array}
+    \right\}
+  \]
+
+  \begin{center}
+    \scalebox{0.65}{
+      % $
+      % \begin{array}{|c|c|c|c|c|c|c|c|c|c|}\hline
+      %    & (1)   & (2)       & (3)       & (4a)^1  & (4b)^1  & (4a)^2 & (4b)^2 & (4a)^3 & (4b)^3\\\hline
+      %  X &       &  & \emptyset & \emptyset & \{a\} & \{a\} & \only<1>{\{a,c,\varepsilon\}}\only<2>{\color{red}\{a,c,\varepsilon\}} & \{a,c,\varepsilon\}& \only<1>{\{a,c,\varepsilon\}}\only<2>{\color{red}\{a,c,\varepsilon\}}\\
+      %  Y &       &  & \emptyset & \emptyset & \{c,\varepsilon\} & \{c,\varepsilon\}& \only<1>{\{c,\varepsilon\}}\only<2>{\color{red}\{c,\varepsilon\}} & \{c,\varepsilon\}& \only<1>{\{c,\varepsilon\}}\only<2>{\color{red}\{c,\varepsilon\}}\\
+      %  Z &       &  & \emptyset & \emptyset & \{d\} & \{d\}& \only<1>{\{d,a,c\}}\only<2>{\color{red}\{d,a,c\}} & \{d,a,c\}& \only<1>{\{d,a,c\}}\only<2>{\color{red}\{d,a,c\}}\\
+      %  a &  & \{a\} & \{a\} & \{a\} & \{a\}& \{a\}& \only<1>{\{a\}}\only<2>{\color{red}\{a\}} & \{a\}& \only<1>{\{a\}}\only<2>{\color{red}\{a\}}\\
+      %  c &  & \{c\} & \{c\} & \{c\} & \{c\}& \{c\}& \only<1>{\{c\}}\only<2>{\color{red}\{c\}} & \{c\}& \only<1>{\{c\}}\only<2>{\color{red}\{c\}}\\
+      %  d &  & \{d\} & \{d\} & \{d\} & \{d\}& \{d\}& \only<1>{\{d\}}\only<2>{\color{red}\{d\}} & \{d\}& \only<1>{\{d\}}\only<2>{\color{red}\{d\}}\\
+      %  \varepsilon & \{\varepsilon\} & \{\varepsilon\} & \{\varepsilon\} &
+      %   \{\varepsilon\}& \{\varepsilon\}& \{\varepsilon\}& \only<1>{\{\varepsilon\}}\only<2>{\color{red}\{\varepsilon\}} & \{\varepsilon\}& \only<1>{\{\varepsilon\}}\only<2>{\color{red}\{\varepsilon\}}\\
+      %  XYZ &     &  & \emptyset & \emptyset & \emptyset & \{a\}& \only<1>{\{a,c,d\}}\only<2>{\color{red}\{a,c,d\}} & \{a,c,d\} & \only<1>{\{a,c,d\}}\only<2>{\color{red}\{a,c,d\}} \\
+      %  YZ &      &  & \emptyset & \emptyset & \emptyset & \{c,d\}& \only<1>{\{a,c,d\}}\only<2>{\color{red}\{a,c,d\}} & \{a,c,d\}& \only<1>{\{a,c,d\}}\only<2>{\color{red}\{a,c,d\}}\\
+      % \hline
+      % \end{array}
+      % $
+      $
+        \begin{array}{|c|c|c|c|c|c|c|c|c|c|c|c|}\hline
+                          & (1)             & (2)             & (3a)^1          & (3b)^1            & (3a)^2            & (3b)^2              & (3a)^3              & (3b)^3              & (3a)^4              & (3b)^4              \\\hline
+          X               &                 & \emptyset       & \emptyset       & \{a\}             & \{a\}             & \{a,c,\varepsilon\} & \{a,c,\varepsilon\} & \{a,c,\varepsilon\} & \{a,c,\varepsilon\} & \{a,c,\varepsilon\} \\
+          Y               &                 & \emptyset       & \emptyset       & \{c,\varepsilon\} & \{c,\varepsilon\} & \{c,\varepsilon\}   & \{c,\varepsilon\}   & \{c,\varepsilon\}   & \{c,\varepsilon\}   & \{c,\varepsilon\}   \\
+          Z               &                 & \emptyset       & \emptyset       & \{d\}             & \{d\}             & \{d,a\}             & \{d,a\}             & \{d,a,c\}           & \{d,a,c\}           & \{d,a,c\}           \\
+          a               &                 & \{a\}           & \{a\}           & \{a\}             & \{a\}             & \{a\}               & \{a\}               & \{a\}               & \{a\}               & \{a\}               \\
+          c               &                 & \{c\}           & \{c\}           & \{c\}             & \{c\}             & \{c\}               & \{c\}               & \{c\}               & \{c\}               & \{c\}               \\
+          d               &                 & \{d\}           & \{d\}           & \{d\}             & \{d\}             & \{d\}               & \{d\}               & \{d\}               & \{d\}               & \{d\}               \\
+          \varepsilon     & \{\varepsilon\} & \{\varepsilon\} &
+          \{\varepsilon\} & \{\varepsilon\} & \{\varepsilon\} & \{\varepsilon\} & \{\varepsilon\}   & \{\varepsilon\}   & \{\varepsilon\}     & \{\varepsilon\}                                                                       \\
+          XYZ             &                 & \emptyset       & \emptyset       & \emptyset         & \{a\}             & \{a\}               & \{a,c,d\}           & \{a,c,d\}           & \{a,c,d\}           & \{a,c,d\}           \\
+          YZ              &                 & \emptyset       & \emptyset       & \emptyset         & \{c,d\}           & \{c,d\}             & \{a,c,d\}           & \{a,c,d\}           & \{a,c,d\}           & \{a,c,d\}           \\
+          \hline
+        \end{array}
+      $
+    }
+  \end{center}
+
+  $(3a)^i$,$(3b)^i$はステップ３の(a)(b)をそれぞれ$i$回目に実行することを示す．
+
+  ここでは(3)を３回実行した時点で変化がなくなった．(4回目は変化がないことを確認するための実行)
+  %\begin{center}
+  %\includegraphics[scale=1.0]{figs191016/first.eps}
+  %\end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$Follow_1$の計算例}
+  \[
+    P=\left\{\begin{array}{ll}
+      X\rightarrow a, & X\rightarrow Y,           \\
+      Y\rightarrow c, & Y\rightarrow \varepsilon, \\
+      Z\rightarrow d, & Z\rightarrow XYZ
+    \end{array}
+    \right\}
+  \]
+
+  \vspace*{10pt}
+
+  \[
+    \begin{array}{|c|c|c|c|c|}\hline
+        & (1)    & (2)       & (3)^1     & (3)^2     \\\hline
+      X &        & \emptyset & \{a,c,d\} & \{a,c,d\} \\
+      Y &        & \emptyset & \{a,c,d\} & \{a,c,d\} \\
+      Z & \{\#\} & \{\#\}    & \{\#\}    & \{\#\}    \\\hline
+    \end{array}
+  \]
+  {\small
+  \greentext{$X$のFollowは$Z\rightarrow XYZ$から求められる}
+
+  \greentext{$Y$のFollowは$X\rightarrow Y$から$Follow_1(X)$, $Z\rightarrow XYZ$から$First(Z)$を含む}
+
+  \greentext{$Follow_1(X)=First_1(YZ)=\{a,c,d\}$}
+
+  \greentext{$Follow_1(Y)=First_1(Z)\cup Follow_1(X)=\{a,c,d\}$}
+  }
+
+  これ以上増えないのは明らか
+\end{frame}
+
+\begin{frame}{First/Followの適用}
+  同じ左辺を持つ複数の生成規則がある場合
+
+  \[\begin{array}{crcl}
+      1: & A & \rightarrow & \alpha \\
+      2: & A & \rightarrow & \beta
+    \end{array}\]
+
+  \greentext{
+    $\varepsilon\notin First(\alpha)\wedge\varepsilon\notin First(\beta)$の場合
+  }
+
+  最左導出の先頭の文字がFirst($\alpha$)である場合，規則１を適用\\
+  最左導出の先頭の文字がFirst($\beta$)である場合，規則２を適用\\
+
+  \vspace*{10pt}
+
+  \greentext{
+  $\varepsilon\in First(\alpha)\vee\varepsilon\in First(\beta)$の場合
+  }
+
+  ($\varepsilon\in First(\alpha)$とすると)
+  最左導出の先頭の文字が$First(\alpha)\backslash\{\varepsilon\}\cup Follow(\alpha)$の場合，規則１を適用\\
+  最左導出の先頭の文字がFirst($\beta$)である場合，規則２を適用
+
+  \vspace*{10pt}
+
+  \redtext{上記の方法で適用する規則が決まれば決定的に最左導出が可能}
+
+\end{frame}
+
+\section{下降型構文解析}
+
+\subsection{再帰降下法}
+
+\begin{frame}
+  \frametitle{下降型構文解析}
+
+  \begin{itemize}
+    \item 下降型構文解析アルゴリズム(再帰降下法)
+          \[
+            \begin{array}{lrcl}
+              r_1: & S & \rightarrow & AB          \\
+              r_2: & A & \rightarrow & aA          \\
+              r_3: & A & \rightarrow & b           \\
+              r_4: & B & \rightarrow & CDe         \\
+              r_5: & C & \rightarrow & \varepsilon \\
+              r_6: & C & \rightarrow & c           \\
+              r_7: & D & \rightarrow & \varepsilon
+            \end{array}
+          \]
+  \end{itemize}
+
+  左辺の非終端記号を右辺の記号列で置き換えることで導出し、終端記号系列に置き換える。
+
+  $\Rightarrow_i$ : 規則$r_i$を適用して導出
+
+  \[
+    \begin{array}{l}
+      \redtext{S}\Rightarrow_1\underline{\redtext{A}B}\Rightarrow_2\underline{a\redtext{A}}B\Rightarrow_2 a\underline{a\redtext{A}}B\Rightarrow_3 aa\underline{b}\redtext{B} \\
+      \quad \Rightarrow_4 aab\underline{\redtext{C}De}
+      \Rightarrow_6 aab\underline{c}\redtext{D}e\Rightarrow_7 aabce
+    \end{array}\]
+\end{frame}
+
+\begin{frame}{下向き構文解析の概念}
+  \[ N\rightarrow\alpha_1\cdots\alpha_n
+  \]
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (2,2.25) {$N$};
+      \fill[opacity=0.3,color=blue] (0,1) -- (2,2) -- (4,1);
+      \node at (2,0.75) {\hbox to 4cm{$\alpha_1\quad\alpha_2$\hfill$\cdots$\hfill$\alpha_n$}};
+    \end{tikzpicture}
+  \end{center}
+  \begin{center}
+    \begin{tabular}{ccc}
+      \begin{minipage}{0.4\textwidth}
+        \begin{tikzpicture}
+          \node at (2,2.2) {$S$};
+          \fill[opacity=0.3,color=green] (0,1) -- (2,2) -- (4,1);
+          \node at (2,0.75) {$\beta_1$\hfill$\cdots$\hfill$\beta_\ell$ $N$\hfill $\gamma_1$\hfill$\cdots$\hfill$\gamma_m$};
+          \node at (2,0) {$S\Rightarrow^\ast\beta_1\cdots\beta_\ell N\gamma_1\cdots\gamma_m$};
+        \end{tikzpicture}
+      \end{minipage} & $\Rightarrow$ &
+      \begin{minipage}{0.4\textwidth}
+        \begin{tikzpicture}
+          \node at (2,3.2) {$S$};
+          \fill[opacity=0.3,color=green] (0,2) -- (2,3) -- (4,2);
+          \fill[opacity=0.3,color=blue] (0.7,1) -- (2,2) -- (3.3,1);
+          \node at (0.6,1.7) {$\beta_1\cdots\beta_\ell$};
+          \node at (3.4,1.7) {$\gamma_1\cdots\gamma_m$};
+          \node at (2,0.75) {$\alpha_1\cdots\alpha_n$};
+          \node at (2,0.25) {$\beta_1\cdots\beta_\ell\alpha_1\cdots\alpha_n\gamma_1\cdots\gamma_m$};
+        \end{tikzpicture}
+      \end{minipage}
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}{再帰降下法による導出}
+
+  \begin{tikzpicture}
+    \only<3>{\fill[color=blue,opacity=0.3] (0,0.5) -- (1.5,1) -- (2,0.5);}
+    \only<4->{\path[-] (0,0.5) edge (1.5,1)
+      (1.5,1) edge (2,0.5)
+      (2,0.5) edge (0,0.5);}
+    \only<3->{\node at (1,0.25) {$a_1\ \cdots\ a_k$};}
+    \only<2->{\node at (1.5,1.25) {$N''$};}
+    \only<2>{\fill[color=blue,opacity=0.3] (0.5,1.5)--(2,1.5)--(1.5,2);}
+    \only<3->{\path[-] (0.5,1.5) edge (2,1.5)
+      (0.5,1.5) edge (1.5,2)
+      (1.5,2) edge (2,1.5);}
+    {\node at (1.5,2.25) {$N$};}
+    \only<5>{\fill[color=blue,opacity=0.3] (3,0.5)--(4.5,0.5)--(3.75,1);}
+    %    \path[-] (3,0.5) edge (4.5,0.5)
+    %             (3,0.5) edge (3.75,1)
+    %             (3.75,1) edge (4.5,0.5);
+    \only<5>{\node at (3.75,0.25) {$b_1\cdots b_p$};}
+
+    \only<4->{\node at (3.75,1.25) {$M$};}
+    \only<4>{\fill[color=blue,opacity=0.3] (3,1.5)--(4.5,1.5)--(3.5,2);}
+    \only<5->{\path[-] (3,1.5) edge (4.5,1.5)
+      (3,1.5) edge (3.5,2)
+      (3.5,2) edge (4.5,1.5);}
+    \node at (3.5,2.25) {$N'$};
+
+    \only<1>{\fill[color=blue,opacity=0.3](1,2.5)--(4,2.5)--(2.5,3);}
+    \only<2->{\path[-] (1,2.5) edge (4,2.5)
+      (1,2.5) edge (2.5,3)
+      (2.5,3) edge (4,2.5);}
+    \node at (2.5,3.2) {$S$};
+
+    \only<1>{\node [draw,red,line width=1pt] at (8,3.2) {$S\rightarrow N N'$};}
+    \only<2->{\node at (8,3.2) {$S\rightarrow N N'$};}
+    \only<2>{\node[draw,red,line width=1pt] at (8,2.5) {$N\rightarrow N''$};}
+    \only<1,3->{\node at (8,2.5) {$N\rightarrow N''$};}
+    \only<4>{\node[draw,red,line width=1pt] at (8,1.8) {$N'\rightarrow M$};}
+    \only<1-3,5->{\node at (8,1.8) {$N'\rightarrow M$};}
+    \only<3>{\node[draw,red,line width=1pt] at (8,1.1) {$N''\rightarrow a_1\cdots a_k$};}
+    \only<1-2,4->{\node at (8,1.1) {$N''\rightarrow a_1\cdots a_k$};}
+    \only<1-4>{\node at (8,0.4) {$M\rightarrow b_1\cdots b_p$};}
+    \only<5>{\node[red,draw,line width=1pt] at (8,0.4) {$M\rightarrow b_1\cdots b_p$};}
+
+    %    \only<1>{\draw[red] (5.5,2.8) rectangle (9.5,3.2);}
+  \end{tikzpicture}
+
+  \vspace*{15pt}
+
+  {\small
+    \[
+      S\Rightarrow N N'\uncover<2->{\Rightarrow N'' N'}\uncover<3->{\Rightarrow a_1\cdots a_k N'}\uncover<4->{\Rightarrow a_1\cdots a_k M}\uncover<5>{a_1\cdots a_k b_1\cdots b_p}
+    \]
+  }
+  \vspace*{15pt}
+
+  \uncover<5>{\greentext{終端記号の系列が導出されれば終了}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{再帰降下法の問題点}
+  \begin{list}{}{}
+    \item 生成規則の左辺に同じ非終端記号をもつ規則が複数ある場合、どの規則
+          を適用すべきか？\\
+          \greentext{まちがった規則を適用すると解析木が生成できない}
+
+          \[
+            \{A\rightarrow a,A\rightarrow b\}
+          \]
+          に対して、入力$b$に対して、1番目の規則を適用しても構文解析できな
+          い。\greentext{後戻り(back track)して別の規則を適用すればよい}
+
+          後戻りは計算機として一般に重い処理\\
+          \quad$\rightarrow$あらかじめどの規則を適用できるか知りたい\\
+          \qquad 生成規則を予め解析して$First/Follow$を得る\\
+          \quad 入力の文字を先読みする(Look-ahead)
+
+          先の例は、次の文字が$b$であることを知っていたら、2番目の規則を後
+          戻りなく適用可能
+  \end{list}
+\end{frame}
+
+\begin{frame}
+  \frametitle{左括りだし(Left factoring)}
+
+  生成規則に以下のような規則が含まれるとする。
+  \[
+    \begin{array}{rcl}
+      A & \rightarrow & \alpha\beta_1 \\
+      A & \rightarrow & \alpha\beta_2 \\
+    \end{array}
+  \]
+  を以下のように書き換えることを\greentext{左括り出し}
+  \[
+    \begin{array}{rcl}
+      A  & \rightarrow & \alpha A' \\
+      A' & \rightarrow & \beta_1   \\
+      A' & \rightarrow & \beta_2   \\
+    \end{array}
+  \]
+  \redtext{導出は変わらない}
+
+  降下型構文解析に不要なバックトラックを避ける。
+
+  \greentext{そのままでは下向き構文解析不能であっても、等価で解析可能な文
+    法に変換できる}
+\end{frame}
+
+\subsection{LL構文解析}
+
+% \begin{frame}
+% \frametitle{予測的構文解析(LL構文解析)}
+%  \begin{list}{}{}
+%   \item [LL(k)構文解析系]\ \\
+%   \greentext{k文字先読みして、生成規則を特定する}
+%   \item 一意に完全な構文解析が可能な文法のクラス=LL(k)文法
+%   \item 1文字先読み=LL(1)文法\\
+%   \begin{tabular}{ll}
+%   先読み文字の計算:& 右辺$\alpha$が空でないとき $First_1(\alpha)$\\
+%   & 右辺$\alpha$が空$\varepsilon$のとき $Follow_1(A)$
+%   \end{tabular}
+%   \item [LL(1)文法]\ \\
+%   \greentext{
+%   各非終端記号と先読み文字が与えられたとき、生成規則が
+%   一意に定まる文法のクラス}
+%  \end{list}
+% \end{frame}
+
+\subsection{左再帰性}
+
+\begin{frame}
+  \frametitle{左再帰性}
+
+  \begin{itemize}
+    \item 右辺の非終端記号の呼出の順序はなんでもよい。
+          生成規則の右辺に左辺と同じ記号が表れる。(再帰性)\\
+          最初から処理していく場合に、\\
+          右辺の最初に同じ非終端記号あらわれたら？(左再帰性)
+  \end{itemize}
+
+  {\scriptsize
+  \begin{eqnarray*}
+    \mbox{パラメータリスト} & \rightarrow & \mbox{パラメータ}\
+    \mbox{パラメータリスト}\\
+    \mbox{パラメータリスト} & \rightarrow & \mbox{パラメータ}
+  \end{eqnarray*}
+  }
+
+  ずっと最初の規則を適用することがおこりうる。\\
+
+  パラメータリスト$\not\Rightarrow^\ast\varepsilon$であるとすると、\\
+
+  First(パラメータリスト　パラメータ)=First(パラメータリスト)\\
+
+  {\color[rgb]{0,0.5,0}２つの規則はFirstで見分けがつかない}
+\end{frame}
+\begin{frame}
+  \frametitle{左再帰性除去}
+  左再帰性は以下のように除去可能
+
+  {\scriptsize
+  \begin{eqnarray*}
+    \mbox{パラメータリスト} & \rightarrow & \mbox{パラメータ}\
+    \mbox{パラメータリスト'}\\
+    \mbox{パラメータリスト'} & \rightarrow & \mbox{','}\ \mbox{パラメータ}\
+    \mbox{パラメータリスト'}\\
+    \mbox{パラメータリスト'} & \rightarrow & \varepsilon\\
+  \end{eqnarray*}
+  }
+
+  一般に
+  \uncover<1->{
+    \begin{center}
+      $\begin{array}{l}
+          A\rightarrow A\alpha_1, A\rightarrow A\alpha_2,\cdots,A\rightarrow A\alpha_m \\
+          A\rightarrow \beta_1,A\rightarrow \beta_2,\cdots ,A\rightarrow \beta_n
+        \end{array}$
+    \end{center}
+    は
+  }
+  \uncover<2>{
+    \begin{center}
+      $\begin{array}{l}
+          A\rightarrow\beta_1 A',A\rightarrow\beta_2 A',\cdots,A\rightarrow\beta_n A' \\
+          A'\rightarrow\alpha_1 A',A'\rightarrow\alpha_2 A',\cdots,A'\rightarrow\alpha_m A',A'\rightarrow\varepsilon
+        \end{array}$
+    \end{center}
+    という等価な文法に変換可能$\Rightarrow$\redtext{左再帰性除去}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{左再帰性}
+  $\left\{\begin{array}{l}
+      A\rightarrow A\alpha \\
+      A\rightarrow \beta
+    \end{array}\right\}$
+  \hspace*{2cm}
+  $\left\{\begin{array}{l}
+      A\rightarrow \beta A'   \\
+      A'\rightarrow \alpha A' \\
+      A'\rightarrow \varepsilon
+    \end{array}\right\}$
+
+  \begin{tikzpicture}
+    \node (N0) at (0,0) {$\beta$};
+    \node (N1) at (0,1) {$A$};
+    \node (N2) at (0.5,2) {$A$};
+    \node (N3) at (1.5,2) {$\alpha$};
+    \node (N4) at (1,3) {$A$};
+    \node (N5) at (2,3) {$\alpha$};
+    \node (N6) at (1.5,4) {$A$};
+    \node (N7) at (2.5,4) {$\alpha$};
+    \node (N8) at (2,5) {$A$};
+    \path (N0) edge (N1);
+    \path[style=dashed] (N2) edge (N1);
+    \path (N4) edge (N2) (N4) edge (N3);
+    \path (N6) edge (N4) (N6) edge (N5);
+    \path (N8) edge (N6) (N8) edge (N7);
+
+    \node (M0) at (4.5,5) {$A$};
+    \node (M1) at (4,4) {$\beta$};
+    \node (M2) at (5,4) {$A'$};
+    \node (M3) at (4.5,3) {$\alpha$};
+    \node (M4) at (5.5,3) {$A'$};
+    \node (M5) at (6,2) {$A'$};
+    \node (M6) at (5.5,1) {$\alpha$};
+    \node (M7) at (6.5,1) {$A'$};
+    \node (M8) at (6.5,0) {$\varepsilon$};
+    \path (M0) edge (M1) (M0) edge (M2);
+    \path (M2) edge (M3) (M2) edge (M4);
+    \path[style=dashed] (M4) edge (M5);
+    \path (M5) edge (M6) (M5) edge (M7);
+    \path (M7) edge (M8);
+  \end{tikzpicture}
+\end{frame}
+
+
+\subsection{LL(1)構文解析}
+
+\begin{frame}
+  \frametitle{下向き構文解析表}
+
+  最左導出における$A$を含む文形式は$\beta A\gamma$
+  ($\beta\in\Sigma^\ast$)
+  \[
+    \mbox{$A$を左辺にもつ生成規則：}\quad
+    A\rightarrow \alpha_1\,|\,\alpha_2\,|\cdots\,|\,\alpha_n\]
+
+  入力系列$w=\beta\beta'$に対して$S\Rightarrow^\ast w$となるための
+  $\mathsf{fst}(\beta'\#)$と$\mathsf{First}_1(\alpha_i)$との対応表
+
+  縦に$N$、横に$\Sigma\cup\{\#\}$を書く。
+  \vspace*{3pt}
+
+  \begin{itemize}
+    \item $a\in\mathsf{First}_1(\alpha_i)$ならば、$A$の行、$a$の列に$A\rightarrow\alpha_i$を追加
+    \item $\varepsilon\in\mathsf{First}_1(\alpha_i)$ならば、$A$の行、$a\in\mathsf{Follow}_1(A)$の列に$A\rightarrow\alpha_i$を追加
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{下向き構文解析表の構成}
+  \begin{center}
+    \begin{tabular}{ccc}
+      \includegraphics[scale=0.8]{firstfollow-1-r1-crop.pdf}
+       &  &
+      \includegraphics[scale=0.8]{firstfollow-2-crop.pdf}
+    \end{tabular}
+  \end{center}
+
+  \begin{center}{\small
+      \begin{tabular}{ccc}                                                                                          \\
+        $a\in\mathsf{First}_1(\alpha)$                                 &  & $b\in\mathsf{Follow}_1(A)$ \\
+        \begin{tabular}{c|ccc|}
+                   & $\cdots$ & $a$                  & $\cdots$ \\\hline
+          $\vdots$ &          & $\vdots$             &          \\
+          $A$      & $\cdots$ & $A\rightarrow\alpha$ & $\cdots$ \\
+          $\vdots$ &          & $\vdots$             &          \\\hline
+        \end{tabular} &  &
+        \begin{tabular}{c|ccc|}
+                   & $\cdots$ & $b$                       & $\cdots$ \\\hline
+          $\vdots$ &          & $\vdots$                  &          \\
+          $A$      & $\cdots$ & $A\rightarrow\varepsilon$ & $\cdots$ \\
+          $\vdots$ &          & $\vdots$                  &          \\\hline
+        \end{tabular}
+      \end{tabular}
+    }\end{center}
+\end{frame}
+
+
+\begin{frame}{例}
+  \begin{tabular}{ccc}
+    $\left\{\begin{array}{ll}
+                X\rightarrow a,          & X \rightarrow Y, \\
+                Y\rightarrow\varepsilon, & Y\rightarrow c,  \\
+                Z\rightarrow d,          & Z\rightarrow XYZ
+              \end{array}\right\}$ &
+    {\small
+        $\begin{array}{|l|l|}
+             \multicolumn{2}{c}{First} \\\hline
+             X   & \{a,c,\varepsilon\} \\
+             Y   & \{c,\varepsilon\}   \\
+             Z   & \{a,c,d\}           \\
+             XYZ & \{a,c,d\}           \\
+             YZ  & \{a,c,d\}           \\\hline
+           \end{array}$}
+                                                   &
+    {\small
+        $\begin{array}{|l|l|}
+             \multicolumn{2}{c}{Follow} \\\hline
+             X & \{a,c,d\}              \\
+             Y & \{a,c,d\}              \\
+             Z & \{\#\}                 \\\hline
+           \end{array}$}
+  \end{tabular}
+  \begin{center}
+    \includegraphics[width=.65\textwidth]{dparser-crop.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{LL(1)構文解析}
+
+  %  下向き構文解析表に従って生成規則を適用する
+
+  %  \redtext{構文解析表の各欄に2つ以上の規則がある場合、バックト
+  %  ラックなしにLL(1)構文解析することはできない。}
+
+
+
+  \begin{itembox}[l]{LL(1)文法}
+    1文字先読み($First_1$集合)によって、下向き構文解析表を作成し
+    たとき、下向き構文解析表のエントリーに高々1つの生成規則しか
+    ない場合、LL(1)文法とよぶ。
+  \end{itembox}
+
+  \begin{itembox}[l]{LL(1)構文解析}
+    LL(1)文法$G$では入力$w$に対して
+    $w\in L(G)$であるとき，かつ，そのときに限り，１つの先読み
+    トークンによって決定される単一の生成規則を用いて最左導出が可能である．
+  \end{itembox}
+
+  \greentext{\small 先読み文字で選ばれた生成規則で導出できないときは
+    他の生成規則を使っても導出は構成不可能である．}
+
+
+
+  \begin{list}{}{}
+    \item \redtext{LL:Left to right scan and left most
+            derivation}\\
+          % $FIRST$集合を$k$文字に拡張$\Rightarrow$LL(k)文法
+          % \item $LL(k)$文法は再帰降下法構文解析系によって構文解析器が
+          % 作成可能
+  \end{list}
+\end{frame}
+
+\begin{frame}
+  \frametitle{拡張CF文法とELL文法}
+
+  拡張CF文法=CF文法+正規表現\\
+  ELL(1)文法：拡張CF文法に対するLL(1)構文解析可能性
+
+  \vspace*{5pt}
+
+  {\scriptsize
+    \begin{itembox}[l]{アルゴリズム4.3}
+      \begin{list}{}{}
+        \item [(1)] $P$中のすべての規則の右辺が$(N\cup\Sigma)^\ast$の要素になるまで以下の操作を繰り返す。
+              右辺に$\vert$, $\ast$が現れている規則 $A\rightarrow e$を$P$から除く。
+              \begin{itemize}
+                \item $e=e_1\vert e_2$のとき:$P$に$A\rightarrow e_1$. $A\rightarrow e_2$を追加。
+                \item $e=e_1e_2$のとき: 新しい非終端記号$B$を導入して、$A\rightarrow e_1B$と$B\rightarrow e_2$を追加。
+                      非終端記号の集合に$B$を追加。
+                \item $e=e^\ast$のとき: 新しい非終端記号を導入して、$A\rightarrow B$, $B\rightarrow eB$, $B\rightarrow\varepsilon$を$P$に追加。$B$を非終端記号の集合に追加。
+              \end{itemize}
+        \item [(2)] 修正された非終端記号集合、生成規則を$N'$, $P'$とし、得られた文法を$(N',\Sigma,P',S)$とする。
+      \end{list}
+    \end{itembox}
+
+    \greentext{\small 拡張CF文法の表現能力は変わらない．ただし，記述は簡潔になる．}
+  }
+  \vspace*{10pt}
+  %  \begin{center}
+  %   \includegraphics[scale=0.75]{al4_12.eps}
+  %  \end{center}
+  % \greentext{等価なCF文法に変換して$\mathsf{First}_1$,$\mathsf{Follow}_1$を求める}
+\end{frame}
+
+\begin{frame}
+  \frametitle{拡張CF文法における$\mathsf{First}_1$と$\mathsf{Follow}_1$}
+  \begin{center}{\scriptsize
+      \begin{itembox}[l]{定義4.5 [$First_1(e)$]}
+        \begin{itemize}
+          \item $e=\varepsilon$のとき: $\{\varepsilon\}$, $e\in\Sigma$のとき: $\{e\}$
+          \item $e=e_1\vert e_2$のとき: $\mathsf{First}_1(e_1)\cup\mathsf{First}_2(e_2)$
+          \item $e=e_1e_2$のとき:
+                \begin{list}{}{}
+                  \item $\varepsilon\in\mathsf{First}_1(e_1)$のとき　$\mathsf{First}_1(e_1)\backslash\{\varepsilon\}\cup\mathsf{First}_1(e_2)$
+                  \item $\varepsilon\notin\mathsf{First}_1(e_1)$のとき　$\mathsf{First}_1(e_1)$
+                \end{list}
+          \item $e=e_1^\ast$のとき: $\mathsf{First}_1(e_1)\cup\{\varepsilon\}$
+        \end{itemize}
+      \end{itembox}
+
+      \begin{itembox}[l]{定義4.6 [$Follow_1(e)$]}
+        \begin{itemize}
+          \item $A\rightarrow e\in P$のとき $\mathsf{Follow}_1(e):=\mathsf{Follow_1}(A)$
+          \item $e=e_1|e_2$のとき　$\mathsf{Follow}_1(e_1):=\mathsf{Follow}_1(e)$, $\mathsf{Follow}_1(e_2):=\mathsf{Follow}_1(e)$
+          \item $e=e_1e_2$のとき　$\mathsf{Follow}_1(e_2):=\mathsf{Follow}_1(e)$\\
+                \begin{list}{}{}
+                  \item $\varepsilon\in\mathsf{First}_1(e_2)$のとき$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_2)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(e)$
+                  \item $\varepsilon\notin\mathsf{First}_1(e_2)$のとき$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_2)$
+                \end{list}
+          \item $e=e^\ast$のとき　$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_1)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(e)$
+        \end{itemize}
+      \end{itembox}
+    }
+
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{ELL(1)文法}
+
+  拡張した生成規則に対しても全く同じ方法で下向き構文解析表が
+  構成できる。
+
+  \begin{itembox}[l]{ELL(1)文法}
+    拡張した生成規則によって定義される拡張CF文法の
+    下向き構文解析表を作成したとき、表のエントリの生成規則が
+    高々１つである場合、ELL(1)構文解析可能であり、
+    その拡張CF文法はELL(1)文法である。
+  \end{itembox}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{ELL(1)文法における解析木の構成}
+
+  $E\rightarrow E\,\texttt{+}\,T$, $E\rightarrow T$から左再帰性を除去して
+  拡張CF文法の規則とすると$E\rightarrow T(\texttt{+}\,T)^\ast$
+
+  このため、そのままでは以下のような構文木を表す可能性がある。
+
+  \begin{figure}[H]
+    \includegraphics[scale=0.5]{exCF-tree-crop.pdf}
+  \end{figure}
+
+  \greentext{\small この木構造は加算の意味を表しているとは言えない．
+    もとの木と同じ意味を持つことを保証するためには、$\texttt{+}$が
+    ２項演算であることを示すための補助的情報を追加する必要がある。}
+
+  % \greentext{\small javaccではこのような木をポストオーダーで
+  % たどった場合の頂点の個数によって新たなノード生成する指示子が
+  % 導入されている．}
+\end{frame}
+
+% \begin{frame}
+%  \frametitle{ELL(1)文法}
+% \begin{itembox}[l]{定義4.15'}
+% CF文法$G=\langle{N,\Sigma,P,S}\rangle$は次の条件を満たす時$ELL(1)$文法である。
+%  \begin{list}{}{}
+%   \item [(1)] $A\rightarrow e_1,A\rightarrow e_2\in P$に対して、
+%   $e_1\not=e_2$ならば $\First{e_1}\cap\First{e_2}=\emptyset$
+%   \item [(2)] $A\rightarrow e\in P$について$e$に現れる部分表現
+%   $e_1\vert e_2$に対して、$e_1\not= e_2$ならば
+%   \[
+%   (\bigcup_{a\in\Follow{e_1}}\First{e_1a})
+%   \cap
+%   (\bigcup_{b\in\Follow{e_1}}\First{e_2b})
+%   =\emptyset
+%   \]
+%   \item [(3)] $A\rightarrow e\in P$について$e$に現れる部分表現$e^\ast_1$
+%   に対して
+%   \[
+%   \First{e_1}\cap\Follow{e_1^\ast}=\emptyset
+%   \]
+%  \end{list}
+% \end{itembox}
+% \end{frame}
+
+% \begin{frame}
+%  \frametitle{ELL(1)文法}
+%  \begin{center}
+%   \includegraphics[scale=0.75]{figs191016/df4_15.eps}
+%  \end{center}
+% \end{frame}
+
+% \subsection{再帰降下パーザ}
+
+% \begin{frame}[fragile]{再帰降下パーザ}
+% \begin{list}{}{}
+% \item[(1)] {\tt main}関数を以下のように作成
+%     \begin{Verbatim}
+% int main(void) {
+%   get(&nextsym);S();if(nextsym.type!=#) error();
+% }
+%     \end{Verbatim}
+
+% \item[(2)] 
+%     すべての生成規則 $A\rightarrow e$に対して次の関数を生成する。
+%         \begin{center}\verb|void |$A$\verb|(void){T(|$e$\verb|)}|\end{center}
+
+%     \verb|T(|$e$\verb|)|は以下の通り定義する。
+%     \begin{list}{}{}
+%     \item \bluetext{$e\in\Sigma$のとき：}\\
+%     \verb|if(nextsym.type==|$e$\verb|) get (&nextsym); else error();|
+%     \item \bluetext{$e\in N$のとき：} $e$\verb|();|
+%     \item \bluetext{$e=e_1\ldots e_n$のとき：} $T(e_1);\ldots T(e_n);$
+%     \end{list}
+% \end{list}
+% \end{frame}
+
+% \begin{frame}[fragile]{再帰降下パーザ}
+% 　　\begin{list}{}{}
+%     \item \bluetext{$e=e_1\vert\cdots\vert e_n$のとき：}\\
+%     \verb|switch(nextsym.type){|$C(e_1)\ldots C(e_n)$\verb| default;|$D(e)$\verb|;}|\\
+%     \greentext{$C(e_k)$は以下のように定義する。}
+%     \begin{list}{}{}
+%     \item $\First (e_k)=\{\varepsilon\}$のとき 空文
+%     \item $\First (e_k)\not=\{\varepsilon\}$のとき\\
+%     \verb|case |$a_1$\verb|:|$\cdots$\verb|case |$a_m$\verb|:|$T(e_k)$\verb|;break;|\\
+%     ここで、$\First (e_k)\backslash\{\varepsilon\}=\{a_1,\ldots,a_m\}$\\
+%     \end{list}
+%     $D(e)$は以下の通り定義する。
+%     \begin{list}{}{}
+%     \item $\varepsilon\in\First (e)$のとき　\verb|break|
+%     \item $\varepsilon\notin\First (e)$のとき　\verb|error()|
+%     \end{list}
+%     \end{list}
+
+% \end{frame}
+
+% \begin{frame}[fragile]{再帰降下型パーザ}
+% 　　\begin{list}{}{}
+%     \item \bluetext{$e=e_1^{\ast}$のとき：}\\
+%     \begin{list}{}{}
+%     \item $\First (e_k)=\{\varepsilon\}$のとき 空文
+%     \item $\First (e_k)\not=\{\varepsilon\}$のとき\\
+%     \verb|while(nextsym.type==|$a_1$\verb:||...||nextsym.type==:$a_m$\verb|){|\\
+%     \quad $T(e_1)$\verb|;|\\\verb|}|\\
+%     ここで、$\First (e_1)\backslash\{\varepsilon\}=\{a_1,\ldots,a_n\}$
+%     \end{list}
+%     \end{list}
+% \end{frame}
+
+% \begin{frame}
+%  \frametitle{再帰降下パーザ}
+
+
+%  \begin{center}
+%   \begin{tabular}{cc}
+%   \includegraphics[scale=0.45]{figs191016/alg4_16.eps}
+%   &
+%   \includegraphics[scale=0.45]{figs191016/alg4_16-2.eps}
+%  \\
+%   \end{tabular}
+%  \end{center} 
+%  \greentext{$LL$の場合、$e={e_1}^\ast$は不要}
+% \end{frame}
+
+\begin{frame}[containsverbatim]
+  \frametitle{jjtreeによる再帰降下型パーザの生成}
+
+  \verb|javacc|に含まれる\verb|jjtree|をつかうと文脈自由文法から再帰降下
+  構文解析プログラムを生成できる。
+
+  \begin{center}
+    \includegraphics[width=.6\textwidth]{jjtree.pdf}
+  \end{center}
+
+  \begin{list}%
+    {} %default label
+    {} %formatting parameter
+    \item [(1)]
+          字句定義と文脈自由文法を記述したファイル(\verb|jjt|ファイル)を\verb|jjtree|で変換して、
+          いくつかの\verb|java|ファイルと\verb|javacc|ファイル(\verb|jj|ファイル)を生成する。
+    \item [(2)]
+          \verb|javacc|のファイルを\verb|javacc|で\verb|java|に変換して、全部を
+          \verb|class|ファイルに変換して完成
+  \end{list}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+  \frametitle{例(四則演算式)}
+
+  以下の(拡張)BNF定義で定義される文法の構文解析を考える．
+
+  \[\begin{array}{rcl}
+      \NTerm{AddExpr}  & \mathtt{::=} & \NTerm{MulExpr} ((\texttt{+}|\texttt{-})\NTerm{MulExpr})*   \\
+      \NTerm{MulExpr}  & \mathtt{::=} & \NTerm{PrimExpr} ((\texttt{*}|\texttt{/})\NTerm{PrimExpr})* \\
+      \NTerm{PrimExpr} & \mathtt{::=} & \Term{(}\ \NTerm{AddExpr}\ \Term{)}\ |\ \Term{Literal}
+    \end{array}\]
+
+  $\Term{Literal}$は数のトークンであるとする。
+
+  \greentext{\small $\NTerm{AddExpr}$と$\NTerm{MulExpr}$にはそれぞれ１つしか生成規則はなく，
+    $\NTerm{PrimExpr}$については、$\First{(\Term{(}\ \NTerm{AddExpr}\ \Term{)}}=\{\Term{(}\}$，
+    $\First(\Term{Literal})$は互いに素であることから$ELL(1)$文法である．}
+
+  %以下，例の実行方法については講義ページを参照
+
+  \vspace*{1zw}
+
+  {\small
+    参考・引用：五月女 健治：\\
+    Java CC: コンパイラ・コンパイラfor Java\\
+    テクノプレス(2003)[絶版]
+  }
+\end{frame}
+
+\begin{frame}
+  \begin{tabular}{cc}
+    \includegraphics[width=0.45\textwidth]{AddExpr-jjt-crop.pdf}
+     &
+    \includegraphics[width=0.45\textwidth]{MulExpr-jjt-crop.pdf} \\
+    \includegraphics[width=0.45\textwidth]{PrimeExpr-crop.pdf}
+     &
+    \includegraphics[width=0.52\textwidth]{Literal-jjt-crop.pdf}
+  \end{tabular}
+\end{frame}
+
+\begin{frame}
+  \frametitle{式の計算}
+
+  jjtreeは下降型構文解析のプログラムのみを生成する．\\
+  \greentext{生成されたjavaccファイルは主に字句解析を行う．}
+
+  \vspace*{1zw}
+
+  生成された \texttt{AddNode}, \texttt{SubNode}, \texttt{MulNode},
+  \texttt{DivNode}において子供の値を計算する\texttt{calculate}メソッド
+  を実装すればよい．
+
+  \vspace*{1zw}
+
+  \texttt{jjtree}で生成したjavaプログラムに追加する．
+
+  \vspace*{1zw}
+
+  \greentext{講義のwebsiteを参照}
+\end{frame}
+\end{document}
