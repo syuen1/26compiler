@@ -1,0 +1,869 @@
+\documentclass[ckj]{beamer}
+\usepackage{etex}
+%\usetheme{Warsaw}
+%\usetheme{Malmoe}
+%\usetheme{AnnArbor}
+%\usetheme{Hannover}
+%\usetheme{Bergen}
+%\usetheme{Berlin}
+\usetheme{Singapore}
+%\usetheme{Montpellier}
+%\usetheme{Pittsburgh}
+\usepackage{graphicx}
+\usepackage{latexsym,amssymb}
+%\usepackage{epsbox}
+%\usepackage{multirow}
+\usepackage{fancybox}
+\usepackage{fancyvrb}
+%\usepackage{listings}
+\usepackage{tabularx}\usepackage{pstricks,pst-node,pst-tree}
+%\usepackage{multimedia}
+%\usepackage{pstricks,pst-node,pst-tree}
+%\usepackage{pst-all}
+%\include{prooftree}
+%\lstloadlanguages{pascal}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\renewcommand{\familydefault}{\sfdefault}
+
+\include{mymacros}
+
+\newcommand{\lecturedate}{2018/11/12}
+
+\cornersize{0.25}
+
+\setbeamertemplate{frametitle}[default][center]
+\setbeamertemplate{footline}{\hfill
+コンパイラおよび演習\quad\lecturedate
+\hfill\insertframenumber/\inserttotalframenumber\hspace*{1zw}}
+\newcounter{coffee}
+\setbeamercovered{transparent=10}
+\title{コンパイラおよび演習(9)}
+\date{\lecturedate}
+\begin{document}
+\frame{\titlepage}
+ 
+
+\begin{frame}
+ \frametitle{SLR(1)構文解析ができない文法}
+ 
+ \[
+ G_{10}=\tuple{\{S,E,T\},\{=,+,i\},P_{10},S}
+ \]
+
+ の開始記号を$S'$とした拡大文法 $G'_{10}$ 
+
+ \[
+ P'_{10}=\left\{
+  \begin{array}{llllll}
+  (0) & S'\rightarrow S\# & (1) & S\rightarrow E=E & (2) &
+  S\rightarrow i\\
+  (3) & E\rightarrow E+T & (4) & E\rightarrow T & (5) &
+  T\rightarrow i\\
+  \end{array}
+ \right\}
+ \]
+
+ \begin{tabular}{cc}
+  \begin{minipage}{.6\textwidth}
+   \scalebox{0.75}{
+   \begin{pspicture}(0,0)(6,6)
+    \psset{nodesep=5pt}
+    \rput(0.5,4.5){\rnode{A1}{$S'$}}
+    \rput(0.5,3){\rnode{A2}{$S$}}
+    \rput(0.5,1.5){\rnode{A3}{$i$}}
+    \ncline{-}{A1}{A2}
+    \ncline{-}{A2}{A3}
+    \pspolygon[linewidth=0.5pt,linestyle=dashed,linecolor=red](0,1)(1,1)(1,3.5)(0,3.5)
+    \rput(4.5,5.5){\rnode{B1}{$S$}}
+    \rput(3.5,4){\rnode{B2}{$E$}}
+    \rput(5.5,4){\rnode{B3}{$E$}}
+    \rput(3.5,2.5){\rnode{B4}{$T$}}
+    \rput(5.5,2.5){\rnode{B5}{$T$}}
+    \rput(3.5,1){\rnode{B6}{$i$}}
+    \rput(4.5,1){\rnode{B8}{$=$}}
+    \rput(5.5,1){\rnode{B7}{$i$}}
+    \ncline{-}{B1}{B2}
+    \ncline{-}{B1}{B3}
+    \ncline{-}{B2}{B4}
+    \ncline{-}{B3}{B5}
+    \ncline{-}{B4}{B6}
+    \ncline{-}{B5}{B7}
+    \rput[tl](0.7,1.5){\rnode{C1}{\redtext{$\uparrow$}}}
+    \rput[tl](5.7,1){\rnode{C2}{\redtext{$\uparrow$}}}
+    \pspolygon[linewidth=0.5pt,linestyle=dashed,linecolor=red](5,0.5)(6,0.5)(6,3)(5,3)
+   \end{pspicture}}
+  \end{minipage}
+  &
+  \begin{minipage}{.4\textwidth}
+   $i=i$を解析するとき、
+   $T\rightarrow i$と$S\rightarrow i$を区別できない。
+   
+   $S\rightarrow i$の還元の可能性を$FOLLOW$のみで排除できない。
+
+   (\greentext{実際はありえない})
+
+   \redtext{SLR(1)ではない}
+  \end{minipage}
+ \end{tabular}
+\end{frame}
+
+\begin{frame}
+ \frametitle{$G_{10}$のLR(0)オートマトン}
+ \only<1>{
+ \begin{center}
+  \includegraphics[height=.5\textheight]{figs/G10LR0NFA-r1.eps}
+ \end{center}
+ }
+ \only<2>{
+ \begin{center}
+  \includegraphics[height=.5\textheight]{figs/G10LR0A.eps}
+ \end{center}
+ }
+\end{frame}
+
+ \begin{frame}
+  \frametitle{$G_{10}$のSLR構文解析表}
+  \begin{tabular}{ll}
+  \begin{minipage}{.5\textwidth}
+   \[
+   \begin{array}{c|cccc|ccc}
+ & \multicolumn{4}{|c}{\mathsf{action}}
+ & \multicolumn{3}{|c}{\mathsf{Goto}}\\\hline
+  & i & = & + & \#& S & E & T\\\hline\hline
+0 & s4&   &   &   & 1 & 2 & 3\\\hline
+1 &   &   &   &acc&   &   &  \\\hline
+2 &   & s5& s6&   &   &   &  \\\hline
+3 &   & r4& r4& r4&   &   &  \\\hline
+4 &   & r5& r5& r5&   &   &  \\
+  &   &   &   & r2&   &   &  \\\hline
+5 & s8&   &   &   &   & 7 & 3\\\hline
+6 & s8&   &   &   &   &   & 9\\\hline
+7 &   &   & s6& r1&   &   &  \\\hline
+8 &   & r5& r5& r5&   &   &  \\\hline
+9 &   & r3& r3& r3&   &   &  \\\hline\hline
+   \end{array}
+   \]
+  \end{minipage}
+   &    {\small
+	\begin{minipage}{.5\textwidth}
+	 状態4のreduce/reduce conflict\\[5pt]
+	 \greentext{\# が先読み文字のときに$S$に還元する
+	 か$T$に還元するかが不明}\\[3pt]
+
+%	 状態7のshift/reduce conflict\\[5pt]
+%	 \greentext{
+%	 ２番目の$i$を$E$に還元したあとこのまま$+$を読んで構文解析を
+%すればよいか、$S\rightarrow E=E$でSに還元すればよいかわからない
+%	 }
+	\end{minipage}}
+  \end{tabular} 
+\end{frame}
+
+\begin{frame}
+ \frametitle{LR(1)項}
+ \greentext{SLR(1)がうまくいかないのは還元の情報が足りないため}\\
+ \greentext{$\rightarrow$還元の先読み文字をあらかじめ状態に埋
+ めこむ。}\\
+
+ 還元するかどうかを先読み文字によって決定
+ \[
+  [A\rightarrow\alpha\bullet\beta,a]
+ \]
+ $x\in FOLLOW(A)$に対して$[A\rightarrow\alpha\bullet\beta,x]$
+ という状態を作成
+ 
+ \begin{minipage}{.5\textwidth}
+  \begin{pspicture}(0,0)(6,4)
+   \psset{nodesep=2pt}
+   \rput(2.6,3.8){\rnode{A}{$A$}}
+   \pspolygon(0,1)(2.5,3.5)(2.5,1)
+   \pspolygon(5.2,1)(2.7,3.5)(2.7,1)
+   \rput(5.5,0.5){\rnode{B}{$a$}}
+   \rput(1.7,1.5){\rnode{D}{$\alpha$}}
+   \rput(3.5,1.5){\rnode{D}{$\beta$}}
+   \pnode(5.5,1){C}
+   \ncline{->}{B}{C}
+  \end{pspicture}
+ \end{minipage}
+ \parbox{12zw}{\greentext{$[A\rightarrow\alpha\bullet,a]$が還元するのは先読
+ みが$a$のとき}}
+\end{frame}
+
+\begin{frame}
+ \frametitle{LR(1)項}
+ \greentext{LR項を先読み文字で拡張}
+ \begin{center}
+  \begin{Def}
+   \begin{trivlist}
+    \item [(LR項)]
+   生成規則 $A\rightarrow\beta_1\beta_2$ ($\beta_1\in(N\cup\Sigma)^\ast$,
+   $\beta_2\in(N\cup\Sigma)^\ast\cup(N\cup\Sigma)^\ast\#)$)
+   $\beta_1$と$\beta_2$の間に$\bullet$を挿入した
+   $A\rightarrow\beta_1\bullet\beta_2$項
+
+   \item [(LR(1)項)]
+LR項と
+   $a\in\Sigma\cup\{\#,\varepsilon\}$の組
+   $[A\rightarrow\beta_1\bullet\beta_2,a]$\\
+	 ただし、$a=\varepsilon$となるのは、$A$が開始記号の場合のみ。
+   \end{trivlist}
+  \end{Def}
+  
+  \vspace*{-1em}
+
+  \begin{Def}
+   最右導出 $S'\Rightarrow_{rm}^\ast\alpha A
+   w\Rightarrow_{rm}\alpha\beta_1\beta_2 w$が存在し、$a=First_1(w)$のと
+   き、$[A\rightarrow\beta_1\bullet\beta_2,a]$は、可延頭部
+   $\alpha\beta_1$に対する正準LR(1)項\\
+   $I_1(\alpha\beta_1)$\ :\ $\alpha\beta_1$に対する正準LR(1)項の集合
+  \end{Def}
+ 
+%  \includegraphics[width=.75\textwidth]{figs/def4_21.eps}
+  \end{center}
+% \greentext{正準LR(1)項も拡張可能}
+% \begin{center}
+%  \includegraphics[width=.75\textwidth]{figs/def4_23.eps}
+%  \end{center}
+\end{frame}
+
+
+
+\begin{frame}
+ \frametitle{正準LR(1)集成の構成}
+ \begin{trivlist}
+
+   \item $S'\Rightarrow^\ast_{rm}\alpha Aw\#\Rightarrow_{rm}\alpha\beta
+ w\#$ ($w\in\Sigma^\ast$)が存在し、$a=First_1(w)$\\[10pt]
+
+   \item $[A\rightarrow\beta_1\bullet\beta_2,a]$は、可延頭部$\alpha\beta_1$に対す
+ る正準LR(1)項\\[5pt]
+   \item $\alpha\beta_1$に対する正準LR(1)項の集合：$I_1(\alpha\beta_1)$
+ 
+   \item 正準LR(1)集成:$I_1(\alpha\beta_1)$の集合
+ \end{trivlist}
+
+ \begin{trivlist}
+  \only<1>{
+  \item [{\bf 定義4.24}]
+ \[
+	\begin{array}{l}%
+	 \mbox{$X\in{N\cup\Sigma}$とする。}\\\relax
+	 [A\rightarrow\alpha_1\alpha_2\cdots\bullet X\cdots\alpha_n,a]
+	  \stackrel{X}{\rightarrow}
+	  [A\rightarrow\alpha_1\alpha_2\cdots X\bullet\cdots\alpha_n,a]\\
+	  \mbox{$X\rightarrow\gamma\in P$のとき}
+	  [A\rightarrow\beta_1\bullet
+	  X\beta_2,a]\stackrel{\varepsilon}{\rightarrow}
+	  [X\rightarrow\bullet\gamma,b]\\
+	  \mbox{ここで、$b\in First_1(\beta_2a)$}
+	   \mbox{\small \redtext{先読み文字が変化することに注意}}
+	\end{array}
+ \]
+}\only<2>{
+ \item [{\bf 定義4.25}]
+ \[
+  \begin{array}{l}
+   Goto(I,\varepsilon)=\{\theta'|\exists\theta\in
+    I.\theta\stackrel{\varepsilon}{\rightarrow}^\ast\theta'\}\\
+   Goto(I,\alpha X)=Goto(\{\theta'|\exists\theta\in
+    Goto(I,\alpha).\theta\stackrel{X}{\rightarrow}\theta'\}\\
+  \end{array}
+ \]}
+\end{trivlist}
+
+ {\scriptsize
+	可延頭部$\alpha=X_1\cdots X_n$に対して、
+	$I(\alpha)=Goto(\{[S'\rightarrow\bullet S\#]\},\alpha)$
+ }
+
+ {\scriptsize \greentext{LR(0)の場合と同様にLR(1)集成の要素を状態として
+ LR(1)オートマトンを作成$\rightarrow$決定化した状態集合に一致}
+ }
+
+\end{frame}
+
+\begin{frame}
+ \frametitle{正準LR(1)オートマトン$\rightarrow$PDT}
+ スタックトップ$I_{top}=I(X_1\ldots X_n)$
+ \begin{trivlist}
+  \item [{\bf 還元(Reduce)}]
+	$[A\rightarrow\alpha\bullet,a]\in I_{top}$のとき
+
+	$\alpha'\alpha w\Rightarrow_{rm}\alpha'Aw$\\
+	$A\rightarrow\alpha$の規則番号$i$
+
+	$\alpha=X_{n-k+1}\ldots X_n$とする($\alpha$の長さが$k$)とき、ス
+	タックトップから\\
+	$X_{n-k+1}I_1(X_1\ldots X_{n-k+1})\ldots X_n I_1(X_1\ldots X_n)$
+	を$AI_1(X_1\ldots X_{n-k}A)$でおきかえる=$r_i$動作
+	\[
+	 \begin{array}{ll}
+	  & (I_1(\varepsilon)\ldots X_{n-k}I_1\underline{(X_1\ldots
+	   X_{n-k})\ldots  X_nI_1(X_1\ldots X_n)},ax,\pi)\\
+	  \vdash 
+	  & (I_1(\varepsilon)\ldots X_{n-k}I_1(X_1\ldots X_{n-k})A
+	   I_1(X_1\ldots X_{n-k}A),ax,\pi i)\\
+	 \end{array}
+	\]
+
+	\greentext{LR(1)構文解析表が同様に構成できる。}
+
+	$I_1(X_1\ldots X_{n-k})=I_l$とするとき、
+	$\mathsf{Action}(l,a)=r_i$
+	$\mathsf{Goto}(l,A)=m$であれば$I_m\in I_1(X_1\ldots X_{n-k}A)$
+ \end{trivlist}
+\end{frame}
+
+\begin{frame}
+ \frametitle{正準LR(1)オートマトン$\rightarrow$PDT}
+ スタックトップ$I_{top}=I_1(X_1\ldots X_n)$
+ \begin{trivlist}
+  \item [{\bf シフト(Shift)}]
+	$[A\rightarrow\beta\bullet a\gamma,b]\in I_{top}$のとき
+
+	\[
+	 \begin{array}{ll}
+	  & (I_1(\varepsilon)\ldots X_nI_1(X_1\ldots X_n),ax,\pi)\\
+	  \vdash 
+	  & (I_1(\varepsilon)\ldots X_nI_1(X_1\ldots X_n)aI_1(X_1\ldots X_na),x,\pi)\\
+	 \end{array}
+	\]
+
+	$I_1(X_1\ldots X_n)=I_l$ $I_1(X_1\ldots X_na)=I_j$のとき、
+	$\mathsf{Action}(l,a)=s_j$
+  \item [{\bf 受理(Accept)}]
+	$[S'\rightarrow S\bullet\#,\varepsilon]\in I_{top}$ならば受理
+	\[
+	 (I_1(\varepsilon)SI_1(S),\#,\pi)\vdash(\mbox{受理},\#,\pi)
+	\]
+	受理動作=$acc$
+  \item [{\bf 誤り(Error)}]
+	上記いずれにもあてはまらないとき
+ \end{trivlist}
+\end{frame}
+
+\begin{frame}
+ \frametitle{LR(1)構文解析(例)}
+ \[
+ {\scriptsize
+ \left\{
+  \begin{array}{llll}
+   (0) & S'\rightarrow\mbox{論理式} &
+   (1) & \mbox{論理式}\rightarrow\mbox{論理式}\ \mathtt{OR}\ \mbox{AND式}\\
+   (2) & \mbox{論理式}\rightarrow\mbox{AND式} &
+   (3) & \mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT}\\
+   (4) & \mbox{AND式}\rightarrow\mathtt{EQT}\\
+  \end{array}
+ \right\}}
+ \]
+
+ \only<1>{
+ LR(1)項の集合(赤は不要)
+ \begin{center}
+ \includegraphics[height=.5\textheight]{figs/4_18LRterms.eps}
+ \end{center}
+ }
+ \begin{list}{}{}
+  \item 図4.12 LR(1)オートマトン
+ \only<2>{
+	\begin{center}
+	 \includegraphics[scale=.4]{figs/fig4-12.eps}
+	\end{center}
+	}
+  \item 表4.1 LR(1)構文解析表
+	\only<3>{
+	\begin{center}
+	\includegraphics[scale=.5]{figs/table4-1.eps}
+	\end{center}
+	}
+  \item 図4.13 パーザの動作
+	\only<4>{
+	\begin{center}
+	\includegraphics[scale=.7]{figs/fig4-13.eps}
+	\end{center}
+	}
+ \end{list}
+% LR(1)構文解析でない例 4.30\\
+% LR(1)構文解析表 表4.2(Shift/Reduce conflictがある)
+\end{frame}
+
+
+\begin{frame}
+ \frametitle{SLR(1)とLR(1)}
+ 構文解析表において衝突が発生する場合
+
+ G10:\\
+ \begin{tabular}{llllll}
+  (0) & $S'\rightarrow S$ & (1) & $S\rightarrow E=E$ & (2) &
+  $S\rightarrow i$\\
+  (3) & $E\rightarrow E+T$ & (4) & $E\rightarrow T$ & (5) &
+  $T\rightarrow i$\\
+ \end{tabular}
+
+ \begin{tabular}{cc}
+  \begin{minipage}{.6\textwidth}
+   \begin{pspicture}(0,0)(6,6)
+    \psset{nodesep=5pt}
+    \rput(0.5,4.5){\rnode{A1}{$S'$}}
+    \rput(0.5,3){\rnode{A2}{$S$}}
+    \rput(0.5,1.5){\rnode{A3}{$i$}}
+    \ncline{-}{A1}{A2}
+    \ncline{-}{A2}{A3}
+    \pspolygon[linewidth=0.5pt,linestyle=dashed,linecolor=red](0,1)(1,1)(1,3.5)(0,3.5)
+    \rput(4.5,5.5){\rnode{B1}{$S$}}
+    \rput(3.5,4){\rnode{B2}{$E$}}
+    \rput(5.5,4){\rnode{B3}{$E$}}
+    \rput(3.5,2.5){\rnode{B4}{$T$}}
+    \rput(5.5,2.5){\rnode{B5}{$T$}}
+    \rput(3.5,1){\rnode{B6}{$i$}}
+    \rput(4.5,1){\rnode{B8}{$=$}}
+    \rput(5.5,1){\rnode{B7}{$i$}}
+    \ncline{-}{B1}{B2}
+    \ncline{-}{B1}{B3}
+    \ncline{-}{B2}{B4}
+    \ncline{-}{B3}{B5}
+    \ncline{-}{B4}{B6}
+    \ncline{-}{B5}{B7}
+    \rput[tl](0.7,1.5){\rnode{C1}{\redtext{$\uparrow$}}}
+    \rput[tl](5.7,1){\rnode{C2}{\redtext{$\uparrow$}}}
+    \pspolygon[linewidth=0.5pt,linestyle=dashed,linecolor=red](5,0.5)(6,0.5)(6,3)(5,3)
+   \end{pspicture}
+  \end{minipage}
+  &
+  \begin{minipage}{.4\textwidth}
+   $i=i$を解析するとき、
+   $T\rightarrow i$と$S\rightarrow i$を区別できない。
+   
+   $S\rightarrow i$の還元の可能性を$FOLLOW$のみで排除できない。
+
+   (\greentext{実際はありえない})
+
+   \redtext{SLR(1)ではない}
+  \end{minipage}
+ \end{tabular}
+\end{frame}
+
+% \begin{frame}
+%  \frametitle{LR(1)オートマトンの作成}
+%  \only<1>{\small
+%\begin{tabular}{p{.8\textwidth}p{.2\textwidth}}
+%$
+%\begin{array}{c|c|c|c|c|c|c|}
+%         & S      & E         & T              & =     & +     & i \\ \hline
+%0        & 1      & 3,6^2,6^3 & 12^2,12^3      &       &       & 9,13^2,13^3\\\hline
+%1        &        &           &                &       &       &            \\\hline
+%\rb{2}   & \rb{3} & \rb{6^3}  & \rb{12^2,12^3} &       &       & \rb{13^2,13^3}  \\\hline
+%3        &        &           &                & 5     &       & \\\hline
+%\rb{4^i} &        & \rb{6^i}  & \rb{12^2}      &       &       & \rb{13^2}\\\hline
+%5        &        & 6^1,6^2,7 & 12^1,12^2      &       &       & 13^1,13^2\\\hline  
+%6^i      &        &           &                &       & 8^i   & \\\hline
+%7        &        &           &                &       &       &            \\\hline
+%8^i      &        &           & 11^i           &       & 13^i  & \\\hline
+%9        &        &           &                &       &       &            \\\hline
+%\rb{10^i}&        &           & \rb{12^i}      &       & \rb{13^i}  & \\\hline
+%11^i     &        &           &                &       &   & \\\hline
+%12^i     &        &           &                &       &       &            \\\hline
+%13^i     &        &           &                &       &       &            \\\hline
+%\end{array}$ &
+%$i\in\{1,2,3\}$ \greentext{赤は状態0から到達不能}
+%\end{tabular}
+%}
+%
+% \only<2>{
+%  \begin{pspicture}(0,0)(10,6.5)
+%   \rput(2,6){\ovalnode{I00}{$0$}}
+%   \rput[b](1.6,6.2){\greentext{$I_0$}}
+%   \rput(7,6){\ovalnode{I01}{$1$}}
+%   \rput[b](6.6,6.2){\greentext{$I_1$}}
+%   \rput(1,4.5){\ovalnode{I02}{$3,6^2,6^3$}}
+%   \rput(4,4.5){\ovalnode{I04}{$12^2,12^3$}}
+%   \rput(7,4.5){\ovalnode{I03}{$9,13^2,13^3$}}
+%   \ncline{->}{I00}{I01}\Aput[0.1]{$S$}
+%   \ncline{->}{I00}{I02}\Bput[0.1]{$E$}
+%   \ncline{->}{I00}{I03}\Aput[0.1]{$i$}
+%   \ncline{->}{I00}{I04}\lput[0.1]{:U}(0.4){$T$}
+%   \rput(1,3){\ovalnode{I05}{$5$}}
+%   \rput(4,3){\ovalnode{I06}{$8^2,8^3$}}
+%   \rput(7,3.5){\ovalnode{I10}{$11^2,11^3$}}
+%   \rput(7,2.5){\ovalnode{I11}{$13^2,13^3$}}
+%   \ncline{->}{I02}{I05}\Aput[0.1]{$=$}
+%   \ncline{->}{I02}{I06}\Aput[0.1]{$+$}
+%   \ncline{->}{I06}{I10}\Aput[0.1]{$T$}
+%   \ncline{->}{I06}{I11}\Aput[0.1]{$i$}
+%   \rput(1,1.5){\ovalnode{I07}{$6^1,6^2,7$}}
+%   \rput(4,1.5){\ovalnode{I08}{$12^1,12^2$}}
+%   \rput(7,1.5){\ovalnode{I09}{$13^1,13^2$}}
+%   \ncline{->}{I05}{I07}\Aput[0.1]{$E$}
+%   \ncline{->}{I05}{I08}\Aput[0.1]{$T$}
+%   \ncline{->}{I05}{I09}\Aput[0.1]{$i$}
+%   \rput(1,0){\ovalnode{I12}{$8^1,8^2$}}
+%   \rput(4,0){\ovalnode{I13}{$11^1,11^2$}}
+%   \ncline{->}{I07}{I12}\Aput[0.1]{$+$}
+%   \ncline{->}{I12}{I09}\Aput[0.1]{$i$}
+%   \ncline{->}{I12}{I13}\Bput[0.1]{$T$}
+%  \end{pspicture}
+%  }
+% \end{frame}
+
+ \begin{frame}
+  \frametitle{LR(1)項による還元の区別}
+  
+  $I3:$\quad $[S\rightarrow i\bullet,\#]$,
+  $[T\rightarrow i\bullet,\mathtt{+}]$,
+  $[T\rightarrow i\bullet,\mathtt{=}]$
+
+  \begin{list}{}{}
+   \item \greentext{先読みが\#のとき$S$に還元}
+   \item \greentext{先読みが$\mathtt{+}$または$\mathtt{=}$のとき$T$に還元}
+  \end{list}
+
+  LR(1)集成、gotoの構成：LR(0)の場合の直接的な拡張
+
+  SLR(1)の場合と同様に構文解析表を作成
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{LR(1)項$\varepsilon$閉包}
+  \hspace*{-1zw}
+
+  \begin{center}
+   \includegraphics[width=\textwidth]{figs/epscl.eps}
+  \end{center}
+  
+%  {\tiny
+%\[
+%\begin{array}{llllll}
+%cl_0=& \multicolumn{5}{l}{\{{\color{red}{[S'\rightarrow\bullet S\#,\varepsilon]}},[S\rightarrow\bullet E=E,\#],[E\rightarrow\bullet E+T,=/+],
+%[E\rightarrow\bullet T,=/+],[S\rightarrow\bullet i,\#],[T\rightarrow\bullet i,=/+]\}}\\
+%cl_1=& \multicolumn{5}{l}{\{{\color{red}{[S'\rightarrow S\#\bullet,\varepsilon]}}\}}\\
+%cl_2=& \multicolumn{5}{l}{\{{\color{red}{[S\rightarrow\bullet E=E,\#]}},[E\rightarrow\bullet E+T,=],[E\rightarrow\bullet T,=/+],[T\rightarrow\bullet i,=/+]\}}\\
+%cl_3=& \multicolumn{5}{l}{\{{\color{red}{[S\rightarrow E\bullet = E,\#]}}\}}\\
+%cl_4^1=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow \bullet E+T,\#]}},[E\rightarrow\bullet T,+],[T\rightarrow\bullet i,+]\}}\\
+%cl_4^2=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow \bullet E+T,+]}},[E\rightarrow\bullet T,+],[T\rightarrow\bullet i,+]\}}\\
+%cl_4^3=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow \bullet E+T,=]}},[E\rightarrow\bullet T,+],[T\rightarrow\bullet i,+]\}}\\
+%cl_5=& \multicolumn{5}{l}{\{{\color{red}{[S\rightarrow E=\bullet E,\#]}},[E\rightarrow\bullet E+T,\#/+],[E\rightarrow\bullet T,\#/+],[T\rightarrow\bullet i,\#/+]\}}\\
+%cl_6^1=& \{{\color{red}{[E\rightarrow E\bullet +T,\#]}}\} &
+%cl_6^2=& \{{\color{red}{[E\rightarrow E\bullet +T,+]}}\} &
+%cl_6^3=& \{{\color{red}{[E\rightarrow E\bullet +T,=]}}\}\\
+%cl_7=& \{{\color{red}{[S\rightarrow E=E\bullet,\#]}}\}\\
+%cl_8^1=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow E+\bullet T,\#]}},[T\rightarrow\bullet i,\#]\}\quad
+%cl_8^2= \{{\color{red}{[E\rightarrow E+\bullet T,+]}},[T\rightarrow\bullet i,+]\}}\\
+%cl_8^3=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow E+\bullet T,=]}},[T\rightarrow\bullet i,=]\}}\\
+%cl_9=& \{{\color{red}{[S\rightarrow i\bullet,\#]}}\}\\
+%cl_{10}^1=& \{{\color{red}{[E\rightarrow \bullet T,\#]}},[T\rightarrow\bullet i,\#]\} &
+%cl_{10}^2=& \{{\color{red}{[E\rightarrow \bullet T,+]}},[T\rightarrow\bullet i,+]\} &
+%cl_{10}^3=& \{{\color{red}{[E\rightarrow \bullet T,=]}},\\
+%          & & & & &\quad [T\rightarrow\bullet i,=]\}\\
+%cl_{11}^1=& \{{\color{red}{[E\rightarrow E+T\bullet,\#]}}\} &
+%cl_{11}^2=& \{{\color{red}{[E\rightarrow E+T\bullet,+]}}\} &
+%cl_{11}^3=& \{{\color{red}{[E\rightarrow E+T\bullet,=]}}\}\\
+%cl_{12}^1=& \{{\color{red}{[E\rightarrow T\bullet,\#]}}\}&
+%cl_{12}^2=& \{{\color{red}{[E\rightarrow T\bullet,+]}}\}&
+%cl_{12}^3=& \{{\color{red}{[E\rightarrow T\bullet,=]}}\}\\
+%cl_{13}^1=& \{{\color{red}{[T\rightarrow i\bullet,\#]}}\}&
+%cl_{13}^2=& \{{\color{red}{[T\rightarrow i\bullet,+]}}\}&
+%cl_{13}^3=& \{{\color{red}{[T\rightarrow i\bullet,=]}}\}\\
+%\end{array}
+%\]}
+ \end{frame}
+
+\begin{frame}
+ \frametitle{LR(1)項と遷移関係}
+ \begin{center}
+  \includegraphics[height=.7\textheight]{figs/G10LRNFA.eps}
+ \end{center}
+\end{frame}
+
+ \begin{frame}
+  \frametitle{正準LR(1)集成}
+{\tiny
+\[
+\begin{array}{ccc}
+\begin{array}{cl}
+I_0: & [S'\rightarrow\bullet S\#,\varepsilon]\\
+     & [S\rightarrow\bullet E=E,\#]\\
+     & [S\rightarrow\bullet i,\#]\\
+     & [E\rightarrow\bullet E+T,=/+]\\
+     & [E\rightarrow\bullet T,=/+]\\
+     & [E\rightarrow\bullet i,=/+]\\
+I_1: & [S'\rightarrow S\bullet\#,\varepsilon]\\
+I_2: & [S\rightarrow E\bullet=E,\#]\\
+     & [E\rightarrow E\bullet+T,=/+]\\
+I_3: & [E\rightarrow T\bullet,=/+]\\
+\end{array} &
+\begin{array}{cl}
+I_4: & [S\rightarrow i\bullet,\#]\\
+     & [T\rightarrow i\bullet,=/+]\\
+I_5: & [S\rightarrow E=\bullet E,\#]\\
+     & [E\rightarrow\bullet T,\#/+]\\
+     & [E\rightarrow\bullet i,\#/+]\\
+I_6: & [E\rightarrow E+\bullet T,=/+]\\
+     & [T\rightarrow \bullet i,=/+]\\
+I_7: & [S\rightarrow E=E\bullet,\#]\\
+     & [E\rightarrow E\bullet+T,\#/+]\\
+\end{array} &
+\begin{array}{cl}
+I_8: & [E\rightarrow E+T\bullet,=/+]\\
+I_9: & [T\rightarrow i\bullet,=/+]\\
+I_{10}: & [E\rightarrow E+\bullet T,\#/+]\\
+        & [T\rightarrow \bullet i,\#/+]\\
+I_{11}: & [E\rightarrow E+T\bullet,\#/+]\\
+I_{12}: & [T\rightarrow i\bullet,=/+]\\
+I_{13}: & [E\rightarrow T\bullet,\#/+]
+\end{array}
+\end{array}
+\]}
+
+\greentext{
+$[N\rightarrow \alpha,a_1/a_2/\cdots/a_n]$\\
+\qquad =$[N\rightarrow\alpha,a_1],[N\rightarrow\alpha,a_2]\cdots,[N\rightarrow\alpha,a_n]$}
+
+\begin{trivlist}
+ \item $I_i$の構成：\\
+       $[A\rightarrow\alpha\bullet B\beta,a]\in I_i$
+       $b\in First_1(\beta a),B\rightarrow\gamma$に対して
+       $[B\rightarrow\gamma,b]$を$I_i$に追加
+ \item 正準LR(1)集成を作成し、$LR(1)$オートマトンを生成
+\end{trivlist}
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{$G_{10}$のLR(1)オートマトン}
+
+  \begin{center}
+   \includegraphics[height=.7\textheight]{figs/LR1A.eps}
+  \end{center}
+  \greentext{goto関数$I(X_1\ldots X_n)$が構成可能}
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{LR(1)構文解析表の作成}
+
+  \begin{tabular}{ll}
+   $a\in \Sigma$による遷移 & Shift動作\\
+   $A\in N$による遷移 & goto表\\
+   マーカが最後のLR(1)項 & Reduce動作
+  \end{tabular}
+
+  \vspace*{.5cm}
+
+  \redtext{$G_{10}$はLR(1)構文解析可能}
+
+  \vspace*{.5cm}
+
+%  \begin{tabular}{c}
+%   $[S\rightarrow i\bullet,\#]\in I_4$
+%  \end{tabular}
+  \greentext{構文解析の過程を記録して違う状態とする}
+ \end{frame} 
+ 
+ \begin{frame}
+  \frametitle{$G_{10}$のLR(1)構文解析表}
+  \[
+  \begin{array}{c|cccc|ccc}
+   &  i &  = &  + & \# & S & E & T\\\hline\hline
+0  & s4 &    &    &    & 1 & 2 & 3\\\hline
+1  &    &    &    &acc &   &   &  \\\hline
+2  &    & s5 & s6 &    &   &   &  \\\hline
+3  &    & r4 & r4 &    &   &   &  \\\hline
+4  &    & r5 & r5 & r2 &   &   &  \\\hline
+5  & s12&    &    &    &   & 7 & 11\\\hline
+6  & s9 &    &    &    &   &   & 8\\\hline
+7  &    &    & s10& r1 &   &   &  \\\hline
+8  &    & r3 & r3 &    &   &   &  \\\hline
+9  &    & r5 & r5 &    &   &   &  \\\hline
+10 & s12&    &    &    &   &   & 11\\\hline
+11 &    &    & r3 & r3 &   &   &  \\\hline
+12 &    &    & r5 & r5 &   &   &  \\\hline
+13 &    &    & r4 & r4 &   &   &  \\\hline
+  \end{array}
+  \]
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{$G_{10}$のLR(1)構文解析}
+  \[ i=i\# \]
+
+  \begin{center}
+   \includegraphics[scale=0.6]{figs/LR1parseEx.eps}
+  \end{center}
+
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{LALR構文解析}
+
+  LR(1)の近似:状態数はSLR(1)と同じくらいにする\\[5pt]
+  \redtext{LR(0)項が同じのLR(1)項は同じ状態を表す}\\
+  $\Rightarrow$\redtext{同じ状態にまとめる}\\[5pt]
+
+  \vfill
+
+  $G_{10}$の場合：$I_3$と$I_{13}$、$I_6$と$I_{10}$、$I_8$と$I_{11}$、$I_{9}$と$I_{12}$を統合
+
+  \vfill
+
+  これでconflictが発生しなければLALR(1)構文解析可能
+
+  \vfill
+
+  yacc(bison), sableCCの構文解析法
+
+  LRオートマトンはSLRと同等
+
+  \greentext{還元するときはLR(1)項の先読み情報を使う}=文脈に依存した還元情報
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{$G_{10}$のLALR(1)オートマトン}
+
+  \begin{center}
+   \includegraphics[height=.7\textheight]{figs/LALR1A.eps}
+  \end{center}
+
+%  \begin{pspicture}(0,0)(10,6)
+%   \rput(2,6){\ovalnode{I00}{$0$}}
+%   \rput(7,6){\ovalnode{I01}{$1$}}
+%   \rput(1,4.5){\ovalnode{I02}{$3,6$}}
+%   \rput(4,4.5){\ovalnode{I48}{$12$}}
+%   \rput(7,4.5){\ovalnode{I03}{$9,13$}}
+%   \ncline{->}{I00}{I01}
+%   \Aput{$S$}
+%   \ncline{->}{I00}{I02}
+%   \Aput{$E$}
+%   \ncline{->}{I00}{I48}
+%   \Aput{$T$}
+%   \ncline{->}{I00}{I03}
+%   \Aput{$i$}   
+%   \rput(1,3){\ovalnode{I05}{$5$}}
+%   \rput(4,3){\ovalnode{I612}{$8$}}
+%   \rput(7,3.5){\ovalnode{I1013}{$11$}}
+%   \rput(7,2.5){\ovalnode{I911}{$13$}}
+%   \ncline{->}{I02}{I05}
+%   \Aput{$=$}
+%   \ncline{->}{I02}{I612}
+%   \Aput{$+$}
+%   \ncline{->}{I612}{I1013}
+%   \Aput{$T$}
+%   \ncline{->}{I612}{I911}
+%   \Aput{$i$}
+%   \ncline{->}{I05}{I48}
+%   \Aput{$T$}
+%   \rput(1,1.5){\ovalnode{I07}{$6,6,7$}}
+%   \ncline{->}{I05}{I07}
+%   \Aput{$E$}
+%   \ncline{->}{I07}{I612}
+%   \Aput{$+$}
+%   \nccurve[angleA=-30,angleB=200]{->}{I05}{I911}
+%   \Aput{$i$}
+%  \end{pspicture}
+%
+%  \greentext{LR(1)オートマトンの上付き文字を無視}
+ \end{frame}
+
+ \begin{frame}
+  \frametitle{$G_{10}$のLALR(1)構文解析表}
+
+  \begin{center}
+   \includegraphics[height=.6\textheight]{figs/LALR1tab.eps}
+  \end{center}
+  \redtext{$G_{10}$はLALR(1)構文解析可能である。}
+ \end{frame}
+
+\begin{frame}{構文のクラスわけ}
+ \begin{center}
+  \includegraphics[scale=.8]{figs/classes.eps}
+ \end{center}
+(``Tiger book''より)
+\end{frame}
+
+\begin{frame}
+ \frametitle{演算子順位}
+ \[
+  \begin{array}{ccc}
+   G4=\langle N,T,E,P\rangle & N=\{E\} &
+    T=\{+,-,\ast,/,(,),i,n\}\\
+   \multicolumn{3}{c}{
+    P=\left\{
+       \begin{array}{llll}
+	E\rightarrow E+E, & E\rightarrow E-E, & E\rightarrow
+	 E\ast E, & E\rightarrow E/E,\\
+	E\rightarrow (E), & E\rightarrow i, & E\rightarrow n & \\
+       \end{array}
+      \right\}
+    }
+  \end{array}
+ \]
+ \begin{center}
+  \includegraphics[scale=0.75]{figs/operationOrder.eps}
+ \end{center}
+ $op_1\ll op_2$：\redtext{$op_2$を$op_1$よりも先に還元する}\\
+ \greentext{一番優先順位の高い演算子から還元する}
+\end{frame}
+
+\begin{frame}[fragile]
+ \frametitle{LL(1)とLALR(1)}
+
+LL(1)ではあるがLALR(1)でない文法
+\[\left\{
+ \begin{array}{clcl}
+  1: & S\rightarrow \verb|(|X & 5: & X\rightarrow F\verb|]| \\
+  2: & S\rightarrow E\verb|]| & 6: & E \rightarrow A\\
+  3: & S\rightarrow F\verb|)| & 7: & F\rightarrow A\\
+  4: & X\rightarrow E\verb|)| & 8: & A\rightarrow
+ \end{array}
+\right\}
+\]
+
+LALR(1)であるがLL(1)でない文法
+\[
+ \left\{
+ \begin{array}{clcl}
+  1: & S\rightarrow A\verb|a| & 4: & S\rightarrow \verb|b|B\verb|a|\\
+  2: & S\rightarrow \verb|b|A\verb|c| & 5: & A\rightarrow\verb|d|\\
+  3: & S\rightarrow B\verb|c| & 6: & B\rightarrow\verb|d|
+ \end{array}\right\}
+\]
+\end{frame}
+
+\begin{frame}
+ \frametitle{演算子順位構文表}
+ \begin{center}
+  \includegraphics[scale=0.75]{figs/operationOrder2.eps}
+ \end{center}
+ \vspace*{1zw}
+
+ ハンドラ：$\ll$と$\gg$で囲まれた部分
+
+ \greentext{還元して非終端記号に置き換える}
+\end{frame}
+
+\begin{frame}
+ \frametitle{例4.5}
+ \vspace*{-4cm}
+
+\only<1>{\input{figs/ex45/page0}}
+\only<2>{\input{figs/ex45/page2}}
+\only<3>{\input{figs/ex45/page3}}
+\only<4>{\input{figs/ex45/page4}}
+\only<5>{\input{figs/ex45/page5}}
+\only<6>{\input{figs/ex45/page6}}
+\end{frame}
+
+\begin{frame}
+ \frametitle{例}
+ \vspace*{-3.5cm}
+
+\only<1>{\input{figs/ex3/page0}}
+\only<2>{\input{figs/ex3/page1}}
+\only<3>{\input{figs/ex3/page2}}
+\only<4>{\input{figs/ex3/page3}}
+\only<5>{\input{figs/ex3/page4}}
+\only<6>{\input{figs/ex3/page5}}
+\only<7>{\input{figs/ex3/page6}}
+\only<8>{\input{figs/ex3/page7}}
+
+\end{frame}
+
+\end{document}

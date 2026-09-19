@@ -1,0 +1,128 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{pst-all}
+\begin{document}
+\begin{pspicture}(0,0)(15,12)
+ \rput(4,11){\rnode{I0}{\psframebox{
+ $\scriptsize I_0:\left\{\begin{array}{llll}
+  [E'\rightarrow \bullet E\#], & [E\rightarrow\bullet E+T], &
+  [E\rightarrow\bullet T], & [T\rightarrow\bullet T\ast F],\\\relax
+  [T\rightarrow\bullet F], & [F\rightarrow\bullet(E)], &
+  [F\rightarrow\bullet i]
+  \end{array}\right\}
+ $}}}
+ \rput(2,9.5){\rnode{I1}{\psframebox{
+ $\scriptsize I_1:\left\{\begin{array}{ll}
+       [E'\rightarrow E\bullet\#]& [E\rightarrow E\bullet +T]
+	     \end{array}
+ \right\}$
+ }}}
+ \rput(4,8){\rnode{I2}{\psframebox{
+ $\scriptsize I_2:\left\{\begin{array}{ll}
+       [E\rightarrow T\bullet] & [T\rightarrow T\bullet\ast F]
+	     \end{array}\right\}$
+ }}}
+ \rput(11,9.5){\rnode{I3}{\psframebox{
+ $\scriptsize I_3:\left\{\begin{array}{l}
+       [T\rightarrow F\bullet]
+	     \end{array}\right\}
+ $
+ }}}
+ \rput(10,6){\rnode{I4}{\psframebox{
+ $\scriptsize I_4:\left\{\begin{array}{llll}
+       [F\rightarrow(\bullet E)],&[E\rightarrow\bullet E+T],&
+	[E\rightarrow\bullet T],&[T\rightarrow\bullet T\ast F],\\\relax
+	[T\rightarrow\bullet F],&[F\rightarrow\bullet(E)],
+	&[F\rightarrow\bullet i]
+	     \end{array}
+ \right\}
+ $}}}
+ \rput(9.5,7.5){\rnode{I5}{\psframebox{
+ $\scriptsize I_5:\left\{\begin{array}{l}
+       [F\rightarrow i\bullet]
+	     \end{array}
+ \right\}
+ $
+ }}}
+ \rput(0,6){\rnode{I6}{\psframebox{
+ $\scriptsize I_6:\left\{\begin{array}{lll}
+       [E\rightarrow E+\bullet T],&[T\rightarrow\bullet T\ast F],&
+	[T\rightarrow\bullet F],\\\relax
+	[F\rightarrow\bullet (E)], &[F\rightarrow\bullet i]
+	     \end{array}
+ \right\}
+ $}}}
+ \rput(3,4.5){\rnode{I7}{\psframebox{
+ $\scriptsize I_7:\left\{\begin{array}{lll}
+   [T\rightarrow T\ast\bullet F], & [F\rightarrow\bullet(E)], &
+   [F\rightarrow\bullet i]
+			 \end{array}
+ \right\}
+ $
+ }}}
+ \rput(10,4.5){\rnode{I8}{\psframebox{
+ $\scriptsize I_8:\left\{\begin{array}{ll}
+   [F\rightarrow (E\bullet )], & [E\rightarrow E\bullet +T]
+			 \end{array}
+ \right\}
+ $
+ }}}
+ \rput(0,3){\rnode{I9}{\psframebox{
+ $\scriptsize I_9:\left\{\begin{array}{ll}
+   [E\rightarrow E+T\bullet], & [T\rightarrow T\bullet\ast F]
+			 \end{array}
+ \right\}
+ $
+ }}}
+ \rput(7,3){\rnode{I10}{\psframebox{
+ $\scriptsize I_{10}:\left\{\begin{array}{l}
+   [T\rightarrow T\ast F\bullet]
+			 \end{array}
+ \right\}
+ $
+ }}}
+ \rput(11,3){\rnode{I11}{\psframebox{
+ $\scriptsize I_{11}:\left\{\begin{array}{l}
+   [F\rightarrow (E)\bullet]
+			 \end{array}
+ \right\}
+ $
+ }}}
+ 
+ \psline{->}(2,10.5)(2,9.8)\rput(2.3,10.2){$E$}
+ \psline{->}(6,10.5)(6,8.3)\rput(6.3,9.4){$T$}
+ \psline{->}(7.5,10.5)(7.5,6.5)\rput(7.7,9.5){$($}
+ \psline{->}(8.4,10.5)(8.4,7.8)\rput(8.6,9.7){$i$}
+ \psline{->}(8.5,10.5)(10,9.8)\rput(9.6,10.3){$F$}
+ \psline{->}(0.5,9.2)(0.5,6.5)\rput(0.8,7.6){$+$}
+ \psline{->}(-1,5.5)(-1,3.3)\rput(-0.8,4.5){$T$}
+ \psline{->}(1,3.3)(1,4.2)\rput(1.2,3.8){$\ast$}
+ \psline{->}(4.5,7.7)(4.5,4.8)\rput(4.7,7.5){$\ast$}
+ \psline{->}(6,4.2)(6,3.3)\rput(6.2,3.8){$F$}
+ \pnode(7.5,4.8){P11}\pnode(4,5.2){P12}\pnode(2,5.5){P13}
+ \nccurve[angleA=160,angleB=0]{-}{P11}{P12}
+ \nccurve[angleA=180,angleB=340]{->}{P12}{P13}
+ \rput(7.7,5){$+$}
+ \ncline{->}{I6}{I4}\rput(4,6.2){$($}
+ \psline{->}(6,4.8)(6,5.5)\rput(5.8,5){$($}
+ \psline{->}(10,5.5)(10,4.8)\rput(10.2,5.3){$E$}
+ \psline{->}(11,4.2)(11,3.3)\rput(11.2,3.8){$)$}
+ \pnode(5.1,4.8){P21}\pnode(5.1,6.1){P22}\pnode(8.1,7.4){P23}
+ \ncline{-}{P21}{P22}\nccurve[angleA=90,angleB=200]{->}{P22}{P23}
+ \rput(5.3,5){$i$}
+ \pnode(3.3,6.45){P31}\pnode(8.1,7.6){P32}
+ \nccurve[angleA=20,angleB=190]{->}{P31}{P32}\rput(3.2,6.6){$i$}
+ \pnode(2,6.45){P41}\pnode(6.8,7.7){P42}\pnode(10,9.2){P43}
+ \nccurve[angleA=25,angleB=200]{-}{P41}{P42}\rput(2,6.6){$F$}
+ \nccurve[angleA=20,angleB=240]{->}{P42}{P43}
+ \pnode(12,6.45){P51}\pnode(12,7){P52}\pnode(13,7){P53}\pnode(13,6.45){P54}
+ \ncline{-}{P51}{P52}\nccurve[angleA=90,angleB=90]{-}{P52}{P53}\Aput{(}
+ \ncline{->}{P53}{P54}
+ \pnode(6,6.45){P61}\pnode(6,7.7){P62}
+ \ncline{->}{P61}{P62}\rput(6.2,6.6){$T$}
+ \pnode(11.5,6.45){P71}\pnode(11.5,9.2){P72}
+ \ncline{->}{P71}{P72}\rput(11.7,8.5){$F$}
+ \pnode(10,6.45){P81}\pnode(10,7.2){P82}
+ \ncline{->}{P81}{P82}\rput(10.2,6.7){$i$}
+\end{pspicture}
+\end{document}

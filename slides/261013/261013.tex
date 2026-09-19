@@ -1,0 +1,881 @@
+\documentclass[dvipdfmx,cjk]{beamer}
+%\documentclass[cjk]{beamer}
+\usepackage{bxdpx-beamer}% dvipdfmxなので必要
+\usepackage{pxjahyper}% 日本語で'しおり'したい
+%\documentclass[ckj]{beamer}
+%\usepackage{etex}
+%\usetheme{Warsaw}
+\usetheme{Malmoe}
+%\usetheme{AnnArbor}
+%\usetheme{Hannover}
+%\usetheme{Bergen}
+%\usetheme{Berlin}
+%\usetheme{Singapore}
+%\usetheme{Montpellier}
+%\usetheme{Pittsburgh}
+\usepackage{graphics}
+\usepackage{latexsym,amssymb}
+%\usepackage{epsbox}
+%\usepackage{multirow}
+\usepackage{fancybox}
+\usepackage{fancyvrb}
+%\usepackage{listings}
+\usepackage{tabularx}%\usepackage{pstricks,pst-node,pst-tree}
+%\usepackage{multimedia}
+%\usepackage{pstricks,pst-node,pst-tree}
+%\usepackage{pst-all}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{ascmac}
+\usepackage{ulem}
+%\usepackage{color,soul}
+%\include{prooftree}
+%\lstloadlanguages{pascal}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\renewcommand{\familydefault}{\sfdefault}
+
+\include{mymacros}
+
+%\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
+%\newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
+
+\newcommand{\lecturedate}{2026/10/13}
+
+\graphicspath{{figs261013/}}
+
+\cornersize{0.25}
+
+\setbeamertemplate{frametitle}[default][center]
+\setbeamertemplate{footline}{\hfill
+コンパイラ\quad\lecturedate
+\hfill\insertframenumber/\inserttotalframenumber\hspace*{1zw}}
+\newcounter{coffee}
+\setbeamercovered{transparent=10}
+\title{コンパイラ(4)}
+\date{\lecturedate}
+\begin{document}
+\frame{\titlepage}
+
+\section{上昇型構文解析}
+
+\subsection{LR(1)構文解析}
+
+\begin{frame}
+  \frametitle{LR(1)項}
+  \greentext{LR項を先読み文字で拡張}
+  {\small\begin{itembox}[l]{定義(LR項)}
+      \begin{itemize}
+        \item 生成規則 $A\rightarrow\beta_1\beta_2$ ($\beta_1\in(N\cup\Sigma)^\ast$,
+              $\beta_2\in(N\cup\Sigma)^\ast\cup(N\cup\Sigma)^\ast\#)$)
+              $\beta_1$と$\beta_2$の間に$\bullet$を挿入した
+              $A\rightarrow\beta_1\bullet\beta_2$項
+
+        \item
+              LR項と$a\in\Sigma\cup\{\#,\varepsilon\}$の組
+              $[A\rightarrow\beta_1\bullet\beta_2,a]$\\
+              ただし、$a=\varepsilon$となるのは、$A$が開始記号の場合のみ。
+      \end{itemize}
+    \end{itembox}
+
+    \vspace*{10pt}
+
+    \begin{itembox}[l]{正準LR(1)項}
+      \begin{itemize}
+        \item 最右導出 $S'\Rightarrow_{rm}^\ast\alpha A
+                w\Rightarrow_{rm}\alpha\beta_1\beta_2 w$が存在し、$a=First_1(w)$のと
+              き、$[A\rightarrow\beta_1\bullet\beta_2,a]$は、可延頭部
+              $\alpha\beta_1$に対する正準LR(1)項
+        \item
+              $I_1(\alpha\beta_1)$\ :\ $\alpha\beta_1$に対する正準LR(1)項の集合
+      \end{itemize}
+    \end{itembox}}
+
+  %  \includegraphics[width=.75\textwidth]{def4_21.eps}
+  %  \end{center}
+  % \greentext{正準LR(1)項も拡張可能}
+  % \begin{center}
+  %  \includegraphics[width=.75\textwidth]{def4_23.eps}
+  %  \end{center}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{正準LR(1)遷移系の構成}
+  \begin{trivlist}
+
+    \item $S'\Rightarrow^\ast_{rm}\alpha Aw\eof\Rightarrow_{rm}\alpha\beta
+      w\eof$ ($w\in\Sigma^\ast$)が存在し、$a=First_1(w)$\\[10pt]
+
+    \item $[A\rightarrow\beta_1\bullet\beta_2,a]$は、可延頭部$\alpha\beta_1$に対す
+    る正準LR(1)項\\[5pt]
+    \item $\alpha\beta_1$に対する正準LR(1)項の集合：$I_1(\alpha\beta_1)$
+
+    \item 正準LR(1)集成:$I_1(\alpha\beta_1)$の集合
+  \end{trivlist}
+
+  \only<1>{
+    \begin{itembox}[l]{\bf 定義4.18}
+      \[
+        \begin{array}{l}%
+          \mbox{$X\in{N\cup\Sigma}$とする。}                                \\\relax
+          [A\rightarrow\alpha_1\alpha_2\cdots\bullet X\cdots\alpha_n,a]
+          \stackrel{X}{\rightarrow}
+          [A\rightarrow\alpha_1\alpha_2\cdots X\bullet\cdots\alpha_n,a] \\
+          \mbox{$X\rightarrow\gamma\in P$のとき}
+          [A\rightarrow\beta_1\bullet
+            X\beta_2,a]\stackrel{\varepsilon}{\rightarrow}
+          [X\rightarrow\bullet\gamma,b]                                 \\
+          \mbox{ここで、$b\in First_1(\beta_2a)$}
+          \mbox{\small \redtext{先読み文字が変化することに注意}}
+        \end{array}
+      \]
+    \end{itembox}}
+  \only<2>{
+    \begin{itembox}[l]{\bf 定義4.19}
+      \[
+        \begin{array}{l}
+          Goto(I,\varepsilon)=\{\theta'|\exists\theta\in
+          I.\theta\stackrel{\varepsilon}{\rightarrow}^\ast\theta'\} \\
+          Goto(I,\alpha X)=Goto(\{\theta'|\exists\theta\in
+          Goto(I,\alpha).\theta\stackrel{X}{\rightarrow}\theta'\}   \\
+        \end{array}
+      \]
+    \end{itembox}
+  }
+
+  {\scriptsize
+    可延頭部$\alpha=X_1\cdots X_n$に対して、
+    $I(\alpha)=Goto(\{[S'\rightarrow\bullet S\#]\},\alpha)$
+  }
+
+  {\scriptsize \greentext{LR(0)の場合と同様にLR(1)集成の要素を状態として
+      正準LR(1)遷移系を作成$\rightarrow$決定化した状態集合に一致}
+  }
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{正準LR(1)遷移系の構成}
+  {\small
+    \begin{list}{{\rm\bf ステップ\arabic{coffee}}:}{\usecounter{coffee}}
+      \item $I_1=\mathsf{Goto}([S'\rightarrow\bullet S\texttt{\#},\varepsilon\,],\varepsilon)$とする．
+      \item $\Theta\leftarrow(\{I_1\},\varnothing)$;$T\leftarrow\{I_1\}$
+      \item\label{loopLR1} $T=\varnothing$ならば終了する．$\Theta_1$に正準LR(1)遷移系が得られる．
+      \item $I\in T$を選び，$T$から削除する．
+      \item すべての$M\in\mathsf{act}(I)$に対して，$I'=\{\theta'\,|\,\theta\in I,\theta
+              \xrightarrow{\varepsilon}^\ast\xrightarrow{M}\xrightarrow{\varepsilon}^\ast\theta'\}$
+            を構成する．
+            \begin{list}{}{}
+              \item $I'\notin\mathcal{S}_1$ならば，$T$に$I'$を
+                    $\mathcal{S}_1$に$I'$を追加し，$\mathcal{E}$に$I\xrightarrow{M}I'$を追加する．
+              \item $I'\in\mathcal{S}$ならば，$\mathcal{E}$に$I\xrightarrow{M}I'$を追加する．
+            \end{list}
+      \item ステップ\ref{loopLR1}へもどる．
+    \end{list}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{正準LR(1)遷移系$\rightarrow$PDT}
+  スタックトップ$I_{top}=I_n=\mathsf{Goto}(I_1,X_1\ldots X_n)$
+  \begin{trivlist}
+    \item [{\bf 還元(Reduce)}]
+    $[A\rightarrow\alpha\bullet,a]\in I_{top}$のとき
+
+    $\alpha'\alpha w\Rightarrow_{rm}\alpha'Aw$\\
+    $A\rightarrow\alpha$の規則番号$i$
+
+    $\alpha=X_{n-k+1}\ldots X_n$とする($\alpha$の長さが$k$)とき、ス
+    タックトップから\\
+    $X_{n-k+1}X_{n-k+1}\ldots X_n I_n$
+    を$AI_n'$でおきかえる．$I_n'=\mathsf{Goto}(I_{n-k},A)$
+    \[
+      \begin{array}{ll}
+         & (I_1\ldots X_{n-k}I_{n-k}
+        \underline{X_{n-k+1}\ldots  X_nI_n},{\color{red}a}x,\pi) \\
+        \vdash
+         & (I_1\ldots X_{n-k}I_{n-k}A
+        I'_n,{\color{red}a}x,\pi i)                              \\
+      \end{array}
+    \]
+
+    \greentext{LR(1)構文解析表が同様に構成できる。}
+
+    $\mathsf{Goto}(I_1,X_1\ldots X_{n-k})=I_{n-k}$とするとき、
+    $\mathsf{Action}(l_{n-k},{\color{red}a})=r_i$
+    $\mathsf{Goto}(l_{n-k},A)=I'$であれば$I'=\mathsf{Goto}(I_1,X_1\ldots X_{n-k}A)$
+  \end{trivlist}
+\end{frame}
+
+\begin{frame}
+  \frametitle{正準LR(1)遷移系$\rightarrow$PDT}
+  スタックトップ$I_{top}=I_n=\mathsf{Goto}(I_1,X_1\ldots X_n)$
+  \begin{trivlist}
+    \item [{\bf シフト(Shift)}]
+    $[A\rightarrow\beta\bullet a\gamma,b]\in I_{top}$のとき
+
+    \[
+      \begin{array}{ll}
+         & (I_1\ldots X_nI_n,ax,\pi)     \\
+        \vdash
+         & (I_1\ldots X_nI_naI'_n,x,\pi) \\
+      \end{array}
+    \]
+
+    $\mathsf{Goto}(I_1,X_1\ldots X_n)=I_n$ $\mathsf{Goto}(X_1\ldots X_na)=I_j$のとき、
+    $\mathsf{Action}(l_n,a)=s_j$
+    \item [{\bf 受理(Accept)}]
+    $[S'\rightarrow S\bullet\#,\varepsilon]\in I_{top}$ならば受理
+    \[
+      (I_1SI_2,\#,\pi)\vdash(acc,\#,\pi) \mbox{ここで}I_2=\mathsf{Goto}(I_1,S)
+    \]
+    \item [{\bf 誤り(Error)}]
+    上記いずれにもあてはまらないとき
+  \end{trivlist}
+\end{frame}
+
+\begin{frame}
+  \frametitle{LR(1)構文解析(例)}
+  \[
+    {\scriptsize
+        \left\{
+        \begin{array}{llll}
+          (0) & S'\rightarrow\mbox{論理式}\#                                     &
+          (1) & \mbox{論理式}\rightarrow\mbox{論理式}\ \mathtt{OR}\ \mbox{AND式}       \\
+          (2) & \mbox{論理式}\rightarrow\mbox{AND式}                              &
+          (3) & \mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT}   \\
+          (4) & \mbox{AND式}\rightarrow\mathtt{EQT}                              \\
+        \end{array}
+        \right\}}
+  \]
+
+
+  \begin{list}{}{}
+    \item LR(1)項の集合(赤は不要): \greentext{\small 左辺のFollowに入っていないため}
+
+          \only<1>{
+            \begin{center}
+              \includegraphics[angle=-90,scale=.4]{4_18LRterms-r1-crop.pdf}
+            \end{center}
+          }
+    \item 図4.12 LR(1)遷移系
+          \only<2>{
+            \begin{center}
+              \includegraphics[scale=.8]{fig_12-crop.pdf}
+            \end{center}
+          }
+    \item 表4.1 LR(1)構文解析表
+          \only<3>{
+            \begin{center}
+              \includegraphics[scale=.5]{table4_1-crop.pdf}
+            \end{center}
+          }
+    \item 図4.13 パーザの動作
+          \only<4>{
+            \begin{center}
+              \includegraphics[scale=.5]{fig4_13-crop.pdf}
+            \end{center}
+          }
+  \end{list}
+  % LR(1)構文解析でない例 4.30\\
+  % LR(1)構文解析表 表4.2(Shift/Reduce conflictがある)
+\end{frame}
+
+\begin{frame}
+  \frametitle{LR(1)項による還元の区別}
+
+  $I3:$\quad $[S\rightarrow i\bullet,\eof]$,
+  $[T\rightarrow i\bullet,\mathtt{+}]$,
+  $[T\rightarrow i\bullet,\mathtt{=}]$
+
+  \begin{list}{}{}
+    \item \greentext{先読みが\#のとき$S$に還元}
+    \item \greentext{先読みが$\mathtt{+}$または$\mathtt{=}$のとき$T$に還元}
+  \end{list}
+
+  \vspace*{10pt}
+
+  LR(1)集成、gotoの構成：LR(0)の場合の直接的な拡張
+
+  \vspace*{10pt}
+
+  SLR(1)の場合と同様に構文解析表を作成
+\end{frame}
+
+%  \begin{frame}
+%   \frametitle{LR(1)項$\varepsilon$閉包}
+%   \hspace*{-1zw}
+
+%   \begin{center}
+%   \includegraphics[width=\textwidth]{epscl.eps}
+%   \end{center}
+
+%  {\tiny
+%\[
+%\begin{array}{llllll}
+%cl_0=& \multicolumn{5}{l}{\{{\color{red}{[S'\rightarrow\bullet S\#,\varepsilon]}},[S\rightarrow\bullet E=E,\#],[E\rightarrow\bullet E+T,=/+],
+%[E\rightarrow\bullet T,=/+],[S\rightarrow\bullet i,\#],[T\rightarrow\bullet i,=/+]\}}\\
+%cl_1=& \multicolumn{5}{l}{\{{\color{red}{[S'\rightarrow S\#\bullet,\varepsilon]}}\}}\\
+%cl_2=& \multicolumn{5}{l}{\{{\color{red}{[S\rightarrow\bullet E=E,\#]}},[E\rightarrow\bullet E+T,=],[E\rightarrow\bullet T,=/+],[T\rightarrow\bullet i,=/+]\}}\\
+%cl_3=& \multicolumn{5}{l}{\{{\color{red}{[S\rightarrow E\bullet = E,\#]}}\}}\\
+%cl_4^1=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow \bullet E+T,\#]}},[E\rightarrow\bullet T,+],[T\rightarrow\bullet i,+]\}}\\
+%cl_4^2=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow \bullet E+T,+]}},[E\rightarrow\bullet T,+],[T\rightarrow\bullet i,+]\}}\\
+%cl_4^3=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow \bullet E+T,=]}},[E\rightarrow\bullet T,+],[T\rightarrow\bullet i,+]\}}\\
+%cl_5=& \multicolumn{5}{l}{\{{\color{red}{[S\rightarrow E=\bullet E,\#]}},[E\rightarrow\bullet E+T,\#/+],[E\rightarrow\bullet T,\#/+],[T\rightarrow\bullet i,\#/+]\}}\\
+%cl_6^1=& \{{\color{red}{[E\rightarrow E\bullet +T,\#]}}\} &
+%cl_6^2=& \{{\color{red}{[E\rightarrow E\bullet +T,+]}}\} &
+%cl_6^3=& \{{\color{red}{[E\rightarrow E\bullet +T,=]}}\}\\
+%cl_7=& \{{\color{red}{[S\rightarrow E=E\bullet,\#]}}\}\\
+%cl_8^1=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow E+\bullet T,\#]}},[T\rightarrow\bullet i,\#]\}\quad
+%cl_8^2= \{{\color{red}{[E\rightarrow E+\bullet T,+]}},[T\rightarrow\bullet i,+]\}}\\
+%cl_8^3=& \multicolumn{5}{l}{\{{\color{red}{[E\rightarrow E+\bullet T,=]}},[T\rightarrow\bullet i,=]\}}\\
+%cl_9=& \{{\color{red}{[S\rightarrow i\bullet,\#]}}\}\\
+%cl_{10}^1=& \{{\color{red}{[E\rightarrow \bullet T,\#]}},[T\rightarrow\bullet i,\#]\} &
+%cl_{10}^2=& \{{\color{red}{[E\rightarrow \bullet T,+]}},[T\rightarrow\bullet i,+]\} &
+%cl_{10}^3=& \{{\color{red}{[E\rightarrow \bullet T,=]}},\\
+%          & & & & &\quad [T\rightarrow\bullet i,=]\}\\
+%cl_{11}^1=& \{{\color{red}{[E\rightarrow E+T\bullet,\#]}}\} &
+%cl_{11}^2=& \{{\color{red}{[E\rightarrow E+T\bullet,+]}}\} &
+%cl_{11}^3=& \{{\color{red}{[E\rightarrow E+T\bullet,=]}}\}\\
+%cl_{12}^1=& \{{\color{red}{[E\rightarrow T\bullet,\#]}}\}&
+%cl_{12}^2=& \{{\color{red}{[E\rightarrow T\bullet,+]}}\}&
+%cl_{12}^3=& \{{\color{red}{[E\rightarrow T\bullet,=]}}\}\\
+%cl_{13}^1=& \{{\color{red}{[T\rightarrow i\bullet,\#]}}\}&
+%cl_{13}^2=& \{{\color{red}{[T\rightarrow i\bullet,+]}}\}&
+%cl_{13}^3=& \{{\color{red}{[T\rightarrow i\bullet,=]}}\}\\
+%\end{array}
+%\]}
+% \end{frame}
+
+\begin{frame}
+  \frametitle{LR(1)項と遷移関係}
+  \begin{center}
+    \includegraphics[height=.7\textheight]{G10LR1NFA-crop.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{正準LR(1)集成}
+  {\tiny
+    \[
+      \begin{array}{ccc}
+        \begin{array}{cl}
+          I_0: & [S'\rightarrow\bullet S\#,\varepsilon] \\
+               & [S\rightarrow\bullet E=E,\#]           \\
+               & [S\rightarrow\bullet i,\#]             \\
+               & [E\rightarrow\bullet E+T,=/+]          \\
+               & [E\rightarrow\bullet T,=/+]            \\
+               & [T\rightarrow\bullet i,=/+]            \\
+          I_1: & [S'\rightarrow S\bullet\#,\varepsilon] \\
+          I_2: & [S\rightarrow E\bullet=E,\#]           \\
+               & [E\rightarrow E\bullet+T,=/+]          \\
+          I_3: & [E\rightarrow T\bullet,=/+]            \\
+        \end{array} &
+        \begin{array}{cl}
+          I_4: & [S\rightarrow i\bullet,\#]     \\
+               & [T\rightarrow i\bullet,=/+]    \\
+          I_5: & [S\rightarrow E=\bullet E,\#]  \\
+               & [E\rightarrow\bullet T,\#/+]   \\
+               & [E\rightarrow\bullet i,\#/+]   \\
+          I_6: & [E\rightarrow E+\bullet T,=/+] \\
+               & [T\rightarrow \bullet i,=/+]   \\
+          I_7: & [S\rightarrow E=E\bullet,\#]   \\
+               & [E\rightarrow E\bullet+T,\#/+] \\
+        \end{array}         &
+        \begin{array}{cl}
+          I_8:    & [E\rightarrow E+T\bullet,=/+]   \\
+          I_9:    & [T\rightarrow i\bullet,=/+]     \\
+          I_{10}: & [E\rightarrow E+\bullet T,\#/+] \\
+                  & [T\rightarrow \bullet i,\#/+]   \\
+          I_{11}: & [E\rightarrow E+T\bullet,\#/+]  \\
+          I_{12}: & [T\rightarrow i\bullet,=/+]     \\
+          I_{13}: & [E\rightarrow T\bullet,\#/+]
+        \end{array}
+      \end{array}
+    \]}
+
+  \greentext{
+    $[N\rightarrow \alpha,a_1/a_2/\cdots/a_n]$\\
+    \qquad =$[N\rightarrow\alpha,a_1],[N\rightarrow\alpha,a_2]\cdots,[N\rightarrow\alpha,a_n]$}
+
+  \begin{trivlist}
+    \item $I_i$の構成：\\
+    $[A\rightarrow\alpha\bullet B\beta,a]\in I_i$
+    $b\in First_1(\beta a),B\rightarrow\gamma$に対して
+    $[B\rightarrow\gamma,b]$を$I_i$に追加
+    \item 正準LR(1)集成を作成し、LR(1)遷移系を生成
+  \end{trivlist}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G_{10}$のLR(1)遷移系}
+
+  \begin{center}
+    \includegraphics[height=.8\textheight]{LR1Automaton-crop.pdf}
+  \end{center}
+  %\greentext{goto関数$I(X_1\ldots X_n)$が構成可能}
+\end{frame}
+
+\begin{frame}
+  \frametitle{LR(1)構文解析表の作成}
+
+  \begin{tabular}{ll}
+    $a\in \Sigma$による遷移 & Shift動作  \\
+    $A\in N$による遷移      & goto表    \\
+    マーカが最後のLR(1)項      & Reduce動作
+  \end{tabular}
+
+  \vspace*{.5cm}
+
+  \redtext{$G_{=}$はLR(1)構文解析可能}
+
+  \vspace*{.5cm}
+
+  %  \begin{tabular}{c}
+  %   $[S\rightarrow i\bullet,\#]\in I_4$
+  %  \end{tabular}
+  \greentext{構文解析の過程を記録して違う状態とする}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G_{=}$のLR(1)構文解析表}
+  \begin{center}
+    \includegraphics[height=0.85\textheight]{LR1table-crop.pdf}
+  \end{center}
+  %   \[
+  %   \begin{array}{c|cccc|ccc}
+  %    &  i &  = &  + & \# & S & E & T\\\hline\hline
+  % 0  & s4 &    &    &    & 1 & 2 & 3\\\hline
+  % 1  &    &    &    &acc &   &   &  \\\hline
+  % 2  &    & s5 & s6 &    &   &   &  \\\hline
+  % 3  &    & r4 & r4 &    &   &   &  \\\hline
+  % 4  &    & r5 & r5 & r2 &   &   &  \\\hline
+  % 5  & s12&    &    &    &   & 7 & 13\\\hline
+  % 6  & s9 &    &    &    &   &   & 8\\\hline
+  % 7  &    &    & s10& r1 &   &   &  \\\hline
+  % 8  &    & r3 & r3 &    &   &   &  \\\hline
+  % 9  &    & r5 & r5 &    &   &   &  \\\hline
+  % 10 & s12&    &    &    &   &   & 11\\\hline
+  % 11 &    &    & r3 & r3 &   &   &  \\\hline
+  % 12 &    &    & r5 & r5 &   &   &  \\\hline
+  % 13 &    &    & r4 & r4 &   &   &  \\\hline
+  %   \end{array}
+  %   \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G_{=}$のLR(1)構文解析}
+
+  \[
+    P'_{=}=\left\{
+    \begin{array}{llllll}
+      (0) & S'\rightarrow S\# & (1) & S\rightarrow E=E & (2) &
+      S\rightarrow i                                           \\
+      (3) & E\rightarrow E+T  & (4) & E\rightarrow T   & (5) &
+      T\rightarrow i                                           \\
+    \end{array}
+    \right\}
+  \]
+  \[ i=i\# \]
+  {\tiny
+  \begin{tikzpicture}
+    \initpdtline{$I_0$}{$i=i\#$}{$\varepsilon$}{$action(0,i)=s4$}{1}{1}
+    \pdtline{$I_0iI_4$}{$=i\#$}{$\varepsilon$}{action(4,=)=r5,goto(0,T)=3}{2}{1}
+    \pdtline{$I_0TI_3$}{$=i\#$}{$5$}{$action(3,=)=r4,goto(0,E)=2$}{3}{1}
+    \pdtline{$I_0EI_2$}{$=i\#$}{$54$}{action(2,=)=s5}{4}{1}
+    \pdtline{$I_0EI_2=I_5$}{i\#}{$54$}{action(5,i)=s12}{5}{1}
+    \pdtline{$I_0EI_2=I_5iI_{12}$}{$\#$}{$54$}{action(12,\#)=r5,goto(5,T)=13}{6}{1}
+    \pdtline{$I_0EI_2=I_5TI_{13}$}{$\#$}{$545$}{action(13,\#)=r4,goto(5,E)=7}{7}{1}
+    \pdtline{$I_0EI_2=I_5EI_{7}$}{$\#$}{$5454$}{action(7,\#)=r1,goto(0,E)=1}{8}{1}
+    \pdtline{$I_0SI_1$}{$\#$}{$54541$}{action(1,\#)=acc}{9}{1}
+    \pdtline{acc}{$\varepsilon$}{$545410$}{}{10}{1}
+  \end{tikzpicture}
+  }
+  %   \begin{center}
+  %   \includegraphics[scale=0.6]{LR1parseEx.eps}
+  %   \end{center}
+  \begin{center}
+    \begin{tabular}{ccc}
+      \multicolumn{1}{m{5zw}}{
+        \scalebox{0.5}{
+          \begin{tikzpicture}
+            \node (R) at (1,3) {$S$};
+            \node (T1) at (0,2) {$E$};
+            \node at (1,0) {$=$};
+            \node (T2) at (2,2) {$E$};
+            \node (T3) at (0,1) {$T$};
+            \node (T4) at (0,0) {$i$};
+            \node (T5) at (2,1) {$T$};
+            \node (T6) at (2,0) {$i$};
+            \node[red] at ($(R)+(.2,.2)$) {1};
+
+            \path[-] (R) edge (T1)
+            (R) edge (T2)
+            (T1) edge [right,red] node {4} (T3)
+            (T3) edge [right,red] node {5} (T4)
+            (T2) edge [right,red] node {4} (T5)
+            (T5) edge [right,red] node {5} (T6);
+          \end{tikzpicture}
+      }} &
+      \multicolumn{1}{m{5zw}}{$\xrightarrow{postorder}$}
+         &
+      545410
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\subsection{LALR構文解析}
+
+\begin{frame}
+  \frametitle{LALR構文解析}
+
+  LR(1)の近似:状態数はSLR(1)と同じくらいにする\\[5pt]
+  \redtext{LR(0)項が同じのLR(1)項は同じ状態を表す}\\
+  $\Rightarrow$\redtext{同じ状態にまとめる}\\[5pt]
+
+  \vfill
+
+  $G_{10}$の場合：$I_3$と$I_{13}$、$I_6$と$I_{10}$、$I_8$と$I_{11}$、$I_{9}$と$I_{12}$を統合
+
+  \vfill
+
+  これでconflictが発生しなければLALR(1)構文解析可能
+
+  \vfill
+
+  yacc(bison), sableCCの構文解析法
+
+  LR遷移系はSLRと同等
+
+  \greentext{還元するときはLR(1)項の先読み情報を使う}=文脈に依存した還元情報
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G_{=}$のLALR(1)遷移系}
+
+  \begin{center}
+    \includegraphics[height=.8\textheight]{LALR1-TS-crop.pdf}
+  \end{center}
+
+  %  \begin{pspicture}(0,0)(10,6)
+  %   \rput(2,6){\ovalnode{I00}{$0$}}
+  %   \rput(7,6){\ovalnode{I01}{$1$}}
+  %   \rput(1,4.5){\ovalnode{I02}{$3,6$}}
+  %   \rput(4,4.5){\ovalnode{I48}{$12$}}
+  %   \rput(7,4.5){\ovalnode{I03}{$9,13$}}
+  %   \ncline{->}{I00}{I01}
+  %   \Aput{$S$}
+  %   \ncline{->}{I00}{I02}
+  %   \Aput{$E$}
+  %   \ncline{->}{I00}{I48}
+  %   \Aput{$T$}
+  %   \ncline{->}{I00}{I03}
+  %   \Aput{$i$}   
+  %   \rput(1,3){\ovalnode{I05}{$5$}}
+  %   \rput(4,3){\ovalnode{I612}{$8$}}
+  %   \rput(7,3.5){\ovalnode{I1013}{$11$}}
+  %   \rput(7,2.5){\ovalnode{I911}{$13$}}
+  %   \ncline{->}{I02}{I05}
+  %   \Aput{$=$}
+  %   \ncline{->}{I02}{I612}
+  %   \Aput{$+$}
+  %   \ncline{->}{I612}{I1013}
+  %   \Aput{$T$}
+  %   \ncline{->}{I612}{I911}
+  %   \Aput{$i$}
+  %   \ncline{->}{I05}{I48}
+  %   \Aput{$T$}
+  %   \rput(1,1.5){\ovalnode{I07}{$6,6,7$}}
+  %   \ncline{->}{I05}{I07}
+  %   \Aput{$E$}
+  %   \ncline{->}{I07}{I612}
+  %   \Aput{$+$}
+  %   \nccurve[angleA=-30,angleB=200]{->}{I05}{I911}
+  %   \Aput{$i$}
+  %  \end{pspicture}
+  %
+  %  \greentext{LR(1)オートマトンの上付き文字を無視}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G_{=}$のLALR(1)構文解析表}
+
+  \begin{center}
+    \includegraphics[height=.6\textheight]{LALR1tab-crop.pdf}
+  \end{center}
+  \redtext{$G_{=}$はLALR(1)構文解析可能である。}
+\end{frame}
+
+\begin{frame}{構文のクラスわけ}
+  \begin{center}
+    \includegraphics[scale=.8]{classes.pdf}
+  \end{center}
+  (``Tiger book''より)
+\end{frame}
+
+\subsection{演算子順位法}
+
+
+
+\begin{frame}[fragile]
+  \frametitle{LL(1)とLALR(1)}
+
+  LL(1)ではあるがLALR(1)でない文法
+  \[\left\{
+    \begin{array}{clcl}
+      1: & S\rightarrow \verb|(|X & 5: & X\rightarrow F\verb|]| \\
+      2: & S\rightarrow E\verb|]| & 6: & E \rightarrow A        \\
+      3: & S\rightarrow F\verb|)| & 7: & F\rightarrow A         \\
+      4: & X\rightarrow E\verb|)| & 8: & A\rightarrow
+    \end{array}
+    \right\}
+  \]
+
+  LALR(1)であるがLL(1)でない文法
+  \[
+    \left\{
+    \begin{array}{clcl}
+      1: & S\rightarrow A\verb|a|         & 4: & S\rightarrow \verb|b|B\verb|a| \\
+      2: & S\rightarrow \verb|b|A\verb|c| & 5: & A\rightarrow\verb|d|           \\
+      3: & S\rightarrow B\verb|c|         & 6: & B\rightarrow\verb|d|
+    \end{array}\right\}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{演算子順位法}
+  \[
+    \begin{array}{cc}
+      \multicolumn{2}{l}{G_{Exp}=\langle\{E\},\{+,-,\ast,/,(,),i,n\},P,E\rangle} \\[10pt]
+      \multicolumn{1}{m{.5\textwidth}}{$\scriptsize P=\left\{
+          \begin{array}{ll}
+            E\rightarrow E+E, & E\rightarrow E-E, \\ E\rightarrow
+            E\ast E,          & E\rightarrow E/E, \\
+            E\rightarrow (E), & E\rightarrow i,   \\ E\rightarrow n & \\
+          \end{array}
+      \right\}$} &
+      \multicolumn{1}{m{.45\textwidth}}{
+        \includegraphics[scale=0.75]{operationOrder.pdf}
+      }\end{array}\]
+  $op_1\ll op_2$：\redtext{$op_2$を$op_1$よりも先に還元する}\\
+  \greentext{一番優先順位の高い演算子から還元する}
+\end{frame}
+
+\begin{frame}
+  \frametitle{演算子順位構文表}
+  \[
+    \begin{array}{c||c|c|c|c|c|c}
+             & i,n & +,- & \ast,/ & (   & )   & \#  \\\hline\hline
+      i,n    &     & \gg & \gg    &     & \gg & \gg \\\hline
+      +,-    & \ll & \gg & \ll    & \ll & \gg & \gg \\\hline
+      \ast,/ & \ll & \gg & \gg    & \ll & \gg & \gg \\\hline
+      (      & \ll & \ll & \ll    & \ll & ==  &     \\\hline
+      )      &     & \gg & \gg    &     & \gg & \gg \\\hline
+      \#     & \ll & \ll & \ll    & \ll & \ll & acc \\\hline
+    \end{array}
+  \]
+
+  \vspace*{1zw}
+
+  ハンドラ：$\ll$と$\gg$で囲まれた部分
+
+  \greentext{還元して非終端記号に置き換える}
+\end{frame}
+
+\newcommand\reduline{\bgroup\markoverwith{\textcolor{red}{\rule[-0.7ex]{2pt}{2pt}}}\ULon}
+
+\begin{frame}
+  \frametitle{例4.5}
+  \begin{center}
+    \begin{tikzpicture}
+      {\node (T1) at (0,0) {$i$};}
+      {\node (T2) at (0.5,0) {$+$};}
+      {\node (T3) at (1,0) {$i$};}
+      {\node (T4) at (1.5,0) {$\ast$};}
+      {\node (T5) at (2,0) {$i$};}
+
+      \only<2->{
+        \node (N1) at (0,1.5) {$E$};
+        \path[-] (T1) edge (N1);
+      }
+
+      \only<3->{
+        \node (N2) at (1,1.5) {$E$};
+        \path[-] (T3) edge (N2);
+      }
+
+      \only<4->{
+        \node (N3) at (2,1.5) {$E$};
+        \path[-] (T5) edge (N3);
+      }
+      \only<5->{
+        \node (N4) at (1.5,3) {$E$};
+        \path[-] (N2) edge (N4) (N3) edge (N4);
+      }
+      \only<6>{
+        \node (N5) at (1,4) {$E$};
+        \path[-] (N1) edge (N5) (N4) edge (N5);
+      }
+
+
+      \only<1>{
+        \node at (2,6) {\parbox{10em}{$\# i+i\ast i\#$}};
+        \node at (6,6) {\parbox{15em}{$\#\reduline{\ll i\gg} + \ll i\gg\ast\ll i\gg\#$}};
+        %\draw[red,line width=2pt] (3.6,5.75) -- (4.6,5.75);
+      }
+      \only<2>{
+        \node at (2,6) {\parbox{10em}{$\# E+i\ast i\#$}};
+        \node at (6,6) {\parbox{15em}{$\#\ll + \reduline{\ll i\gg}\ast\ll i\gg\#$}};
+      }
+      \only<3>{
+        \node at (2,6) {\parbox{10em}{$\# E+E\ast i\#$}};
+        \node at (6,6) {\parbox{15em}{$\#\ll + \ll\ast\reduline{\ll i\gg}\#$}};
+      }
+      \only<4>{
+        \node at (2,6) {\parbox{10em}{$\# E+E\ast E\#$}};
+        \node at (6,6) {\parbox{15em}{$\#\ll + \reduline{\ll\ast\gg}\#$}};
+      }
+      \only<5>{
+        \node at (2,6) {\parbox{10em}{$\# E+E\#$}};
+        \node at (6,6) {\parbox{15em}{$\#\reduline{\ll + \gg}\#$}};
+      }
+      \only<6>{
+        \node at (2,6) {\parbox{10em}{$\# E\#$}};
+        \node at (6,6) {\parbox{15em}{$\#\#$}};
+      }
+    \end{tikzpicture}
+  \end{center}
+  % \vspace*{-4cm}
+
+  % \only<1>{\input{ex45/page0}}
+  % \only<2>{\input{ex45/page2}}
+  % \only<3>{\input{ex45/page3}}
+  % \only<4>{\input{ex45/page4}}
+  % \only<5>{\input{ex45/page5}}
+  % \only<6>{\input{ex45/page6}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{例}
+  \begin{center}
+    \begin{tikzpicture}
+      \only<1>{
+        \node at (2,6) {\parbox{10em}{$\# (i+i)\ast i\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\ll (\reduline{\ll i\gg} + \ll i\gg)\gg\ast\ll i\gg\#$}};
+        %\draw[red,line width=2pt] (3.6,5.75) -- (4.6,5.75);
+      }
+      \only<2>{
+        \node at (2,6) {\parbox{10em}{$\# (E+i)\ast i\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\ll (\ll + \reduline{\ll i\gg})\gg\ast\ll i\gg\#$}};
+      }
+      \only<3>{
+        \node at (2,6) {\parbox{10em}{$\# (E+E)\ast i\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\ll (\reduline{\ll + \gg})\gg\ast\ll i\gg\#$}};
+      }
+      \only<4>{
+        \node at (2,6) {\parbox{10em}{$\# (E)\ast i\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\reduline{\ll (==)\gg}\ast\ll i\gg\#$}};
+      }
+      \only<5>{
+        \node at (2,6) {\parbox{10em}{$\# E\ast i\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\ll\ast\reduline{\ll i\gg}\#$}};
+      }
+      \only<6>{
+        \node at (2,6) {\parbox{10em}{$\# E\ast E\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\reduline{\ll\ast\gg}\#$}};
+      }
+      \only<7>{
+        \node at (2,6) {\parbox{10em}{$\# E\#$}};
+        \node at (8,6) {\parbox{20em}{$\#\#$}};
+      }
+
+      {\node (T1) at (0,0) {$($};}
+      {\node (T2) at (0.5,0) {$i$};}
+      {\node (T3) at (1,0) {$+$};}
+      {\node (T4) at (1.5,0) {$i$};}
+      {\node (T5) at (2,0) {$)$};}
+      {\node (T6) at (2.5,0) {$\ast$};}
+      {\node (T7) at (3,0) {$i$};}
+
+      \only<2->{
+        \node (N1) at (0.5,1) {$E$};
+        \path[-] (T2) edge (N1);
+      }
+      \only<3->{
+        \node (N2) at (1.5,1) {$E$};
+        \path[-] (T4) edge (N2);
+      }
+      \only<4->{
+        \node (N3) at (1,2) {$E$};
+        \path[-] (N1) edge (N3) (N2) edge (N3);
+      }
+      \only<5->{
+        \node (N4) at (1,3) {$E$};
+        \path[-] (T1) edge (0,1.5) (0,1.5) edge (N4)
+        (T5) edge (2,1.5) (2,1.5) edge (N4)
+        (N3) edge (N4);
+      }
+      \only<6->{
+        \node (N5) at (3,1) {$E$};
+        \path[-] (T7) edge (N5);
+      }
+      \only<7->{
+        \node (N6) at (2,4) {$E$};
+        \path[-] (N4) edge (N6) (N5) edge (N6);
+      }
+    \end{tikzpicture}
+  \end{center}
+
+  % \only<1>{\input{ex3/page0}}
+  % \only<2>{\input{ex3/page1}}
+  % \only<3>{\input{ex3/page2}}
+  % \only<4>{\input{ex3/page3}}
+  % \only<5>{\input{ex3/page4}}
+  % \only<6>{\input{ex3/page5}}
+  % \only<7>{\input{ex3/page6}}
+  % \only<8>{\input{ex3/page7}}
+
+\end{frame}
+
+\subsection{エラー解析}
+
+\begin{frame}
+  \frametitle{構文エラー表示と誤り回復}
+
+  \begin{list}{}{}
+    \item $w\notin L(G)$の場合は実行する必要はない．
+
+    \item 構文解析時に構文解析表に空欄に至った場合エラーが発生．
+
+    \item ユーザーに対してエラーの原因を提示して，修正を促す．
+
+          \begin{itemize}
+            \item 正しい構文解析が可能な修正を最小限行う．\\
+                  文法が限定される．修正が限定的でないと難しい．
+                  （スコアで提示するなどの方法はコストが大きいため，
+                  あまり用いられない)
+            \item パニックモードに入り，特定の分離記号(デリミター)
+                  まで読みとばす．\texttt{\}}や\texttt{;}など．
+          \end{itemize}
+
+    \item 回復することによって複数のエラーを指摘することが可能になる．２つめ
+          以降は回復に依存
+
+  \end{list}
+\end{frame}
+
+\subsection{YACCを用いた構文解析}
+
+\begin{frame}
+  \frametitle{yacc/lexを用いた構文解析}
+  \begin{itemize}
+    \item yacc(yet another compiler compiler) (またはbison)\\
+          CF文法から構文解析を実行するPDTを自動生成．
+  \end{itemize}
+  \begin{center}
+    \includegraphics[height=0.7\textheight]{yacc-config-crop.pdf}
+  \end{center}
+\end{frame}
+
+\end{document}

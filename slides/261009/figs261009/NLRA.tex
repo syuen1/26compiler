@@ -1,0 +1,67 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{pst-all}
+\begin{document}
+
+
+
+\begin{pspicture}(0,0)(12,12)
+ \rput(1,12){\rnode{R11}{$[E'\rightarrow\bullet E\#]$}}
+ \rput(4,12){\rnode{R12}{$[E'\rightarrow E\bullet\#]$}}
+ \rput(1,10){\rnode{R21}{$[E \rightarrow \bullet E\ +\ T]$}}
+ \rput(4,10){\rnode{R22}{$[E \rightarrow E\bullet +\ T]$}}
+ \rput(7,10){\rnode{R23}{$[E \rightarrow E\ +\bullet\ T]$}}
+ \rput(10,10){\rnode{R24}{$[E\rightarrow E\ +\ T\bullet]$}}
+ \rput(1,8){\rnode{R31}{$[E \rightarrow\bullet T]$}}
+ \rput(4,8){\rnode{R32}{$[E \rightarrow T\bullet]$}}
+ \rput(1,6){\rnode{R41}{$[T \rightarrow\bullet T\ \ast\ F]$}}
+ \rput(4,6){\rnode{R42}{$[T \rightarrow T\bullet \ast\ F]$}}
+ \rput(7,6){\rnode{R43}{$[T \rightarrow T\ \ast\bullet F]$}}
+ \rput(10,6){\rnode{R44}{$[T \rightarrow T\ \ast\ F'\bullet]$}}
+ \rput(1,4){\rnode{R51}{$[T \rightarrow\bullet F]$}}
+ \rput(4,4){\rnode{R52}{$[T \rightarrow F\bullet]$}}
+ \rput(1,2){\rnode{R61}{$[F \rightarrow\bullet (E)]$}}
+ \rput(4,2){\rnode{R62}{$[F \rightarrow (\bullet E)]$}}
+ \rput(7,2){\rnode{R63}{$[F \rightarrow (E\bullet )]$}}
+ \rput(10,2){\rnode{R64}{$[F \rightarrow (E)\bullet]$}}
+ \rput(1,0){\rnode{R71}{$[F \rightarrow\bullet i]$}}
+ \rput(4,0){\rnode{R72}{$[F \rightarrow i\bullet]$}}
+
+ \ncline{->}{R11}{R12}\Aput{$E$}
+ \ncline{->}{R21}{R22}\Aput{$E$}
+ \ncline{->}{R22}{R23}\Aput{$+$}
+ \ncline{->}{R23}{R24}\Aput{$T$}
+ \ncline{->}{R31}{R32}\Aput{$T$}
+ \ncline{->}{R41}{R42}\Aput{$T$}
+ \ncline{->}{R42}{R43}\Aput{$\ast$}
+ \ncline{->}{R43}{R44}\Aput{$F$}
+ \ncline{->}{R51}{R52}\Aput{$F$}
+ \ncline{->}{R61}{R62}\Aput{$($}
+ \ncline{->}{R62}{R63}\Aput{$E$}
+ \ncline{->}{R63}{R64}\Aput{$)$}
+ \ncline{->}{R71}{R72}\Aput{$i$}
+
+ \ncline{->}{R11}{R21}\Aput{$\varepsilon$}
+ \ncline{->}{R21}{R31}\Aput{$\varepsilon$}
+ \nccurve[angleA=180,angleB=180]{->}{R11}{R31}\Bput{$\varepsilon$}
+ \ncline{->}{R31}{R41}\Aput{$\varepsilon$}
+ \ncline{->}{R41}{R51}\Aput{$\varepsilon$}
+ \nccurve[angleA=180,angleB=180]{->}{R31}{R51}\Bput{$\varepsilon$}
+ \ncline{->}{R51}{R61}\Aput{$\varepsilon$}
+ \ncline{->}{R61}{R71}\Aput{$\varepsilon$}
+ \nccurve[angleA=180,angleB=180]{->}{R51}{R71}\Bput{$\varepsilon$}
+
+ \ncline{->}{R23}{R31}\Bput{$\varepsilon$}
+ \nccurve[angleA=270,angleB=10]{->}{R23}{R41}\Bput{$\varepsilon$}
+ \ncline{->}{R43}{R51}\Bput{$\varepsilon$}
+ \nccurve[angleA=270,angleB=10]{->}{R43}{R61}\Bput{$\varepsilon$}
+ 
+ \pnode(11.5,6){P0}
+ \pnode(12,6){P1}
+ \nccurve[angleA=45,angleB=270]{-}{R62}{P0}\Aput{$\varepsilon$}
+ \nccurve[angleA=90,angleB=330]{->}{P0}{R31}
+ \nccurve[angleA=30,angleB=270]{-}{R62}{P1}
+ \nccurve[angleA=90,angleB=300]{->}{P1}{R21}\Bput{$\varepsilon$}
+ 
+\end{pspicture}
+\end{document}

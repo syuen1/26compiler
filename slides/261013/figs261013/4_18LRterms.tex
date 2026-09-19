@@ -1,0 +1,68 @@
+\documentclass[landscape]{jarticle}
+\hoffset=-30mm
+\usepackage{color}
+\newcommand{\redtext}[1]{{\color{red}{#1}}}
+\pagestyle{empty}
+\usepackage{graphics}
+\usepackage{lscape}
+\begin{document}
+\begin{landscape}
+\begin{tabular}{cc}
+$
+ \begin{array}{l}
+  [S'\rightarrow\mbox{論理式}\bullet\#,\varepsilon]\\\relax
+  \redtext{[\mbox{論理式}\rightarrow\bullet\mbox{論理式}\ \mathtt{OR}\ \mbox{AND式},\mathtt{EQT}]},
+  [\mbox{論理式}\rightarrow\bullet\mbox{論理式}\ \mathtt{OR}\ \mbox{AND式},\mathtt{AND}],\\\relax
+  [\mbox{論理式}\rightarrow\bullet\mbox{論理式}\ \mathtt{OR}\ \mbox{AND式},\mathtt{OR}],
+  [\mbox{論理式}\rightarrow\bullet\mbox{論理式}\ \mathtt{OR}\ \mbox{AND式},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{論理式}\rightarrow\mbox{論理式}\bullet\mathtt{OR}\ \mbox{AND式},\mbox{\sf EQT}]},
+  [\mbox{論理式}\rightarrow\mbox{論理式}\bullet\mathtt{OR}\ \mbox{AND式},\mathtt{AND}],\\\relax
+  [\mbox{論理式}\rightarrow\mbox{論理式}\bullet\mathtt{OR}\ \mbox{AND式},\mathtt{OR}],
+  [\mbox{論理式}\rightarrow\mbox{論理式}\bullet\mathtt{OR}\ \mbox{AND式},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\bullet \mbox{AND式},\mbox{\sf EQT}]},
+  [\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\bullet \mbox{AND式},\mathtt{AND}],\\\relax
+  [\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\bullet \mbox{AND式},\mathtt{OR}],
+  [\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\bullet \mbox{AND式},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\mbox{AND式}\bullet,\mbox{\sf EQT}]},
+  [\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\ \mbox{AND式}\bullet,\mathtt{AND}],\\\relax
+  [\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\ \mbox{AND式}\bullet,\mathtt{OR}],
+  [\mbox{論理式}\rightarrow\mbox{論理式}\mathtt{OR}\ \mbox{AND式}\bullet,\mathtt{\#}],\\\relax
+  \redtext{[\mbox{論理式}\rightarrow\bullet\mbox{AND式},\mathtt{EQT}]},
+  [\mbox{論理式}\rightarrow\bullet\mbox{AND式},\mathtt{AND}],\\\relax
+  [\mbox{論理式}\rightarrow\bullet\mbox{AND式},\mathtt{OR}],
+  [\mbox{論理式}\rightarrow\bullet\mbox{AND式},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{論理式}\rightarrow\mbox{AND式}\bullet,\mathtt{EQT}]},
+  [\mbox{論理式}\rightarrow\mbox{AND式}\bullet,\mathtt{AND}],\\\relax
+  [\mbox{論理式}\rightarrow\mbox{AND式}\bullet,\mathtt{OR}],
+  [\mbox{論理式}\rightarrow\mbox{AND式}\bullet,\mathtt{\#}],\\
+  \end{array} $
+&
+$ \begin{array}{l}
+  \redtext{[\mbox{AND式}\rightarrow\bullet\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT},\mathtt{EQT}]},
+  [\mbox{AND式}\rightarrow\bullet\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT},\mathtt{AND}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\bullet\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT},\mathtt{OR}]},
+  [\mbox{AND式}\rightarrow\bullet\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{AND式}\bullet \mathtt{AND}\ \mathtt{EQT},\mathtt{EQT}]},
+  [\mbox{AND式}\rightarrow\mbox{AND式}\bullet \mathtt{AND}\ \mathtt{EQT},\mathtt{AND}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{AND式}\bullet \mathtt{AND}\ \mathtt{EQT},\mathtt{OR}]},
+  [\mbox{AND式}\rightarrow\mbox{AND式}\bullet \mathtt{AND}\ \mathtt{EQT},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\bullet \mathtt{EQT},\mathtt{EQT}]},
+  [\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\bullet \mathtt{EQT},\mathtt{AND}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\bullet \mathtt{EQT},\mathtt{OR}]},
+  [\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\bullet \mathtt{EQT},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT}\bullet,\mathtt{EQT}]},
+  [\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT}\bullet,\mathtt{AND}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT}\bullet,\mathtt{OR}]},
+  [\mbox{AND式}\rightarrow\mbox{AND式}\ \mathtt{AND}\ \mathtt{EQT}\bullet,\mathtt{\#}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\bullet\mbox{\sf EQT},\mathtt{EQT}]},
+  [\mbox{AND式}\rightarrow\bullet\mbox{\sf EQT},\mathtt{AND}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\bullet\mbox{\sf EQT},\mathtt{OR}]},
+  [\mbox{AND式}\rightarrow\bullet\mbox{\sf EQT},\mathtt{\#}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{\sf EQT}\bullet,\mathtt{EQT}]},
+  [\mbox{AND式}\rightarrow\mbox{\sf EQT}\bullet,\mathtt{AND}],\\\relax
+  \redtext{[\mbox{AND式}\rightarrow\mbox{\sf EQT}\bullet,\mathtt{OR}]},
+  [\mbox{AND式}\rightarrow\mbox{\sf EQT}\bullet,\mathtt{\#}]
+ \end{array} $
+\end{tabular}
+\end{landscape}
+\end{document}

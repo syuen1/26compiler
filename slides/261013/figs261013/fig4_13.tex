@@ -1,0 +1,24 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\newcommand{\eqtex}{\texttt{EQT}}
+\newcommand{\ANDex}{\mbox{AND式}}
+\newcommand{\LOGex}{\mbox{論理式}}
+\newcommand{\andtx}{\texttt{AND}}
+\newcommand{\ortx}{\texttt{OR}}
+\begin{document}
+\begin{tabular}{clrl|l}
+         & スタック & 入力 & 出力 & 動作\\
+         & $S_0$ & $\eqtex\ \ortx\ \eqtex\ \andtx \eqtex \#$ &   & \\
+$\vdash$ & $S_0\eqtex S_6$ & $\ortx\ \eqtex\ \andtx \eqtex \#$ &  & $s_6$\\
+$\vdash$ & $S_0\ANDex S_7$ & $\ortx\ \eqtex\ \andtx \eqtex \#$ & 4 & $r_4$+ Goto $7$\\
+$\vdash$ & $S_0\LOGex S_1$ & $\ortx\ \eqtex\ \andtx \eqtex \#$ & 42 & $r_2$+ Goto $1$\\
+$\vdash$ & $S_0\LOGex S_1\ortx S_2$ & $\eqtex\ \andtx \eqtex \#$ & 42 & $s_2$\\
+$\vdash$ & $S_0\LOGex S_1\ortx S_2\eqtex S_6$ & $\andtx \eqtex \#$ & 42 & $s_6$\\
+$\vdash$ & $S_0\LOGex S_1\ortx S_2\ANDex S_3$ & $\andtx \eqtex \#$ & 424 & $r_4$+ Goto $3$\\
+$\vdash$ & $S_0\LOGex S_1\ortx S_2\ANDex S_3\andtx S_4$ & $\eqtex \#$ & 424 & $s_4$\\
+$\vdash$ & $S_0\LOGex S_1\ortx S_2\ANDex S_3\andtx S_4\eqtex S_5$ & $\#$ & 424 & $s_5$\\
+$\vdash$ & $S_0\LOGex S_1\ortx S_2\ANDex S_3$ & $\#$ & 4243 & $r_3$+Goto $3$\\
+$\vdash$ & $S_0\LOGex S_1$ & $\#$ & 42431 & $r_1$+Goto $1$\\
+$\vdash$ & $acc$ & $\#$ & 42431 & {\sf Accept}\\
+\end{tabular}
+\end{document}

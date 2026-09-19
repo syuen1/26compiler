@@ -1,0 +1,22 @@
+\frametitle{LL(1)とLALR(1)}
+
+  LL(1)ではあるがLALR(1)でない文法
+  \[\left\{
+    \begin{array}{clcl}
+      1: & S\rightarrow \verb|(|X & 5: & X\rightarrow F\verb|]| \\
+      2: & S\rightarrow E\verb|]| & 6: & E \rightarrow A        \\
+      3: & S\rightarrow F\verb|)| & 7: & F\rightarrow A         \\
+      4: & X\rightarrow E\verb|)| & 8: & A\rightarrow
+    \end{array}
+    \right\}
+  \]
+
+  LALR(1)であるがLL(1)でない文法
+  \[
+    \left\{
+    \begin{array}{clcl}
+      1: & S\rightarrow A\verb|a|         & 4: & S\rightarrow \verb|b|B\verb|a| \\
+      2: & S\rightarrow \verb|b|A\verb|c| & 5: & A\rightarrow\verb|d|           \\
+      3: & S\rightarrow B\verb|c|         & 6: & B\rightarrow\verb|d|
+    \end{array}\right\}
+  \]
