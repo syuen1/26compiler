@@ -1,0 +1,36 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\newcommand{\syntacticObject}[3]{\node[draw,rectangle,rounded corners=5pt,thick,inner sep=5pt] (#2) at #3 {{\hbox to 10pt{}\bf {#1}\hbox to 10pt{}}}}
+\newcommand{\processObject}[3]{\node[draw,rectangle,thick,inner sep=5pt] (#2) at #3 {\hbox to 10pt{}{\bf #1}\hbox to 10pt{}}}
+\begin{document}
+\begin{tikzpicture}
+  \syntacticObject{ソースプログラム}{SRC}{(0,0)};
+  \processObject{字句解析系}{LEX}{(0,-1)};
+  \syntacticObject{トークン列}{TOKEN}{(0,-2)};
+  \processObject{構文解析系}{PAR}{(0,-3)};
+  \syntacticObject{解析木}{TREE}{(0,-4)};
+  \processObject{中間コード生成系}{ILGEN}{(0,-5)};
+  \syntacticObject{中間コード列}{ILSEQ}{(0,-6)};
+  \processObject{コード最適化}{OPT}{(0,-7)};
+  \processObject{コード生成系}{CODEGEN}{(0,-8)};
+  \syntacticObject{目的コード}{OBJCODE}{(0,-9)};
+  \path[->,thick] (SRC) edge (LEX);
+  \path[->,thick] (LEX) edge (TOKEN);
+  \path[->,thick] (TOKEN) edge (PAR);
+  \path[->,thick] (PAR) edge (TREE);
+  \path[->,thick] (TREE) edge (ILGEN);
+  \path[->,thick] (ILGEN) edge (ILSEQ);
+  \path[->,thick] (ILSEQ) edge (OPT);
+  \path[->,thick] (OPT) edge (CODEGEN);
+  \path[->,thick] (CODEGEN) edge (OBJCODE);
+  \path[<->,color=red] (2.5,0) edge [above,sloped] node {\color{red}{\bf フロントエンド}} (2.5,-4);
+  \path[<->,color=red] (2.5,-4) edge [above,sloped] node {\color{red}{\bf バックエンド}} (2.5,-9);
+  \draw[color=red] (SRC) -- (2.75,0) (TREE) -- (2.75,-4) (OBJCODE) -- (2.75,-9);
+
+  \syntacticObject{記号表}{symtab}{(-3.5,-4)};
+  \path[->,out=180,in=60,thick] (PAR) edge (symtab);
+  \path[->,out=300,in=180,thick] (symtab) edge (ILGEN);
+\end{tikzpicture}
+\end{document}

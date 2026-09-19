@@ -1,0 +1,27 @@
+\frametitle{多相型とオーバーロード}
+
+  \begin{itemize}
+  \item 多相型(polymorphism)：リストなど共通の操作を持つデータ型
+
+  Listはその要素の型にかかわらず同じ性質を持つ．\\
+  結合(append)，先頭要素(head)，先頭を除いたリスト(tail)，i番目の取り出し(i-th) etc.
+
+  \vspace*{10pt}
+
+  型変数を持つデータ型:\verb|List<X>|
+
+  型変数に具体的なデータ型を適用して，データ型を構成する．
+
+  整数リスト＝\verb|List<Int>|, 文字リスト＝\verb|List<Char>|
+
+  \item オーバーロード：異なる型に対して同じ操作を認める
+
+  加算：整数，実数などに対して同じ記号\texttt{+}を用いる
+
+  \texttt{x+y}は，$x$,$y$の型に応じて操作を切り替える．
+  \begin{trivlist}
+  \item $\texttt{x}$, $\texttt{y}$がともに整数の場合：整数の加算
+  \item $\texttt{x}$, $\texttt{y}$がともに実数の場合：実数の加算
+  \end{trivlist}
+  \greentext{言語によってはオーバーロードなし：MLにおける \texttt{+}と\texttt{+.}}
+\end{itemize}
