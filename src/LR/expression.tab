@@ -1,0 +1,66 @@
+# SLR(1) parsing table
+[PRODUCTIONS]
+PRODUCTION[1] = expression -> expression '+' term
+PRODUCTION[2] = expression -> term
+PRODUCTION[3] = term -> term '*' factor
+PRODUCTION[4] = term -> factor
+PRODUCTION[5] = factor -> '(' expression ')'
+PRODUCTION[6] = factor -> ID
+PRODUCTION[7] = factor -> NUM
+
+[ACTION]
+ACTION[0, ID] = s2
+ACTION[0, NUM] = s3
+ACTION[0, '('] = s1
+ACTION[1, ID] = s2
+ACTION[1, NUM] = s3
+ACTION[1, '('] = s1
+ACTION[2, '+'] = r6
+ACTION[2, '*'] = r6
+ACTION[2, ')'] = r6
+ACTION[2, #] = r6
+ACTION[3, '+'] = r7
+ACTION[3, '*'] = r7
+ACTION[3, ')'] = r7
+ACTION[3, #] = r7
+ACTION[4, '+'] = s8
+ACTION[4, #] = acc
+ACTION[5, '+'] = r4
+ACTION[5, '*'] = r4
+ACTION[5, ')'] = r4
+ACTION[5, #] = r4
+ACTION[6, '+'] = r2
+ACTION[6, '*'] = s9
+ACTION[6, ')'] = r2
+ACTION[6, #] = r2
+ACTION[7, '+'] = s8
+ACTION[7, ')'] = s10
+ACTION[8, ID] = s2
+ACTION[8, NUM] = s3
+ACTION[8, '('] = s1
+ACTION[9, ID] = s2
+ACTION[9, NUM] = s3
+ACTION[9, '('] = s1
+ACTION[10, '+'] = r5
+ACTION[10, '*'] = r5
+ACTION[10, ')'] = r5
+ACTION[10, #] = r5
+ACTION[11, '+'] = r1
+ACTION[11, '*'] = s9
+ACTION[11, ')'] = r1
+ACTION[11, #] = r1
+ACTION[12, '+'] = r3
+ACTION[12, '*'] = r3
+ACTION[12, ')'] = r3
+ACTION[12, #] = r3
+
+[GOTO]
+GOTO[0, expression] = 4
+GOTO[0, term] = 6
+GOTO[0, factor] = 5
+GOTO[1, expression] = 7
+GOTO[1, term] = 6
+GOTO[1, factor] = 5
+GOTO[8, term] = 11
+GOTO[8, factor] = 5
+GOTO[9, factor] = 12

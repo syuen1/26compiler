@@ -1,0 +1,38 @@
+# LALR(1) parsing table
+[PRODUCTIONS]
+PRODUCTION[0] = attr-start -> start #
+PRODUCTION[1] = start -> expression '=' expression
+PRODUCTION[2] = start -> ID
+PRODUCTION[3] = expression -> expression '+' term
+PRODUCTION[4] = expression -> term
+PRODUCTION[5] = term -> ID
+
+[ACTION]
+ACTION[0, ID] = s1
+ACTION[1, '='] = r5
+ACTION[1, '+'] = r5
+ACTION[1, #] = r2
+ACTION[2, '='] = s6
+ACTION[2, '+'] = s5
+ACTION[3, #] = acc
+ACTION[4, '='] = r4
+ACTION[4, '+'] = r4
+ACTION[4, #] = r4
+ACTION[5, ID] = s7
+ACTION[6, ID] = s7
+ACTION[7, '='] = r5
+ACTION[7, '+'] = r5
+ACTION[7, #] = r5
+ACTION[8, '='] = r3
+ACTION[8, '+'] = r3
+ACTION[8, #] = r3
+ACTION[9, '+'] = s5
+ACTION[9, #] = r1
+
+[GOTO]
+GOTO[0, start] = 3
+GOTO[0, expression] = 2
+GOTO[0, term] = 4
+GOTO[5, term] = 8
+GOTO[6, expression] = 9
+GOTO[6, term] = 4
