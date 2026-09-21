@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
+from slr import write_graph
+
 
 ENDMARK = "#"
 
@@ -35,6 +37,15 @@ class ParsingTable:
     productions: dict[int, Production]
     action: dict[tuple[int, str], list[str]]
     goto: dict[tuple[int, str], int]
+
+
+@dataclass(frozen=True)
+class TreeNode:
+    """構文解析木のノード。terminal は Graphviz の表示形にだけ用いる。"""
+    symbol: str
+    children: tuple["TreeNode", ...] = ()
+    terminal: bool = False
+    production_number: int | None = None
 
 
 def split_symbols(text: str) -> list[str]:
@@ -123,6 +134,74 @@ def format_input(symbols: list[str]) -> str:
     return " ".join(symbols) if symbols else "(空)"
 
 
+def reconstruct_tree(table: ParsingTable, tape: Sequence[int]) -> TreeNode:
+    """還元規則番号のポストオーダー列から構文解析木を再構成する。"""
+    nonterminals = {production.lhs for production in table.productions.values()}
+    stack: list[TreeNode] = []
+    for number in tape:
+        production = table.productions.get(number)
+        if production is None:
+            raise ParseError(f"出力テープの規則 {number} が表にありません")
+        children_reversed: list[TreeNode] = []
+        for symbol in reversed(production.rhs):
+            if symbol in nonterminals:
+                if not stack:
+                    raise ParseError(f"規則 {number} の非終端記号 {symbol} に対応する部分木がありません")
+                child = stack.pop()
+                if child.symbol != symbol:
+                    raise ParseError(f"規則 {number} は {symbol} を要求しますが、部分木 {child.symbol} がありました")
+                children_reversed.append(child)
+            else:
+                children_reversed.append(TreeNode(symbol, terminal=True))
+        if not production.rhs:
+            children_reversed.append(TreeNode("ε", terminal=True))
+        stack.append(TreeNode(production.lhs, tuple(reversed(children_reversed)), production_number=number))
+    if len(stack) != 1:
+        raise ParseError(f"出力テープから構文解析木を一意に復元できません（部分木が {len(stack)} 本残っています）")
+    return stack[0]
+
+
+def format_tree(root: TreeNode) -> str:
+    """Unicode の枝記号を使うテキスト形式の構文解析木を返す。"""
+    lines = [root.symbol]
+
+    def visit(node: TreeNode, prefix: str) -> None:
+        for index, child in enumerate(node.children):
+            last = index == len(node.children) - 1
+            lines.append(prefix + ("└── " if last else "├── ") + child.symbol)
+            visit(child, prefix + ("    " if last else "│   "))
+
+    visit(root, "")
+    return "\n".join(lines)
+
+
+def tree_dot(root: TreeNode) -> str:
+    """構文解析木を上から下へ配置する Graphviz DOT ソースを返す。"""
+    def escape(value: str) -> str:
+        return value.replace("\\", "\\\\").replace('"', '\\"')
+
+    lines = ["digraph ParseTree {", "  rankdir=TB;", "  node [fontname=Helvetica];"]
+    next_number = 0
+
+    def visit(node: TreeNode) -> int:
+        nonlocal next_number
+        number = next_number
+        next_number += 1
+        shape = "ellipse" if node.terminal else "box"
+        label = escape(node.symbol)
+        if not node.terminal and node.production_number is not None:
+            label += f"\\n[{node.production_number}]"
+        lines.append(f'  n{number} [label="{label}" shape={shape}];')
+        for child in node.children:
+            child_number = visit(child)
+            lines.append(f"  n{number} -> n{child_number};")
+        return number
+
+    visit(root)
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
 def run(table: ParsingTable, input_symbols: list[str], verbose: bool = False) -> list[int]:
     """決定的LR表に従い、出力テープ（還元した規則番号列）を返す。"""
     stack: list[int | str] = [0]
@@ -194,12 +273,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("table", type=Path, help="slr1.py --outtab で出力した .tab ファイル")
     parser.add_argument("input", type=Path, help="空白区切りの入力系列ファイル（末尾の # は省略可）")
     parser.add_argument("-v", "--verbose", action="store_true", help="各 shift/reduce/accept 後のスタック・残り入力・出力テープを表示")
+    parser.add_argument("--tree", action="store_true", help="還元規則番号列から再構成した構文解析木をテキストで表示")
+    parser.add_argument("--tree-graph", type=Path, metavar="出力ファイル", help="再構成した構文解析木を Graphviz で出力（拡張子で形式を指定）")
     args = parser.parse_args(argv)
     try:
-        tape = run(read_table(args.table), read_input(args.input), args.verbose)
+        if args.tree_graph and args.tree_graph.resolve() in {args.table.resolve(), args.input.resolve()}:
+            raise ParseError("--tree-graph の出力先には表・入力ファイルと異なるファイルを指定してください")
+        table = read_table(args.table)
+        tape = run(table, read_input(args.input), args.verbose)
         print(f"出力テープ: {format_tape(tape)}")
+        if args.tree or args.tree_graph:
+            root = reconstruct_tree(table, tape)
+            if args.tree:
+                print("\n構文解析木:")
+                print(format_tree(root))
+            if args.tree_graph:
+                write_graph(args.tree_graph, tree_dot(root))
         return 0
-    except (TableError, ParseError) as error:
+    except (TableError, ParseError, OSError, ValueError) as error:
         print(f"エラー: {error}", file=sys.stderr)
         return 2
 

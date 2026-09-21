@@ -10,6 +10,74 @@
 \begin{document}
 \chapter{中間コード生成}
 \section{概要}
+
+構文解析によって，プログラミング言語に対する入力プログラムの構文的な
+正しさをチェックするとともに，入力プログラムの意味を構文解析木として
+与える．構文解析木に沿って，プログラムの動作を実現する命令の系列を
+生成する．開発者が用いるソース言語の抽象度が高いほど，プログラムは
+構造的に整理されて理解が容易な形で記述される．これに対して計算機の
+実行命令は直線的な系列であり，計算機固有のアーキテクチャの影響を受ける．
+近代のコンパイラでは，命令コードは複数の段階を経て生成されるのが
+一般的である．まず，単純な制御構造とメモリアクセスを直線的に表現
+できる中間コードを機械的に生成し，その後，実際のアーキテクチャに
+沿ったよりハードウェアに近い命令に変換する．
+
+中間コードを一旦生成することで，アーキテクチャに依存しない，
+入力プログラムが持つ制御構造，メモリアクセスを抽出して，
+入力プログラムの性質に基づいて最適化することができる．
+さらに中間コードで用いる変数を数の制限の大きいレジスタに配分して，
+プログラムに対してメモリ階層の観点から効率的に実行する割り当て方法を
+実現することができる．
+
+\subsection{抽象構文と抽象構文木}
+
+抽象構文は，プログラムを定義する文脈自由文法が表現する文法のうち，プログラムの
+振舞いに関連する部分のみを抽象した文法によって定義される．例えば，四則演算に
+関する構文は，図\ref{fig:abstractArithSyntax}で十分である．この文脈自由
+文法は曖昧であるが，四則演算の演算子が $\ttpl$, $\ttsb$, $\ttmu$, $\ttdv$
+であり，それらが変数または数から再帰的に構成される式を２つ両側に持つ演算で
+あることを表している．一旦，式の構文解析木が構成されれば，その意味（値）を
+計算するには，抽象構文が表現する意味に沿って計算する命令系列を生成すればよい．
+
+\begin{figure}
+\[
+\begin{array}{rcl}
+  E & \rightarrow & E\ \ttpl\ E\\
+  E & \rightarrow & E\ \ttsb\ E\\
+  E & \rightarrow & E\ \ttmu\ E\\
+  E & \rightarrow & E\ \ttdv\ E\\
+  E & \rightarrow & \texttt{ID}\\
+  E & \rightarrow & \texttt{NUM}\\
+  S & \rightarrow & \texttt{ID}\ \tteq\ E
+\end{array}
+\]
+\caption{四則演算式と代入文の抽象構文}\label{fig:abstractArithSyntax}
+\end{figure}
+
+抽象構文木(abstract syntax tree)は，本質的に意味を表す抽象構文に沿って構成される
+木構造である．コード生成において，構文解析木に現れる非終端記号の情報は必要でない場合が多く，
+生成規則の持つ意味をノードに記述した方がコード生成には都合が良い．木構造がコードの意味を
+直接的に表現していると考えられることから，抽象構文木が中間コードであるとみなすことができる．
+例えば，代入式\texttt{w=x+y*z}の抽象構文木は図\ref{ASTexample}のようになる．
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}
+    \node[draw,circle,inner sep=2pt] (N0) at (0,0) {\tteq};
+    \node[draw,circle,inner sep=2pt] (N1) at (-0.5,-1) {\texttt{w}};
+    \node[draw,circle,inner sep=2pt] (N2) at (0.5,-1) {\ttpl};
+    \node[draw,circle,inner sep=2pt] (N3) at (0,-2) {\texttt{x}};
+    \node[draw,circle,inner sep=2pt] (N4) at (1,-2) {\texttt{*}};
+    \node[draw,circle,inner sep=2pt] (N5) at (0.5,-3) {\texttt{y}};
+    \node[draw,circle,inner sep=2pt] (N6) at (1.5,-3) {\texttt{z}};
+    \path[-] (N0) edge (N1) (N0) edge (N2) (N2) edge (N3) (N2) edge (N4) (N4) edge (N5) (N4) edge (N6);
+  \end{tikzpicture}
+  \caption{抽象構文木の例}\label{ASTexample}
+\end{figure}
+
+実際には構文木の構成において，\texttt{x},\texttt{y},\texttt{z}はそれぞれトークンとして$ID$
+として扱われるが，実際のコード生成においては，変数名を必要とする．字句解析においても
+トークンの他に実際の識別子の記号列が保存されている．(lexにおける\texttt{yytext}など)
+
 \subsection{逆ポーランド記法}
 
 逆ポーランド記法は引数の数が固定の演算を後置形式で記載する．計算に用いる値をメモリの値を
@@ -43,31 +111,9 @@ $\mathsf{push}$命令で参照することによって計算することがで�
 \caption{逆ポーランド記法の計算}\label{revPolExp}
 \end{figure}
 
-実際には構文木の構成において，\texttt{x},\texttt{y},\texttt{z}はそれぞれトークンとして$ID$
-として扱われるが，実際のコード生成においては，変数名を必要とする．字句解析においても
-トークンの他に実際の識別子の記号列が保存されている．(lexにおける\texttt{yytext}など)
 
-\subsection{抽象構文木}
 
-抽象構文木(abstract syntax tree)は，構文解析木をコード生成に必要な部分のみを残して変形した
-木構造である．コード生成において，構文解析木に現れる非終端記号の情報は必要でない場合が多く，
-生成規則の持つ意味をノードに記述した方がコード生成には都合が良い．木構造がコードの意味を
-直接的に表現していると考えられることから，抽象構文木が中間コードであるとみなすことができる．
-例えば，代入式\texttt{w=x+y*z}の抽象構文木は図\ref{ASTexample}のようになる．
-\begin{figure}[t]
-  \centering
-  \begin{tikzpicture}
-    \node[draw,circle,inner sep=2pt] (N0) at (0,0) {\tteq};
-    \node[draw,circle,inner sep=2pt] (N1) at (-0.5,-1) {\texttt{w}};
-    \node[draw,circle,inner sep=2pt] (N2) at (0.5,-1) {\ttpl};
-    \node[draw,circle,inner sep=2pt] (N3) at (0,-2) {\texttt{x}};
-    \node[draw,circle,inner sep=2pt] (N4) at (1,-2) {\texttt{*}};
-    \node[draw,circle,inner sep=2pt] (N5) at (0.5,-3) {\texttt{y}};
-    \node[draw,circle,inner sep=2pt] (N6) at (1.5,-3) {\texttt{z}};
-    \path[-] (N0) edge (N1) (N0) edge (N2) (N2) edge (N3) (N2) edge (N4) (N4) edge (N5) (N4) edge (N6);
-  \end{tikzpicture}
-  \caption{抽象構文木の例}\label{ASTexample}
-\end{figure}
+
 
 \subsection{3番地コード}
 

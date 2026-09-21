@@ -69,9 +69,13 @@ python3 slr1.py --outtab expression-slr-table.tab ../LL-parsing-table/examples/e
 python3 slr1.py --outtab expression.tab expression_tail.y
 python3 pdt.py expression.tab input.txt
 python3 pdt.py -v expression.tab input.txt
+python3 pdt.py --tree expression.tab input.txt
+python3 pdt.py --tree-graph expression-tree.svg expression.tab input.txt
 ```
 
 `-v` を指定すると、各 shift・reduce・accept 動作後の状態と記号が交互に積まれたスタック、残り入力、出力テープ、実行動作を表示します。拡大文法の規則0（`attr-start -> 開始記号 #`）による受理時は、スタックを空にし、`#` を消費して出力テープへ `0` を追加します。
+
+`--tree` は出力テープをポストオーダーとして構文解析木をテキスト表示します。`--tree-graph 出力ファイル` は同じ木を Graphviz で描画し、拡張子に応じて SVG、PNG、PDF、EPS、DOT などを出力します。非終端記号は四角形で、そのノードを生成した規則番号を併記します。終端記号と `ε` は楕円で表示します。
 
 `--eps` を指定すると、SLR(1) の ACTION/GOTO 構文解析表を EPS 形式でも出力します。
 
