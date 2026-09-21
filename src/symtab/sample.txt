@@ -1,0 +1,12 @@
+int g;
+
+func f(int a, real b) {
+    int x;
+    x = a + 1;
+    g = x;
+}
+
+func h() {
+    real y;
+    y = 2.5;
+}

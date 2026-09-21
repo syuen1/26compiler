@@ -1,0 +1,25 @@
+<program>        ::= <top-items>
+<top-items>      ::= <top-item> <top-items> | ε
+<top-item>       ::= <var-decl> | <function-def>
+<var-decl>       ::= <type> IDENT ";"
+<type>           ::= "int" | "real"
+<function-def>   ::= "func" IDENT "(" <parameters> ")" "{" <local-decls> <statements> "}"
+<parameters>     ::= <parameter> <parameter-tail> | ε
+<parameter-tail> ::= "," <parameter> <parameter-tail> | ε
+<parameter>      ::= <type> IDENT
+<local-decls>    ::= <var-decl> <local-decls> | ε
+<statements>     ::= <statement> <statements> | ε
+<statement>      ::= <assignment> | <call>
+<assignment>     ::= IDENT "=" EXPR ";"
+<call>           ::= IDENT "(" <arguments> ")" ";"
+<arguments>      ::= EXPR <argument-tail> | ε
+<argument-tail>  ::= "," EXPR <argument-tail> | ε
+
+# EXPR は空でない式全体を表す抽象トークン。
+# 実装は引数の式を括弧の深さ0のコンマまたは閉じ括弧まで読み取る。
+# 式の内容・型は検査しない。呼出し先の種類と引数個数は検査する。
+# 呼出し先は登録済みの関数に限る（自己再帰は可能）。
+
+# スコープは global / local のみ。関数終了時に local の項目を消去する。
+# 記号表はコンパイル時に局所文脈に入った直後（仮引数・局所変数の登録前）と、
+# 局所文脈を出る際の局所項目の消去直前に表示する。呼出し文では表示しない。

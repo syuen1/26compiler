@@ -1,0 +1,14 @@
+digraph SymbolTables {
+  graph [rankdir=TB];
+  node [shape=plain, fontname="sans-serif"];
+  table0 [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD COLSPAN="8" BGCOLOR="#dbeafe"><B>関数 h の局所文脈を出るとき（局所項目の消去直前）</B></TD></TR>
+      <TR><TD BGCOLOR="#f1f5f9"><B>名前</B></TD><TD BGCOLOR="#f1f5f9"><B>種類</B></TD><TD BGCOLOR="#f1f5f9"><B>値</B></TD><TD BGCOLOR="#f1f5f9"><B>スコープ</B></TD><TD BGCOLOR="#f1f5f9"><B>番地</B></TD><TD BGCOLOR="#f1f5f9"><B>型</B></TD><TD BGCOLOR="#f1f5f9"><B>引数個数</B></TD><TD BGCOLOR="#f1f5f9"><B>引数型</B></TD></TR>
+      <TR><TD>g</TD><TD>変数</TD><TD>未定</TD><TD>global</TD><TD>G+0</TD><TD>int</TD><TD>—</TD><TD>—</TD></TR>
+      <TR><TD>f</TD><TD>関数</TD><TD>—</TD><TD>global</TD><TD>L_f</TD><TD>void</TD><TD>2</TD><TD>(int, real)</TD></TR>
+      <TR><TD>h</TD><TD>関数</TD><TD>—</TD><TD>global</TD><TD>L_h</TD><TD>void</TD><TD>0</TD><TD>()</TD></TR>
+      <TR><TD>x</TD><TD>変数</TD><TD>未定</TD><TD>local</TD><TD>FP+0</TD><TD>int</TD><TD>—</TD><TD>—</TD></TR>
+    </TABLE>
+  >];
+}

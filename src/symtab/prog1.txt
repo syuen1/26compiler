@@ -1,0 +1,17 @@
+int a;
+int b;
+func f() {
+	int a;
+	a = 2;
+}
+func g() {
+	int a;
+	a = 3;
+}
+
+func main() {
+	int a;
+	a = 3;
+	f();
+	g();
+}

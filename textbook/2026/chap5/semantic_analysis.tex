@@ -161,6 +161,101 @@ C言語と同様に\texttt{main}から実行されるとすると，9行目は�
 高速にアクセス可能であるが，追加・削除における木構造の操作に時間がかかる．
 この目的のため，次に述べるハッシュによるインデックス付けの手法がよく用いられる．
 
+例えば以下のようなC言語風のプログラミング言語において，各関数が呼び出された直後と
+各関数の環境を出る直前の記号表の様子を示す．番地については，関数については
+コンパイルされた命令の最初の位置，帯域変数では，プロセス内で割り当てられた帯域変数領域
+の先頭からの相対位置($G+n$)，局所変数，仮引数については，スタックフレームにおける局所変数領域の
+先頭からの相対位置($FP+n$)が記入されている．
+
+% \begin{Verbatim}
+% <program>        ::= <top-items>
+% <top-items>      ::= <top-item> <top-items> | ε
+% <top-item>       ::= <var-decl> | <function-def>
+% <var-decl>       ::= <type> IDENT ";"
+% <type>           ::= "int" | "real"
+% <function-def>   ::= "func" IDENT "(" <parameters> ")"
+%                         "{" <local-decls> <statements> "}"
+% <parameters>     ::= <parameter> <parameter-tail> | ε
+% <parameter-tail> ::= "," <parameter> <parameter-tail> | ε
+% <parameter>      ::= <type> IDENT
+% <local-decls>    ::= <var-decl> <local-decls> | ε
+% <statements>     ::= <statement> <statements> | ε
+% <statement>      ::= <assignment> | <call>
+% <assignment>     ::= IDENT "=" EXPR ";"
+% <call>           ::= IDENT "(" <arguments> ")" ";"
+% <arguments>      ::= EXPR <argument-tail> | ε
+% <argument-tail>  ::= "," EXPR <argument-tail> | ε
+% \end{Verbatim}
+
+\begin{figure}[H]
+\begin{tabular}{cc}
+\begin{minipage}{.4\linewidth}
+\begin{Verbatim}[frame=single]
+int g;
+
+func f(int a, real b) {
+    int x;
+    x = a + 1;
+    g = x;
+}
+
+func h() {
+    int x;
+    g = 0;
+}
+
+func main() {
+    int x;
+    x = 3;
+    f(x + 1, (2.5 + 3.5) * 2);
+    h();
+}
+\end{Verbatim}
+\end{minipage}
+&
+\begin{tabular}{c}
+\begin{minipage}{.5\linewidth}
+\begin{figure}[H]
+    \centering
+\includegraphics[scale=0.5]{figures/envarg1.pdf}
+\end{figure}
+\end{minipage}
+\\
+\begin{minipage}{.5\linewidth}
+\begin{figure}[H]
+    \centering
+\includegraphics[scale=0.4]{figures/envarg2.pdf}
+\end{figure}
+\end{minipage}\\
+\begin{minipage}{.5\linewidth}
+\begin{figure}[H]
+    \centering
+\includegraphics[scale=0.4]{figures/envarg3.pdf}
+\end{figure}
+\end{minipage}
+\end{tabular}\\[5.3cm]
+
+\begin{minipage}{.5\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{figures/envarg4.pdf}
+\end{minipage}
+
+&
+
+\begin{minipage}{.5\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{figures/envarg5.pdf}
+\end{minipage}\\[2cm]
+
+\multicolumn{2}{c}{
+\begin{minipage}{.5\linewidth}
+    \centering
+    \includegraphics[scale=0.5]{figures/envarg6.pdf}
+\end{minipage}}
+\end{tabular}
+\caption{記号表の例}\label{fig:symboltable}
+\end{figure}
+
 \subsubsection{ハッシュ}
 
 ハッシュは線形に並べたデータをインデックス（目次）ごとに並べるようにして，
@@ -335,8 +430,12 @@ $\texttt{x:=1},\texttt{x+y}$，$\texttt{x+1}$，$\texttt{m[x]}$
 
 \subsection{多相型と型のオーバーロード}
 
+原則的には構文的に対応する場所には同じ型がなければならない．
 直観的な値に対する型の概念は，その値に対してどういった操作を適用できるかということで
-決定される．例えば，整数に対しては，四則演算を適用できる値の集まりであると特徴づけ
+決定される．したがって，型が厳密に一致していなくても互換性のある操作であれば認める方が
+プログラムとしては記述しやすい．型の一致については，多層型やオーバーロードという方法で
+矛盾することなく型の概念が適用できる．
+例えば，整数に対しては，四則演算を適用できる値の集まりであると特徴づけ
 られる．これに対して，文字列については，文字を表す記号列に対して，連接や接頭語，
 接尾語などを取り出す操作をもつ値であり，整数型とは異なる．
 

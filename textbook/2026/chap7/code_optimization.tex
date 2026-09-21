@@ -9,6 +9,50 @@
 \begin{document}
 \chapter{コード最適化}
 \section{基本ブロックとフローグラフ}
+
+3番地コードレベルの抽象度を持つ言語の命令の系列に対して，以下の条件を満たす系列を基本ブロックという．
+
+実行制御がその系列の先頭から最後まですs味，条件付きジャンプおよび無条件ジャンプは最後の場所でのみ出現し，他の命令からのジャンプ先は必ず系列の先頭しかない．
+
+基本ブロックでは，すべての命令の前提としてそれより前にある命令が必ず実行されている．
+３番地コードから構成される基本ブロック内では，参照される変数について，それより前の
+ブロック内で定義されていれば，最後に定義されたところの値を持つことがわかる．そうでなければ，
+先頭にジャンプしているブロック内の値が引き継がれる．
+
+基本ブロックを頂点として，制御のフローを有向グラフで表した構造をフローグラフ（あるいは，
+コントロールフローグラフ，CFG）と呼ぶ．
+
+\begin{tabular}{cc}
+\begin{minipage}{.3\linewidth}
+\begin{Verbatim}[frame=single]
+    t=1
+    n=10
+L1: t=t*n
+    n=n-1
+    b=(n>1)
+    if b goto L1
+    f=t
+\end{Verbatim}
+\end{minipage}
+&
+\begin{minipage}{.5\linewidth}
+    \begin{tikzpicture}
+    \node (B1) at (0,0) {$\begin{array}{c}
+        \texttt{t=1}\\
+        \texttt{n=10}
+    \end{array}$};
+    \draw ($(B1)+(-0.75,0.75)$) rectangle +(1.5,-1.5);
+    \node (B2) at ($(B1)+(0,-3)$) {$\begin{array}{ll}
+        L1: & {\texttt{t=t*n}}\\
+            & {\texttt{n=n-1}}\\
+            & {\texttt{b=n>1}}\\
+            & {\texttt{if\ b\ goto\ }L1}\end{array}$};
+    \draw ($(B2)+(-2,1.25)$) rectangle +(4,-2.5);
+    \node (B3) at ($(B2)+(3,-4)$);
+\end{tikzpicture}
+\end{minipage}
+\end{tabular}
+
 \section{局所最適化}
 \section{大域最適化}
 \section{データフロー解析}

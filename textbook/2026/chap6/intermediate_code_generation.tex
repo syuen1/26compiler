@@ -112,7 +112,16 @@ $\mathsf{push}$命令で参照することによって計算することがで�
 \end{figure}
 
 
-
+\begin{figure}
+  \centering
+\begin{tabularx}{0.8\textwidth}{|l|>{\hsize=0.7\hsize}X|>{\hsize=1.3\hsize}X|}\hline
+ & 一般形 & 演算子$\theta$\\\hline
+ 代入文 & $C=A\theta B$\newline $B=\theta A$\newline B=A & \ttpl,\ttsb,\ttmu,\ttdv,\newline{\tt and},{\tt or},{\tt not}
+ \newline$\texttt{>}$,$\texttt{>=}$,$\texttt{=}$,$\texttt{!=}$,$\texttt{<=}$,$\texttt{<}$,$\texttt{-}$\\\hline
+ ジャンプ文 & {\tt if}\ A\ {\tt goto}\ L\newline{\tt if-not}\ A\ {\tt goto}\ L\newline{\tt goto}\ L & \\\hline
+\end{tabularx}
+\caption{３番地コード}\label{fig:threeAddressCode}
+\end{figure}
 
 
 \subsection{3番地コード}

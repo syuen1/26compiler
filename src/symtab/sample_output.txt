@@ -1,0 +1,40 @@
+【入力プログラム】
+int g;
+
+func f(int a, real b) {
+    int x;
+    x = a + 1;
+    g = x;
+}
+
+func h() {
+    real y;
+    y = 2.5;
+}
+
+
+【関数 f の局所文脈に入るとき（仮引数・局所変数の登録前）】
+名前 | 種類 | 値 | スコープ | 番地 | 型 | 引数個数 | 引数型
+g | 変数 | 未定 | global | G+0 | int | — | —
+f | 関数 | — | global | L_f | void | — | —
+
+【関数 f の局所文脈を出るとき（局所項目の消去直前）】
+名前 | 種類 | 値 | スコープ | 番地 | 型 | 引数個数 | 引数型
+g | 変数 | 未定 | global | G+0 | int | — | —
+f | 関数 | — | global | L_f | void | 2 | (int, real)
+a | 仮引数 | 呼出し時に決定 | local | FP+0 | int | — | —
+b | 仮引数 | 呼出し時に決定 | local | FP+8 | real | — | —
+x | 変数 | 未定 | local | FP+16 | int | — | —
+
+【関数 h の局所文脈に入るとき（仮引数・局所変数の登録前）】
+名前 | 種類 | 値 | スコープ | 番地 | 型 | 引数個数 | 引数型
+g | 変数 | 未定 | global | G+0 | int | — | —
+f | 関数 | — | global | L_f | void | 2 | (int, real)
+h | 関数 | — | global | L_h | void | — | —
+
+【関数 h の局所文脈を出るとき（局所項目の消去直前）】
+名前 | 種類 | 値 | スコープ | 番地 | 型 | 引数個数 | 引数型
+g | 変数 | 未定 | global | G+0 | int | — | —
+f | 関数 | — | global | L_f | void | 2 | (int, real)
+h | 関数 | — | global | L_h | void | 0 | ()
+y | 変数 | 未定 | local | FP+0 | real | — | —

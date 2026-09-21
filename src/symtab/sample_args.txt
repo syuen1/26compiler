@@ -1,0 +1,19 @@
+int g;
+
+func f(int a, real b) {
+    int x;
+    x = a + 1;
+    g = x;
+}
+
+func h() {
+    int x;
+    g = 0;
+}
+
+func main() {
+    int x;
+    x = 3;
+    f(x + 1, (2.5 + 3.5) * 2);
+    h();
+}
