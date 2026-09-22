@@ -598,12 +598,13 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
 
 他の非終端記号の構文グラフについても同様に３番地コードを生成することができる．
 
-\subsection{構文主導定義}
+\subsection{構文主導定義による意味定義}
 
-構文主導定義(Syntax-Directed Definition, SDD)は生成規則の構文要素に「属性」を割り当てることによって，
+構文主導定義(Syntax-Directed Translation, SDD)は生成規則の構文要素に「属性」を割り当てることによって，
 特定の意味を与えることができる．
 構文主導定義では，コード生成ルーチンを陽に与える代わりに，構文要素間に成立する等式を意味規則として
-与える．非終端記号$X$に対して$X.a$は，$X$に対する属性$a$を表す．
+与える．形式言語理論における属性文法(Attributed Grammar)に基づく．
+非終端記号$X$に対して$X.a$は，$X$に対する属性$a$を表す．
 例えば，生成規則 $E\rightarrow E^{(1)}\ttpl\mathsf{NUM}$に対して，
 各構文要素がもつ値属性($val$)に対する関係$E.val=E^{(1)}.val+\mathsf{NUM}.val$に
 よってこの生成規則が与える意味を定義する．属性は，数，型，表参照，文字列など，どういった種類の
@@ -684,7 +685,7 @@ $\mathsf{NUM}$は数のトークンであり，$\mathsf{NUM}.val$は，そのト
 \end{Exmp}
 
 \begin{Def}
-文脈自由文法$G=(N,\Sigma,P,S)$に対する属性文法は$(G,\mathcal{A},E)$として
+文脈自由文法$G=(N,\Sigma,P,S)$に対するSDDは$(G,\mathcal{A},E)$として
 与えられる．
 \begin{itemize}
 \item $\mathcal{A}$は属性の集合である．$X\in N\cup\Sigma$に対して，
@@ -792,9 +793,13 @@ $S(T)=\{val\}$, $I(T)=\varnothing$, $S(L)=\{val\}$, $I(L)=\{op\}$
 あるいは，相続属性の出現を限定する(L-Attribute Definition)ことによって巡回を避けるための
 十分条件が知られている．
 
-% \subsection{YACCによるコード生成}
+\subsection{コンパイラコンパイラによるコード生成}
 
-% \subsection{JAVACCによるコード生成}
+\subsubsection{JAVACCによるコード生成}
+
+\subsubsection{YACCによるコード生成}
+
+
 
 % \subsection{LLVM-IRによる3番地コードの実現}
 
