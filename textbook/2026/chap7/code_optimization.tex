@@ -8,13 +8,21 @@
 %\graphicspath{{figs241108/}}
 \begin{document}
 \chapter{コード最適化}
+
+本章では，中間コードのレベルで意味を保ちながらより高速なコードに変換する手法について述べる．
+ソースコードから構文的に生成された中間コードは不要な繰り返しや変数間のコピーが多く生成されるため，
+制御フローとデータフローを中間コードを解析して同じ効果をもつより効率的なコードに変換する．この
+過程を{\bf コード最適化(code optimization)}と呼ぶ．
+さらに，最近のコンパイラで用いられている　{\bf 静的単一代入形式(Static single assignment, SSA)}を用いた
+最適化手法を紹介する．SSAの特徴は，その名前の通り，変数に対する代入を一度に制限して上書きしない．
+このことによって，変数がより多く必要になる一方，変数の名前によってデータフローを追跡することができ，
+基本ブロックを越えた最適化がより明確に可能になる．
+
 \section{基本ブロックとフローグラフ}
 
-3番地コードレベルの抽象度を持つ言語の命令の系列に対して，以下の条件を満たす系列を基本ブロックという．
+3番地コードレベルの抽象度を持つ言語の命令の系列に対して，以下の条件を満たす系列を{\bf 基本ブロック}という．
 
-実行制御がその系列の先頭から最後まですs味，条件付きジャンプおよび無条件ジャンプは最後の場所でのみ出現し，他の命令からのジャンプ先は必ず系列の先頭しかない．
-
-
+実行制御がその系列の先頭から最後まで，条件付きジャンプおよび無条件ジャンプは最後の場所でのみ出現し，他の命令からのジャンプ先は必ず系列の先頭しかない．
 
 \begin{figure}[H]
 \centering
@@ -60,10 +68,188 @@ L1: t=t*n
 ブロック内で定義されていれば，最後に定義されたところの値を持つことがわかる．そうでなければ，
 先頭にジャンプしているブロック内の値が引き継がれる．
 
-基本ブロックを頂点として，制御のフローを有向グラフで表した構造をフローグラフ（あるいは，
-コントロールフローグラフ，CFG）と呼ぶ．基本ブロック中では，制御の合流や分岐が存在しないので，
+基本ブロックを頂点として，制御のフローを有向グラフで表した構造を{\bf フローグラフ（あるいは，
+コントロールフローグラフ，CFG）}と呼ぶ．基本ブロック中では，制御の合流や分岐が存在しないので，
 CFGはプログラムの振舞いを抽象的に表現していることになる．
+
 \section{局所最適化}
+
+局所最適化は，3番地コードの系列で構成される基本ブロックに対して同じ意味を持つ
+より短くて変数の少ない系列を求める．
+
+\subsection{局所最適化の例}
+
+\subsubsection{定数伝播(constant propagation)}
+定数畳み込み(constant folding)とも言う．実行によって値が変わらない変数は，
+プログラムとして値を埋め込んでメモリ上の値の参照を減らす．
+
+\begin{center}
+\begin{tabular}{lclp{6cm}}
+$\texttt{a=2*3.14}$ & $\rightarrow$ & $\texttt{a=6.28}$ & 定数計算をコンパイル時に行う．\\
+$\texttt{b=a/100}$ & $\rightarrow$ & $\texttt{b=0.0628}$ & $\texttt{b}$はコンパイル時に値が決定できる．
+\end{tabular}
+\end{center}
+
+変数の値を参照する場合には，メモリから値を読み出す必要があるが，定数にすると値自体を
+コードとして生成できるので，高速になる．
+
+\subsubsection{共通部分式削除}
+
+同じ部分式で同じ計算の繰り返しをまとめて，計算の繰り返しを防ぐ．
+
+\begin{center}
+\begin{tabular}{lcl}
+    $\texttt{x=a*b}$ & & $\texttt{x=a*b}$\\
+    $\texttt{y=x+c}$ & & $\texttt{y=x+c}$\\
+    $\texttt{d=a*b}$ & $\Rightarrow$ & $\texttt{d=x}$\\
+    $\texttt{e=d-c}$ & & $\texttt{e=d-c}$
+\end{tabular}
+\end{center}
+
+以下の系列では，同じ形の部分式$\texttt{b+c}$があるが，$\texttt{a}$
+と$\texttt{e}$に対する代入で値が更新されているので，$\texttt{e=a}$の
+ような消去はできない．
+
+\begin{center}
+\begin{tabular}{lcl}
+$\texttt{a=b+c}$ & & $\texttt{a=b+c}$\\
+$\texttt{b=b-d}$ & & $\texttt{b=b-c}$\\
+$\texttt{c=c+d}$ & & $\texttt{c=c+d}$\\
+$\texttt{e=b+c}$ & $\not\Rightarrow$ & $\texttt{e=a}$
+\end{tabular}
+\end{center}
+
+\subsubsection{コピー伝播}
+
+$\texttt{a=b}$のような変数のコピーがある場合，$a$と$b$は同じ値を保持しているので，$a$を代入する必要はない．
+
+\begin{center}
+\begin{tabular}{lcl}
+    $\texttt{a=b}$ & & $\texttt{a=b}$\\
+    $\texttt{c=a+d}$ & $\Rightarrow$ & $\texttt{c=b+d}$\\
+    $\texttt{e=e-a}$ & & $\texttt{e=e-b}$
+\end{tabular}
+\end{center}
+
+このブロックの後で，$\texttt{a}$が使われることがなければ，$\texttt{a=b}$は
+消去しても構わない．基本ブロックで用いられる変数については，データフロー解析など
+の手法を用いて求めることができる場合がある．不要コードの消去(Dead-code elimination)
+によってより高速にすることができる．
+
+\subsubsection{代数的性質の利用}
+
+\begin{center}
+\begin{tabular}{lcl}
+    $\texttt{a+0}$ & $\Rightarrow$ & $\texttt{0}$\\
+    $\texttt{b*1}$ & $\Rightarrow$ & $\texttt{b}$\\
+    $\texttt{1+(c+2)}$ & $\Rightarrow$ & $\texttt{3+c}$\\
+    $\texttt{d*(1+e/d)}$ & $\Rightarrow$ & $\texttt{d+e}$\\
+    $\texttt{x*2}$ & $\Rightarrow$ & $\texttt{x+x}$\\
+    $\texttt{x/5}$ & $\Rightarrow$ & $\texttt{x*0.2}$\\
+\end{tabular}
+\end{center}
+
+演算の単位元などによる簡単化，分配則による簡単化などによって式を短縮化する．
+さらに命令を低レベルのマシン語に変換するときに，除算よりも積算，積算よりも和算
+の方がサイクルが少ないので，より軽い命令に変更することで高速化が期待できる．
+
+局所最適化については，個々の最適化について大きな効果は期待できない．
+しかし，基本ブロックがループによって繰り返し実行されるとプログラム全体では
+大きな効果が期待できる．
+
+\subsection{基本ブロックのDAG表現}
+
+基本ブロックを有向非巡回グラフ(Directed Acyclic Graph, DAG)を用いて
+表すことによって，各３番地コードにおける参照関係を表現できる．参照関係を
+壊さない等価なグラフの変形によって最適化を行う．基本ブロックに対して，
+以下のアルゴリズムによってDAGを生成する．
+
+\begin{Alg}
+DAGの頂点が始点となる辺を持たない頂点を葉頂点と呼ぶ．葉頂点には，変数
+または定数のラベルをつける．葉以外の頂点には，演算$\theta$と，演算の
+結果が収納される変数のラベルのリストをつける．
+\begin{enumerate}
+\item 基本ブロックに入る前に定義された値を参照する変数名と定数値に対して，
+葉頂点を生成し，変数$x$に対して，$x_0$を頂点にラベルづけし，$[x]$を変数
+リストとする．定数$c$に対しては，$c$を頂点にラベル付けする．
+\item 基本ブロック内のすべての代入文について上から順に以下の操作を適用する．
+\begin{list}{}{}
+    \item [(a)]
+代入文$X=A\theta B$に対して，$A$,$B$が変数であるときは変数ラベルに持つ
+頂点を$v_A$, $v_B$とする．定数の場合は定数をラベルにもつ
+$v_A$, $v_B$を選ぶ． 
+\item [(b)] $X$を変数リストに含む頂点があれば，その変数リストから$X$を削除する．
+\item [(c)] $v_A$, $v_B$を子に持ち，$\theta$を演算ラベルとする
+ノード$v_\theta$がすでに存在するならば，$v_\theta$の変数リストに$X$を追加する．
+$v_\theta$が存在しないならば，$v_\theta$を新たに生成して，$v_A$, $v_B$を子ノードとする辺を追加し，$\theta$を$v_\theta$の演算ラベルとし，$[X]$を変数リストとする．
+\item [(d)] $X=A$の場合は，すでに存在する頂点の変数リストに$X$が含まれれば，消去した上で，$v_A$の変数リストに$X$を追加する．
+\end{list}
+\end{enumerate}
+\end{Alg}
+
+\begin{Exmp}\label{example:DAG}
+以下にアルゴリズムで生成されるDAGを示す．５行の基本ブロックにおいて，
+最初の３行までで，まず(a)に示すDAGが生成される．
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{tikzpicture}
+    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+    \node[draw,circle,label={180:$[\texttt{x},\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+    \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
+    \path[->] (X1) edge (A0) (X1) edge (B0);
+    \path[->] (Y1) edge (X1) (Y1) edge (C0); 
+    \end{tikzpicture}
+    & & 
+    \begin{minipage}{.2\linewidth}
+        \vspace*{-2cm}
+        \begin{Verbatim}
+        x=a*b
+        y=x+c
+        d=a*b
+        \end{Verbatim}
+    \end{minipage}\\
+    \multicolumn{3}{c}{(a) ３行目までで生成されるDAG}\\[5mm]
+    \begin{tikzpicture}
+    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+    \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+    \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
+    \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
+    \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
+    \path[->] (X1) edge (A0) (X1) edge (B0);
+    \path[->] (Y1) edge (X1) (Y1) edge (C0);
+    \path[->] (E1) edge (X1) (E1) edge (C0);
+        \path[->] (X2) edge (X1) (X2) edge (E1);
+    \end{tikzpicture}
+    & & 
+    \begin{minipage}{.2\linewidth}
+        \vspace*{-3cm}
+        \begin{Verbatim}
+        x=a*b
+        y=x+c
+        d=a*b
+        e=d-c
+        x=d+e
+        \end{Verbatim}
+    \end{minipage}\\
+    \multicolumn{3}{c}{(b) 5行目までで生成されるDAG} 
+\end{tabular}
+\end{center}
+４行目の命令でさらに$\texttt{e}$に対するノードが新たに生成され，
+５行目では$\texttt{x}$が更新されるため，既存の変数リストから
+$\texttt{x}$を消去して新しく一番上のノードに$\texttt{x}$を変数
+リストに追加している．
+\end{Exmp}
+
+例\ref{example:DAG}の(a)において，$[\texttt{x},\texttt{d}]$のように
+複数の変数が一つのノードにつけられる場合は，共通部分式が存在するということである．
+
+この基本ブロックの後で$\texttt{y}$が使われない場合は，$[\texttt{y}]$を
+変数リストにもつ頂点とその辺は消去しても意味は変わらない．
+
 \section{大域最適化}
 \section{データフロー解析}
 \section{静的単一代入形式と最適化}
