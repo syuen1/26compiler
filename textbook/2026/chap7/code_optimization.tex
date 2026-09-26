@@ -242,15 +242,79 @@ $v_\theta$が存在しないならば，$v_\theta$を新たに生成して，$v_
 ５行目では$\texttt{x}$が更新されるため，既存の変数リストから
 $\texttt{x}$を消去して新しく一番上のノードに$\texttt{x}$を変数
 リストに追加している．
-\end{Exmp}
 
 例\ref{example:DAG}の(a)において，$[\texttt{x},\texttt{d}]$のように
-複数の変数が一つのノードにつけられる場合は，共通部分式が存在するということである．
+複数の変数が一つのノードにつけられる場合は，共通部分式が存在するということであるので
+共有部分式の消去が適用できる．さらに，コピー伝播を適用すると(c)のようになる．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{tikzpicture}
+    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+    \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+    \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
+    \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
+    \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
+    \path[->] (X1) edge (A0) (X1) edge (B0);
+    \path[->] (Y1) edge (X1) (Y1) edge (C0);
+    \path[->] (E1) edge (X1) (E1) edge (C0);
+        \path[->] (X2) edge (X1) (X2) edge (E1);
+    \end{tikzpicture}
+    & &
+    \begin{minipage}{.2\linewidth}
+        \vspace*{-3cm}
+        \begin{Verbatim}
+        x=a*b
+        y=x+c
+        d=x
+        e=x-c
+        x=x+e
+        \end{Verbatim}
+    \end{minipage}\\
+    \multicolumn{3}{c}{(c) 共有部分式とコピー伝播の適用}   
+\end{tabular}
+\end{center}
 
 この基本ブロックの後で$\texttt{y}$が使われない場合は，$[\texttt{y}]$を
-変数リストにもつ頂点とその辺は消去しても意味は変わらない．
+変数リストにもつ頂点とその辺を消去しても意味は変わらない．これに対して，
+$\texttt{d}$が使われない場合は，$[\texttt{d}]$の頂点を消すことはできない．
+これは，$\texttt{x}$が$\texttt{d}$の頂点に依存しているためである．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{tikzpicture}
+    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+    \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+    \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
+    \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
+    \path[->] (X1) edge (A0) (X1) edge (B0);
+    \path[->] (E1) edge (X1) (E1) edge (C0);
+        \path[->] (X2) edge (X1) (X2) edge (E1);
+    \end{tikzpicture}
+    & &
+    \begin{minipage}{.2\linewidth}
+        \vspace*{-3cm}
+        \begin{Verbatim}
+        x=a*b
+        d=x
+        e=x-c
+        x=x+e
+        \end{Verbatim}
+    \end{minipage}\\
+    \multicolumn{3}{c}{(d) 不要コード消去の適用}   
+\end{tabular}
+\end{center}
+\end{Exmp}
 
 \section{大域最適化}
+
+複数の基本ブロックにわたる最適化を大域的最適化とよぶ．この最適化を行うために，
+フローグラフの構造にマッチする構造を見つける方法について示す．
+
 \section{データフロー解析}
 \section{静的単一代入形式と最適化}
 \end{document}
