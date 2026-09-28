@@ -322,9 +322,320 @@ $\texttt{d}$が使われない場合は，$[\texttt{d}]$の頂点を消すこと
 基本ブロックを局所最適化によって最適化することによって大きな効果が期待できることは
 述べた．これに加えて，ループ構造として最適化する手法について示す．
 
+ループ構造の最適化は，制御フローグラフに依存するため，ソースコードでも３番地コードでも
+ほぼ変わらない．以下では，C言語プログラムの一部で最適化の手法について示す．
 
+
+\subsubsection{ループ最適化}
+
+\paragraph{ループ不変コードの移動}
+
+ループ内で値が変化しない変数をループの外に移動し，計算に影響しない命令が何度も実行されずに
+同じ意味を表現するようにする．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+i=1;
+do {
+    c=a/b;x=i*c; .... i++;
+} while(i<n);
+    \end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+i=1;t=a/b;
+do {
+    c=t;x=i*c;...i++;
+} while(i<n);
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+$\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれも
+更新されないとき，$\texttt{c}$はループ実行で変化しないため，ループ外で値を一度代入する
+同じ計算となる．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+for(i=1;i<n;i++) {
+    c=a/b;x=i*c;...
+}
+    \end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+if(n>1) {
+    t=a/b;
+    for(i=1;i<n;i++) {
+        c=t;x=i*c;...
+    }
+}
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+一般的な{\tt for}ループでは，条件によってループの内容が実行されないこともあるため，
+不変コードはループが実行された場合だけ，実行されるように変換する必要がある．
+
+\paragraph{ループ内演算の強さ軽減}
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+for(i=1;i<n;i++)
+    a=a+b*i;
+    \end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+t=0;
+for(i=1;i<n;i++) {
+    t=t+b;a=a+t;
+}
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\paragraph{帰納変数の消去}
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+t=b;
+for(i=1;i<n;i++) {
+    a=a+t;t=t+b;
+}
+    \end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+m=n*b;
+for(t=b;t<m;t=t+b)
+    a=a+t;
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\paragraph{ループ融合}
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+for(i=1;i<n;i++)
+    a[i+1]=a[i]+i;
+for(i=1;i<n;i++)
+    b[i]=a[i]+i;
+    \end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+for(i=1;i<n;i++) {
+    a[i+1]=a[i]+i;
+    b[i]=a[i]+i;
+}
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\paragraph{ループ分解}
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+for(i=1;i<n;i++) {
+    a[i+1]=a[i]+i;
+    b[i]=a[i]+i;
+}
+\end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+for(i=1;i<n;i++)
+    a[i+1]=a[i]+i;
+for(i=1;i<n;i++)
+    b[i]=a[i]+i;
+    \end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\paragraph{ループ展開}
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+for(i=1;i<n;i++) {
+    a[i+1]=a[i]+i;
+    b[i]=a[i]+b[i-1];
+}
+\end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+for(i=1;i<n;i++) {
+    a[i]=a[i-1]+i;
+    b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
+    b[i+1]=a[i+1]+b[i];
+}
+    \end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\paragraph{ソフトウェアパイプライン}
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+for(i=1;i<1000;i++) {
+    a[i]=a[i-1]+1; // Ai
+    b[i]=a[i]+b[i-1]; // Bi
+    c[i]=b[i]+2; // Ci
+}
+\end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+    A1;
+    B1; A2;
+    for(i=3;i<1000;i++) {
+        Ci-2;Bi-1;Ai;
+    }
+    C998;B999;
+    C999;
+    \end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+\subsubsection{手続き呼び出し最適化}
+
+\paragraph{インライン展開}
+
+手続き呼び出しは，スタック上に局所環境を作成し，リターンの際にもスタック上の局所環境をクリアする
+必要がある．局所環境を作成するほどでもない単純な手続き呼び出しでは，スタック操作を行わなくても
+よい場合もあり，ループ構造内では大きな高速化の効果が期待できる．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+int square(int x) {
+    return x*x;
+}
+y = square(a);
+\end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.3\linewidth}
+    \begin{Verbatim}
+y = a * a;
+    \end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+
+c言語では，関数の前に{\tt inline}を付加することでスタックを用いずに呼び出しを
+行う．ただし，{\tt inline}をつけた場合は，実際にインライン展開するかどうかは
+コンパイラで判断する．必ず展開する場合は，{\verb|#define|}でマクロ定義すれば
+呼び出しと同様の形式でプログラムを記述できる．
+
+\paragraph{末尾再帰}
+
+再帰呼び出しは，呼び出し定義の中で自分を呼び出すことである．
+定義の中の呼び出しが定義の最後の命令であるとき，関数からリターンしたあと
+もとの環境の変数は参照されないので，環境を復元する必要がない．従って，
+インラインでない関数呼び出しを行う場合であっても，毎回，局所環境を作成する
+必要がなく，最初の１回目の呼び出しで作成した領域を上書きすればよい．
+変換としては，再帰呼び出しをgotoに置き換えることで高速化が可能である．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \begin{minipage}{.4\linewidth}
+\begin{Verbatim}
+int sum_tail(int n, int acc) {
+    if (n == 0) {
+        return acc;
+    }
+    return sum_tail(n-1,acc+n);
+}
+\end{Verbatim}
+    \end{minipage}
+    & $\Rightarrow$ &
+    \begin{minipage}{.4\linewidth}
+    \begin{Verbatim}
+int sum_tail(int n, int acc) {
+L:  if (n == 0) {
+        return acc;
+    }
+    acc+=n; n--;
+    goto L;
+}
+    \end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{center}
+gotoによるループ構造をgotoなしで記述すると以下のプログラムと等価である．
+
+\begin{center}
+\begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+int sum(int n,int acc) {
+    while(n!=0) {
+        acc+=n; n--;
+    }
+    return acc;
+}
+\end{Verbatim}
+\end{minipage}
+\end{center}
 
 \subsection{データフロー解析}
 
+\subsubsection{到達定義解析}
+
+\subsubsection{生存解析}
+
+\subsubsection{利用可能式解析}
+
 \section{静的単一代入形式と最適化}
+
+最近のコンパイラにおける最適化では，静的単一代入形式(Static single assignment, SSA)を用いる
+事が多い．SSA形式では中間コード列の中に各変数の定義（３番地コードの場合は代入の左辺）が一箇所しか
+現れないという制約を持つ．定義が１つしかないため，どこで定義された変数がどこで参照されるかが，
+プログラムとして明示される．プログラムを解析すれば，プログラムの構文情報からデータフローを
+解析することができる．
+
+\subsection{例}
+
+\subsection{$\phi$関数}
+
+\subsection{SSA形式への変換}
+
+\subsection{SSA上での最適化}
+
+\subsection{逆変換}
+
 \end{document}
