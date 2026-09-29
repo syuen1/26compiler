@@ -13,6 +13,7 @@
 % \newcounter{coffee}
 \include{../mypackage}
 \include{../mymacros}
+\graphicspath{{figures/}}
 \begin{document}
 \chapter{序論}
 \section{プログラミング言語と言語処理系}
@@ -69,9 +70,9 @@ BASIC, C, Java, Python などがよく用いられる．計算の手順を適切
 \begin{figure}[H]
   \begin{center}
     \begin{tabular}{ccc}
-      \includegraphics[width=0.45\textwidth]{figures/compiler-crop.pdf}
+      \includegraphics[width=0.45\textwidth]{compiler-crop.pdf}
                 & \qquad &
-      \includegraphics[width=0.45\textwidth]{figures/interpreter-crop.pdf} \\
+      \includegraphics[width=0.45\textwidth]{interpreter-crop.pdf} \\
       (a) コンパイラ &        & (b) インタプリタ
     \end{tabular}
   \end{center}
@@ -270,7 +271,7 @@ BNFでは右辺に$\ast$を含めた正規表現を許す．$\ast$が用いら�
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics{figures/compiler-il-crop.pdf}
+    \includegraphics{compiler-il-crop.pdf}
   \end{center}
 \end{figure}
 
@@ -568,6 +569,8 @@ $T$の部分木の集合$\{S_1,\cdots,S_n\}$の{\bf 交差グラフ(intersection
   }
   \caption{図\ref{fig:graph_and_tree}の部分構造，交差グラフの例}\label{fig:subgraphs}
 \end{figure}
+
+
 
 これらのグラフの概念は，主にレジスタ割り当ての際に用いる．
 \end{document}
