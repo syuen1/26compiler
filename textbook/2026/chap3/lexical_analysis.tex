@@ -2,6 +2,7 @@
 \include{../mypackage}
 \include{../mymacros}
 \setcounter{chapter}{2}
+\graphicspath{{figures/}}
 \begin{document}
 
 \chapter{字句解析}
@@ -153,7 +154,7 @@ $A_{kw}$, $A_{id}$, $A_{cnst}$, $A_{str}$. $A_{del}$とする．
 
 \begin{figure}[H]
   \centering
-  \includegraphics{figures/lex-analysis-crop.pdf}
+  \includegraphics{lex-analysis-crop.pdf}
   \caption{字句解析器の構成}
 \end{figure}
 
@@ -190,7 +191,7 @@ $s_1$が受理状態であった場合は識別子，$s_2$が受理状態であ�
 
 \begin{figure}[t]
   \centering
-  \includegraphics{figures/id-automata-crop.pdf}
+  \includegraphics{id-automata-crop.pdf}
   \caption{字句解析の正規表現とオートマトン}\label{lexautomata}
 \end{figure}
 

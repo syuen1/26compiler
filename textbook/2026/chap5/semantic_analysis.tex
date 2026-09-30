@@ -1,6 +1,7 @@
 \documentclass[a4j,dvipdfmx]{jbook}
 \include{../mypackage}
 \include{../mymacros}
+\graphicspath{{figures/}}
 \usepackage{here}
 
 \setcounter{chapter}{4}
@@ -11,27 +12,27 @@
 構文木のノードにはプログラムの意味に関わる情報が含まれている．例えば，
 \verb|x+y*x|という式の構文木は以下のようになる．
 \begin{center}
-\begin{tikzpicture}
-\node (root) at (0,0) {$E$};
-\node (N1) at (-1.5,-1) {$E$};
-\node (N11) at (-1.5,-2) {$T$};
-\node (N111) at (-1.5,-3) {$F$};
-\node[circle,draw] (T1) at (-1.5,-4) {\texttt{x}};N
-\node (N2) at (1.5,-1) {$T$};
-\node (N21) at (0.5,-2) {$T$};
-\node (N22) at (2.5,-2) {$F$};
-\node (N211) at (0.5,-3) {$F$};
-\node[circle,draw] (T2) at (-0.5,-4) {\texttt{+}};
-\node[circle,draw] (T3) at (0.5,-4) {\texttt{y}};
-\node[circle,draw] (T4) at (1.5,-4) {\texttt{*}};
-\node[circle,draw] (T5) at (2.5,-4) {\texttt{x}};
-\path[->] (root) edge (N1) (root) edge (N2)
+    \begin{tikzpicture}
+        \node (root) at (0,0) {$E$};
+        \node (N1) at (-1.5,-1) {$E$};
+        \node (N11) at (-1.5,-2) {$T$};
+        \node (N111) at (-1.5,-3) {$F$};
+        \node[circle,draw] (T1) at (-1.5,-4) {\texttt{x}};N
+        \node (N2) at (1.5,-1) {$T$};
+        \node (N21) at (0.5,-2) {$T$};
+        \node (N22) at (2.5,-2) {$F$};
+        \node (N211) at (0.5,-3) {$F$};
+        \node[circle,draw] (T2) at (-0.5,-4) {\texttt{+}};
+        \node[circle,draw] (T3) at (0.5,-4) {\texttt{y}};
+        \node[circle,draw] (T4) at (1.5,-4) {\texttt{*}};
+        \node[circle,draw] (T5) at (2.5,-4) {\texttt{x}};
+        \path[->] (root) edge (N1) (root) edge (N2)
         (N1) edge (N11) (N111) edge (T1)
         (N11) edge (N111) (root) edge (T2)
         (N2) edge (N21) (N2) edge (N22)
         (N21) edge (N211) (N211) edge (T3)
         (N2) edge (T4) (N22) edge (T5);
-\end{tikzpicture}
+    \end{tikzpicture}
 \end{center}
 
 ここで，終端記号は文法上では，トークンとして扱われていたが，実際には，変数，演算子など
@@ -58,27 +59,27 @@
 という規則である．
 
 \begin{figure}[H]
-\begin{center}
-    \begin{minipage}{0.4\linewidth}
-\begin{Verbatim}[frame=single,numbers=left,numberblanklines=false]
-int x;
-int y;
-int f(int y) {
-    x = 2;
-    return x+y;
-}
+    \begin{center}
+        \begin{minipage}{0.4\linewidth}
+            \begin{Verbatim}[frame=single,numbers=left,numberblanklines=false]
+                int x;
+                int y;
+                int f(int y) {
+                        x = 2;
+                        return x+y;
+                    }
 
-int main() {
-    int x;
-    x = 1;
-    y = 3;
-    x = f(x);
-    printf("%d,%d\n",x,y);
-}
-\end{Verbatim}
-\end{minipage}
-\end{center}
-\caption{局所変数と大域変数の例}\label{list:scoperule}
+                int main() {
+                        int x;
+                        x = 1;
+                        y = 3;
+                        x = f(x);
+                        printf("%d,%d\n",x,y);
+                    }
+            \end{Verbatim}
+        \end{minipage}
+    \end{center}
+    \caption{局所変数と大域変数の例}\label{list:scoperule}
 \end{figure}
 
 例えば上記のプログラムにおいて，3行目から6行目において$\texttt{y}$は引数からの
@@ -135,16 +136,16 @@ C言語と同様に\texttt{main}から実行されるとすると，9行目は�
 して実現される．
 
 \begin{center}
-\begin{tabularx}{.8\linewidth}{c|s|s|s|b|s|s|X|X|}\cline{2-9}
-& \multicolumn{1}{c|}{名前} & \multicolumn{1}{c|}{種類} & 
-\multicolumn{1}{c|}{値} & \multicolumn{1}{c|}{スコープ} & 
-\multicolumn{1}{c|}{番地} & \multicolumn{1}{c|}{型} & 
-\multicolumn{1}{c|}{引数個数} & \multicolumn{1}{c|}{引数型}\\\cline{2-9}
-\scriptsize{1} & \texttt{x} & var &     & 大域(G) &  0  & \texttt{int}  &   &   \\\cline{2-9}
-\scriptsize{2} & \texttt{y} & var &     & 大域(G) &  1  & \texttt{int}  &   &   \\\cline{2-9}
-\scriptsize{3} & \texttt{f} & func &    & 大域(G) &  100  & \texttt{int}  &  1& 0 \\\cline{2-9}
-\scriptsize{4} & \texttt{x} & var &     & 局所(L) &  0  & \texttt{int}  &   &   \\\cline{2-9}
-\end{tabularx}
+    \begin{tabularx}{.8\linewidth}{c|s|s|s|b|s|s|X|X|}\cline{2-9}
+                                  & \multicolumn{1}{c|}{名前}   & \multicolumn{1}{c|}{種類} &
+        \multicolumn{1}{c|}{値}    & \multicolumn{1}{c|}{スコープ} &
+        \multicolumn{1}{c|}{番地}   & \multicolumn{1}{c|}{型}    &
+        \multicolumn{1}{c|}{引数個数} & \multicolumn{1}{c|}{引数型}                                                                     \\\cline{2-9}
+        \scriptsize{1}            & \texttt{x}                & var                     &   & 大域(G) & 0   & \texttt{int} &   &   \\\cline{2-9}
+        \scriptsize{2}            & \texttt{y}                & var                     &   & 大域(G) & 1   & \texttt{int} &   &   \\\cline{2-9}
+        \scriptsize{3}            & \texttt{f}                & func                    &   & 大域(G) & 100 & \texttt{int} & 1 & 0 \\\cline{2-9}
+        \scriptsize{4}            & \texttt{x}                & var                     &   & 局所(L) & 0   & \texttt{int} &   &   \\\cline{2-9}
+    \end{tabularx}
 \end{center}
 
 値フィールドは，定数記号の宣言時に用いられることを想定している．
@@ -188,72 +189,72 @@ C言語と同様に\texttt{main}から実行されるとすると，9行目は�
 % \end{Verbatim}
 
 \begin{figure}[H]
-\begin{tabular}{cc}
-\begin{minipage}{.4\linewidth}
-\begin{Verbatim}[frame=single]
-int g;
+    \begin{tabular}{cc}
+        \begin{minipage}{.4\linewidth}
+            \begin{Verbatim}[frame=single]
+                int g;
 
-func f(int a, real b) {
-    int x;
-    x = a + 1;
-    g = x;
-}
+                func f(int a, real b) {
+                        int x;
+                        x = a + 1;
+                        g = x;
+                    }
 
-func h() {
-    int x;
-    g = 0;
-}
+                func h() {
+                        int x;
+                        g = 0;
+                    }
 
-func main() {
-    int x;
-    x = 3;
-    f(x + 1, (2.5 + 3.5) * 2);
-    h();
-}
-\end{Verbatim}
-\end{minipage}
-&
-\begin{tabular}{c}
-\begin{minipage}{.5\linewidth}
-\begin{figure}[H]
-    \centering
-\includegraphics[scale=0.5]{figures/envarg1.pdf}
-\end{figure}
-\end{minipage}
-\\
-\begin{minipage}{.5\linewidth}
-\begin{figure}[H]
-    \centering
-\includegraphics[scale=0.4]{figures/envarg2.pdf}
-\end{figure}
-\end{minipage}\\
-\begin{minipage}{.5\linewidth}
-\begin{figure}[H]
-    \centering
-\includegraphics[scale=0.4]{figures/envarg3.pdf}
-\end{figure}
-\end{minipage}
-\end{tabular}\\[5.3cm]
+                func main() {
+                        int x;
+                        x = 3;
+                        f(x + 1, (2.5 + 3.5) * 2);
+                        h();
+                    }
+            \end{Verbatim}
+        \end{minipage}
+         &
+        \begin{tabular}{c}
+            \begin{minipage}{.5\linewidth}
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[scale=0.5]{envarg1.pdf}
+                \end{figure}
+            \end{minipage}
+            \\
+            \begin{minipage}{.5\linewidth}
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[scale=0.4]{envarg2.pdf}
+                \end{figure}
+            \end{minipage} \\
+            \begin{minipage}{.5\linewidth}
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[scale=0.4]{envarg3.pdf}
+                \end{figure}
+            \end{minipage}
+        \end{tabular}              \\[5.3cm]
 
-\begin{minipage}{.5\linewidth}
-    \centering
-    \includegraphics[scale=0.5]{figures/envarg4.pdf}
-\end{minipage}
+        \begin{minipage}{.5\linewidth}
+            \centering
+            \includegraphics[scale=0.5]{envarg4.pdf}
+        \end{minipage}
 
-&
+         &
 
-\begin{minipage}{.5\linewidth}
-    \centering
-    \includegraphics[scale=0.5]{figures/envarg5.pdf}
-\end{minipage}\\[2cm]
+        \begin{minipage}{.5\linewidth}
+            \centering
+            \includegraphics[scale=0.5]{envarg5.pdf}
+        \end{minipage} \\[2cm]
 
-\multicolumn{2}{c}{
-\begin{minipage}{.5\linewidth}
-    \centering
-    \includegraphics[scale=0.5]{figures/envarg6.pdf}
-\end{minipage}}
-\end{tabular}
-\caption{記号表の例}\label{fig:symboltable}
+        \multicolumn{2}{c}{
+            \begin{minipage}{.5\linewidth}
+                \centering
+                \includegraphics[scale=0.5]{envarg6.pdf}
+            \end{minipage}}
+    \end{tabular}
+    \caption{記号表の例}\label{fig:symboltable}
 \end{figure}
 
 \subsubsection{ハッシュ}
@@ -272,9 +273,9 @@ $f(d)$ができるだけ$D$を均等に分類する関数によってインデ�
 
 ハッシュ関数として以下のような関数を考える．
 \[
-f(a_1\cdots a_n)=\left\{\begin{array}{l}
-    \sum^n_1\mathsf{ord}(a_i)\cdot 63^{n-1}
-\end{array}\right\}\mathsf{mod}\ N+1
+    f(a_1\cdots a_n)=\left\{\begin{array}{l}
+        \sum^n_1\mathsf{ord}(a_i)\cdot 63^{n-1}
+    \end{array}\right\}\mathsf{mod}\ N+1
 \]
 ここで，識別子のトークンの文字列は，$\texttt{\_}$(アンダースコア), $\texttt{a},\ldots,\texttt{z}$,
 $\texttt{A},\ldots,\texttt{Z}$,$\texttt{0},\ldots,\texttt{9}$の系列であり，それぞれ1から63までの
@@ -301,30 +302,30 @@ $\sigma_1$の情報と$\sigma_2$の情報をリストにしてアクセスする
 
 \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
     \item 1行目のコンパイル:\\
-    \texttt{int\ x}の宣言によって\texttt{x}を割り当てる(図\ref{line1})．
+          \texttt{int\ x}の宣言によって\texttt{x}を割り当てる(図\ref{line1})．
     \item 2行目のコンパイル:\\
-    \texttt{int\ y}の宣言によって\texttt{y}を割り当てる(図\ref{line2})．
+          \texttt{int\ y}の宣言によって\texttt{y}を割り当てる(図\ref{line2})．
     \item 3行目のコンパイル:\\
-    関数\texttt{f}の宣言と仮引数\texttt{int\ y}を割り当てる(図\ref{line3})．
+          関数\texttt{f}の宣言と仮引数\texttt{int\ y}を割り当てる(図\ref{line3})．
     \item 7行目のコンパイル:\\
-    6行目で仮引数\texttt{y}を削除して関数\texttt{main}の宣言を追加する(図\ref{line7})．
+          6行目で仮引数\texttt{y}を削除して関数\texttt{main}の宣言を追加する(図\ref{line7})．
 \end{list}
 
 % \begin{tabularx}{\textwidth}{XcX}
-%     \includegraphics[width=0.45\textwidth]{figures/hash-table1-crop.pdf}
+%     \includegraphics[width=0.45\textwidth]{hash-table1-crop.pdf}
 %     & & 
-%     \includegraphics[width=0.45\textwidth]{figures/hash-table2-crop.pdf}\\
-%     \includegraphics[width=0.45\textwidth]{figures/hash-table3-crop.pdf}
+%     \includegraphics[width=0.45\textwidth]{hash-table2-crop.pdf}\\
+%     \includegraphics[width=0.45\textwidth]{hash-table3-crop.pdf}
 %     & & 
-%     \includegraphics[width=0.45\textwidth]{figures/hash-table4-crop.pdf}\\
+%     \includegraphics[width=0.45\textwidth]{hash-table4-crop.pdf}\\
 % \end{tabularx}
 \begin{figure}[H]
-\centering
-  \subfloat[][1行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table1-crop.pdf}\label{line1}}\quad
-  \subfloat[][2行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table2-crop.pdf}\label{line2}}\\
-  \subfloat[][3行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table3-crop.pdf}\label{line3}}\quad
-  \subfloat[][7行目の記号表]{\includegraphics[width=0.4\textwidth]{figures/hash-table4-crop.pdf}\label{line7}} 
-  \caption{コンパイルの過程における記号表の構成}\label{fig:symboltable_construction}
+    \centering
+    \subfloat[][1行目の記号表]{\includegraphics[width=0.4\textwidth]{hash-table1-crop.pdf}\label{line1}}\quad
+    \subfloat[][2行目の記号表]{\includegraphics[width=0.4\textwidth]{hash-table2-crop.pdf}\label{line2}}\\
+    \subfloat[][3行目の記号表]{\includegraphics[width=0.4\textwidth]{hash-table3-crop.pdf}\label{line3}}\quad
+    \subfloat[][7行目の記号表]{\includegraphics[width=0.4\textwidth]{hash-table4-crop.pdf}\label{line7}}
+    \caption{コンパイルの過程における記号表の構成}\label{fig:symboltable_construction}
 \end{figure}
 
 上記のようにハッシュ表には外部に格納された情報情報へのリンクを格納する方法を
@@ -370,15 +371,15 @@ $\sigma_1$の情報と$\sigma_2$の情報をリストにしてアクセスする
 簡単な型チェック法を次の生成規則で定義される言語を考える．
 
 \begin{center}
-\begin{minipage}{.4\linewidth}
-\begin{align*}
-    P & \rightarrow D\ ;\ S\\
-    D & \rightarrow D\ ;\ D\ |\ \mathbf{id}:\ T\\
-    T & \rightarrow \texttt{char}\ |\ \texttt{int}\ |\ \texttt{\&}T\ |\ \texttt{arr[}n\texttt{]\ of\ } T\\
-    E & \rightarrow c\ |\ n\ |\ \mathbf{id}\ |\ E\ \texttt{+}\ E\ |\ \texttt{*}E\ |\ E\texttt{[}E\texttt{]}\\
-    S & \rightarrow \mathbf{id}\ttassgn E\ |\ S\,\ttsc\,S
-\end{align*}
-\end{minipage}
+    \begin{minipage}{.4\linewidth}
+        \begin{align*}
+            P & \rightarrow D\ ;\ S                                                                                 \\
+            D & \rightarrow D\ ;\ D\ |\ \mathbf{id}:\ T                                                             \\
+            T & \rightarrow \texttt{char}\ |\ \texttt{int}\ |\ \texttt{\&}T\ |\ \texttt{arr[}n\texttt{]\ of\ } T    \\
+            E & \rightarrow c\ |\ n\ |\ \mathbf{id}\ |\ E\ \texttt{+}\ E\ |\ \texttt{*}E\ |\ E\texttt{[}E\texttt{]} \\
+            S & \rightarrow \mathbf{id}\ttassgn E\ |\ S\,\ttsc\,S
+        \end{align*}
+    \end{minipage}
 \end{center}
 
 プログラムは，変数の型宣言部$D$とプログラム本体$E$からなる．$E$はここでは
@@ -392,27 +393,27 @@ $E\ttbrkl E'\ttbrkr$の型は$T$である．図\ref{fig:typeDef}に宣言に
 おける型定義の規則，図\ref{fig:typeConst}に型制約規則を示す．
 
 \begin{figure}[H]\centering
-    \includegraphics{figures/typeDef-crop.pdf}
+    \includegraphics{typeDef-crop.pdf}
     \caption{型定義の規則}\label{fig:typeDef}
 \end{figure}
 
 \begin{figure}[H]\centering
-    \includegraphics[width=\linewidth]{figures/typeConst-crop.pdf}
+    \includegraphics[width=\linewidth]{typeConst-crop.pdf}
     \caption{型制約規則}\label{fig:typeConst}
 \end{figure}
 
 $c$は文字トークン，$n$は整数定数のトークンを表す．
 
 \begin{center}
-\begin{minipage}{0.4\linewidth}
-\begin{Verbatim}[frame=single]
-char x;
-int y;
-&int z;
-arr[10] of char a;
-arr[5] of arr[5] of int m;
-\end{Verbatim}
-\end{minipage}
+    \begin{minipage}{0.4\linewidth}
+        \begin{Verbatim}[frame=single]
+            char x;
+            int y;
+            &int z;
+            arr[10] of char a;
+            arr[5] of arr[5] of int m;
+        \end{Verbatim}
+    \end{minipage}
 \end{center}
 
 ここで，$T.\mathsf{type}$は型識別子$T$が表す型であり，通常，
@@ -463,20 +464,20 @@ $T\tuple{B}$も矛盾のない型として定義される必要がある．
 \subsubsection{オーバーロード}
 
 \begin{wrapfigure}[8]{l}{0.3\linewidth}
-\vspace*{-10pt}    
-\begin{minipage}{.3\linewidth}
-\begin{center}
-\begin{Verbatim}[numbers=left]
-int x;
-float y;
-double z;
-x=1; y=1.1; z=1.575E3;
-x=x+1;
-z=y+z;
-z=z+x;
-\end{Verbatim}
-\end{center}
-\end{minipage}
+    \vspace*{-10pt}
+    \begin{minipage}{.3\linewidth}
+        \begin{center}
+            \begin{Verbatim}[numbers=left]
+                int x;
+                float y;
+                double z;
+                x=1; y=1.1; z=1.575E3;
+                x=x+1;
+                z=y+z;
+                z=z+x;
+            \end{Verbatim}
+        \end{center}
+    \end{minipage}
 \end{wrapfigure}
 
 オーバーロードは同じ種類の操作（通常同じ記号で表す）を引数の型によって切り替える

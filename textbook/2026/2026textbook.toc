@@ -1,131 +1,125 @@
-\contentsline {chapter}{\numberline {第1章}序論}{5}{}%
-\contentsline {section}{\numberline {1.1}プログラミング言語と言語処理系}{5}{}%
-\contentsline {section}{\numberline {1.2}プログラミング言語の種類}{8}{}%
-\contentsline {section}{\numberline {1.3}中間言語}{9}{}%
-\contentsline {section}{\numberline {1.4}コンパイラ構成に必要な諸定義}{10}{}%
-\contentsline {subsection}{\numberline {1.4.1}語と集合演算}{10}{}%
-\contentsline {subsection}{\numberline {1.4.2}グラフと木}{10}{}%
-\contentsline {chapter}{\numberline {第2章}コンパイラの概要}{13}{}%
-\contentsline {section}{\numberline {2.1}コンパイラの構造}{13}{}%
-\contentsline {paragraph}{{\bf 字句解析}(lexical analysis)}{13}{}%
-\contentsline {paragraph}{{\bf 構文解析}(parsing)}{13}{}%
-\contentsline {paragraph}{{\bf 中間コード生成}(intermediate code generation)}{13}{}%
-\contentsline {paragraph}{{\bf コード最適化}(code optimization)}{13}{}%
-\contentsline {paragraph}{{\bf 目的コード生成}(object code generation)}{14}{}%
-\contentsline {subsection}{\numberline {2.1.1}コンパイラにおけるパス}{14}{}%
-\contentsline {section}{\numberline {2.2}字句解析の概要}{15}{}%
-\contentsline {section}{\numberline {2.3}構文解析の概要}{15}{}%
-\contentsline {section}{\numberline {2.4}中間コード生成の概要}{17}{}%
-\contentsline {section}{\numberline {2.5}コード最適化の概要}{17}{}%
-\contentsline {section}{\numberline {2.6}目的コード生成の概要}{18}{}%
-\contentsline {chapter}{\numberline {第3章}字句解析}{21}{}%
-\contentsline {section}{\numberline {3.1}正規表現}{21}{}%
-\contentsline {section}{\numberline {3.2}有限オートマトン}{22}{}%
-\contentsline {section}{\numberline {3.3}字句解析の仕組み}{23}{}%
-\contentsline {paragraph}{字句解析器のプログラミング}{24}{}%
-\contentsline {section}{\numberline {3.4}字句解析器の生成}{25}{}%
-\contentsline {subsection}{\numberline {3.4.1}正規表現の記法}{25}{}%
-\contentsline {subsection}{\numberline {3.4.2}字句解析器生成ツール}{26}{}%
-\contentsline {subsubsection}{lex}{26}{}%
-\contentsline {subsubsection}{sly(python)}{27}{}%
-\contentsline {chapter}{\numberline {第4章}構文解析}{29}{}%
-\contentsline {section}{\numberline {4.1}構文解析の基礎}{29}{}%
-\contentsline {subsection}{\numberline {4.1.1}BNF定義とCF文法}{29}{}%
-\contentsline {subsubsection}{BNF定義}{30}{}%
-\contentsline {subsubsection}{最左導出と最右導出}{30}{}%
-\contentsline {subsection}{\numberline {4.1.2}解析木}{31}{}%
-\contentsline {subsection}{\numberline {4.1.3}文法の曖昧性}{34}{}%
-\contentsline {subsection}{\numberline {4.1.4}解析木の表現}{36}{}%
-\contentsline {subsection}{\numberline {4.1.5}FirstとFollow}{38}{}%
-\contentsline {section}{\numberline {4.2}下降型構文解析}{40}{}%
-\contentsline {subsection}{\numberline {4.2.1}左再帰性}{40}{}%
-\contentsline {subsubsection}{左再帰性除去}{41}{}%
-\contentsline {subsection}{\numberline {4.2.2}左括り出し}{42}{}%
-\contentsline {subsection}{\numberline {4.2.3}LL構文解析}{42}{}%
-\contentsline {subsubsection}{下向き構文解析表}{42}{}%
-\contentsline {subsubsection}{LL(1)構文解析}{43}{}%
-\contentsline {subsection}{\numberline {4.2.4}拡張CF文法とELL(1)文法}{44}{}%
-\contentsline {subsection}{\numberline {4.2.5}Javacc(JJTree)による降下型構文解析プログラムの生成}{45}{}%
-\contentsline {subsection}{\numberline {4.2.6}例}{46}{}%
-\contentsline {section}{\numberline {4.3}上昇型構文解析}{48}{}%
-\contentsline {subsection}{\numberline {4.3.1}プッシュダウン変換機械}{49}{}%
-\contentsline {subsection}{\numberline {4.3.2}LR構文解析}{50}{}%
-\contentsline {subsubsection}{SLR(1)構文解析}{51}{}%
-\contentsline {paragraph}{LR(0)構文解析}{55}{}%
-\contentsline {paragraph}{SLR(1)構文解析表}{58}{}%
-\contentsline {subsubsection}{LR(1)構文解析}{59}{}%
-\contentsline {subsubsection}{LALR(1)構文解析}{63}{}%
-\contentsline {subsection}{\numberline {4.3.3}構文解析手法の能力比較}{64}{}%
-\contentsline {subsection}{\numberline {4.3.4}演算子順位法}{65}{}%
-\contentsline {subsubsection}{演算子順位法による構文解析}{66}{}%
-\contentsline {section}{\numberline {4.4}構文エラー表示と誤り回復}{67}{}%
-\contentsline {section}{\numberline {4.5}YACCによる構文解析プログラム生成}{68}{}%
-\contentsline {chapter}{\numberline {第5章}意味解析}{71}{}%
-\contentsline {section}{\numberline {5.1}記号表}{71}{}%
-\contentsline {subsection}{\numberline {5.1.1}記号表の実現}{73}{}%
-\contentsline {subsubsection}{ハッシュ}{74}{}%
-\contentsline {section}{\numberline {5.2}型チェック}{76}{}%
-\contentsline {subsection}{\numberline {5.2.1}型定義と型チェックアルゴリズム}{77}{}%
-\contentsline {subsection}{\numberline {5.2.2}多相型と型のオーバーロード}{79}{}%
-\contentsline {subsubsection}{多相型}{79}{}%
-\contentsline {subsubsection}{部分型}{79}{}%
-\contentsline {subsubsection}{オーバーロード}{79}{}%
-\contentsline {chapter}{\numberline {第6章}中間コード生成}{81}{}%
-\contentsline {section}{\numberline {6.1}概要}{81}{}%
-\contentsline {subsection}{\numberline {6.1.1}抽象構文と抽象構文木}{81}{}%
-\contentsline {subsection}{\numberline {6.1.2}逆ポーランド記法}{82}{}%
-\contentsline {subsection}{\numberline {6.1.3}3番地コード}{82}{}%
-\contentsline {section}{\numberline {6.2}実行環境}{84}{}%
-\contentsline {subsection}{\numberline {6.2.1}駆動レコードの構成}{84}{}%
-\contentsline {subsubsection}{関数呼び出しとリターン}{85}{}%
-\contentsline {section}{\numberline {6.3}構文主導型変換}{87}{}%
-\contentsline {subsection}{\numberline {6.3.1}構文主導型変換の基礎}{87}{}%
-\contentsline {subsubsection}{実行制御を含む文に対するSDT}{88}{}%
-\contentsline {subsection}{\numberline {6.3.2}上昇型構文主導型変換}{89}{}%
-\contentsline {subsection}{\numberline {6.3.3}下降型構文主導型変換}{91}{}%
-\contentsline {subsection}{\numberline {6.3.4}構文主導定義による意味定義}{92}{}%
-\contentsline {subsection}{\numberline {6.3.5}コンパイラコンパイラによるコード生成}{95}{}%
-\contentsline {subsubsection}{JAVACCによるコード生成}{95}{}%
-\contentsline {subsubsection}{YACCによるコード生成}{95}{}%
-\contentsline {chapter}{\numberline {第7章}コード最適化}{97}{}%
-\contentsline {section}{\numberline {7.1}基本ブロックとフローグラフ}{97}{}%
-\contentsline {section}{\numberline {7.2}局所最適化}{98}{}%
-\contentsline {subsection}{\numberline {7.2.1}局所最適化の例}{98}{}%
-\contentsline {subsubsection}{定数伝播(constant propagation)}{98}{}%
-\contentsline {subsubsection}{共通部分式削除}{98}{}%
-\contentsline {subsubsection}{コピー伝播}{99}{}%
-\contentsline {subsubsection}{代数的性質の利用}{99}{}%
-\contentsline {subsection}{\numberline {7.2.2}基本ブロックのDAG表現}{99}{}%
-\contentsline {section}{\numberline {7.3}大域最適化}{101}{}%
-\contentsline {subsection}{\numberline {7.3.1}意味等価な変換}{101}{}%
-\contentsline {subsubsection}{ループ最適化}{102}{}%
-\contentsline {paragraph}{ループ不変コードの移動}{102}{}%
-\contentsline {paragraph}{ループ内演算の強さ軽減}{102}{}%
-\contentsline {paragraph}{帰納変数の消去}{102}{}%
-\contentsline {paragraph}{ループ融合}{102}{}%
-\contentsline {paragraph}{ループ分解}{102}{}%
-\contentsline {paragraph}{ループ展開}{103}{}%
-\contentsline {paragraph}{ソフトウェアパイプライン}{103}{}%
-\contentsline {subsubsection}{手続き呼び出し最適化}{103}{}%
-\contentsline {paragraph}{インライン展開}{103}{}%
-\contentsline {paragraph}{末尾再帰}{103}{}%
-\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{104}{}%
-\contentsline {subsubsection}{到達定義解析}{104}{}%
-\contentsline {subsubsection}{生存解析}{104}{}%
-\contentsline {subsubsection}{利用可能式解析}{104}{}%
-\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{104}{}%
-\contentsline {subsection}{\numberline {7.4.1}例}{104}{}%
-\contentsline {subsection}{\numberline {7.4.2}$\phi $関数}{104}{}%
-\contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{104}{}%
-\contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{104}{}%
-\contentsline {subsection}{\numberline {7.4.5}逆変換}{104}{}%
-\contentsline {chapter}{\numberline {第8章}目的コード生成}{105}{}%
-\contentsline {section}{\numberline {8.1}算術式のコード生成}{105}{}%
-\contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割り当て}{105}{}%
-\contentsline {subsection}{\numberline {8.2.1}SSAに対するレジスタ割り当て}{105}{}%
-\contentsline {chapter}{\numberline {付 録A }LLVM-IRコード生成}{107}{}%
-\contentsline {section}{\numberline {A.1}生成コード}{107}{}%
-\contentsline {section}{\numberline {A.2}構文解析ツールを用いたコード生成}{107}{}%
-\contentsline {subsection}{\numberline {A.2.1}javacc(下降型)}{107}{}%
-\contentsline {subsection}{\numberline {A.2.2}yacc(上昇型)}{107}{}%
-\contentsline {chapter}{\numberline {付 録B }LLVM-IRコードの実行}{109}{}%
+\contentsline {chapter}{\numberline {第1章}序論}{7}{}%
+\contentsline {section}{\numberline {1.1}プログラミング言語と言語処理系}{7}{}%
+\contentsline {section}{\numberline {1.2}プログラミング言語の種類}{10}{}%
+\contentsline {section}{\numberline {1.3}中間言語}{11}{}%
+\contentsline {section}{\numberline {1.4}コンパイラ構成に必要な諸定義}{12}{}%
+\contentsline {subsection}{\numberline {1.4.1}語と集合演算}{12}{}%
+\contentsline {subsection}{\numberline {1.4.2}グラフと木}{12}{}%
+\contentsline {chapter}{\numberline {第2章}コンパイラの概要}{15}{}%
+\contentsline {section}{\numberline {2.1}コンパイラの構造}{15}{}%
+\contentsline {paragraph}{{\bf 字句解析}(lexical analysis)}{15}{}%
+\contentsline {paragraph}{{\bf 構文解析}(parsing)}{15}{}%
+\contentsline {paragraph}{{\bf 中間コード生成}(intermediate code generation)}{15}{}%
+\contentsline {paragraph}{{\bf コード最適化}(code optimization)}{15}{}%
+\contentsline {paragraph}{{\bf 目的コード生成}(object code generation)}{16}{}%
+\contentsline {subsection}{\numberline {2.1.1}コンパイラにおけるパス}{16}{}%
+\contentsline {section}{\numberline {2.2}字句解析の概要}{17}{}%
+\contentsline {section}{\numberline {2.3}構文解析の概要}{17}{}%
+\contentsline {section}{\numberline {2.4}中間コード生成の概要}{19}{}%
+\contentsline {section}{\numberline {2.5}コード最適化の概要}{19}{}%
+\contentsline {section}{\numberline {2.6}目的コード生成の概要}{20}{}%
+\contentsline {chapter}{\numberline {第3章}字句解析}{23}{}%
+\contentsline {section}{\numberline {3.1}正規表現}{23}{}%
+\contentsline {section}{\numberline {3.2}有限オートマトン}{24}{}%
+\contentsline {section}{\numberline {3.3}字句解析の仕組み}{25}{}%
+\contentsline {paragraph}{字句解析器のプログラミング}{26}{}%
+\contentsline {section}{\numberline {3.4}字句解析器の生成}{27}{}%
+\contentsline {subsection}{\numberline {3.4.1}正規表現の記法}{27}{}%
+\contentsline {subsection}{\numberline {3.4.2}字句解析器生成ツール}{28}{}%
+\contentsline {subsubsection}{lex}{28}{}%
+\contentsline {subsubsection}{sly(python)}{29}{}%
+\contentsline {chapter}{\numberline {第4章}構文解析}{31}{}%
+\contentsline {section}{\numberline {4.1}構文解析の基礎}{31}{}%
+\contentsline {subsection}{\numberline {4.1.1}BNF定義とCF文法}{31}{}%
+\contentsline {subsubsection}{BNF定義}{32}{}%
+\contentsline {subsubsection}{最左導出と最右導出}{32}{}%
+\contentsline {subsection}{\numberline {4.1.2}解析木}{33}{}%
+\contentsline {subsection}{\numberline {4.1.3}文法の曖昧性}{36}{}%
+\contentsline {subsection}{\numberline {4.1.4}解析木の表現}{38}{}%
+\contentsline {subsection}{\numberline {4.1.5}FirstとFollow}{40}{}%
+\contentsline {section}{\numberline {4.2}下降型構文解析}{42}{}%
+\contentsline {subsection}{\numberline {4.2.1}左再帰性}{42}{}%
+\contentsline {subsubsection}{左再帰性除去}{43}{}%
+\contentsline {subsection}{\numberline {4.2.2}左括り出し}{44}{}%
+\contentsline {subsection}{\numberline {4.2.3}LL構文解析}{44}{}%
+\contentsline {subsubsection}{下向き構文解析表}{44}{}%
+\contentsline {subsubsection}{LL(1)構文解析}{45}{}%
+\contentsline {subsection}{\numberline {4.2.4}拡張CF文法とELL(1)文法}{46}{}%
+\contentsline {subsection}{\numberline {4.2.5}Javacc(JJTree)による降下型構文解析プログラムの生成}{47}{}%
+\contentsline {subsection}{\numberline {4.2.6}例}{48}{}%
+\contentsline {section}{\numberline {4.3}上昇型構文解析}{50}{}%
+\contentsline {subsection}{\numberline {4.3.1}プッシュダウン変換機械}{51}{}%
+\contentsline {subsection}{\numberline {4.3.2}LR構文解析}{52}{}%
+\contentsline {subsubsection}{SLR(1)構文解析}{53}{}%
+\contentsline {paragraph}{LR(0)構文解析}{57}{}%
+\contentsline {paragraph}{SLR(1)構文解析表}{60}{}%
+\contentsline {subsubsection}{LR(1)構文解析}{61}{}%
+\contentsline {subsubsection}{LALR(1)構文解析}{65}{}%
+\contentsline {subsection}{\numberline {4.3.3}構文解析手法の能力比較}{66}{}%
+\contentsline {subsection}{\numberline {4.3.4}演算子順位法}{67}{}%
+\contentsline {subsubsection}{演算子順位法による構文解析}{68}{}%
+\contentsline {section}{\numberline {4.4}構文エラー表示と誤り回復}{69}{}%
+\contentsline {section}{\numberline {4.5}YACCによる構文解析プログラム生成}{70}{}%
+\contentsline {chapter}{\numberline {第5章}意味解析}{73}{}%
+\contentsline {section}{\numberline {5.1}記号表}{73}{}%
+\contentsline {subsection}{\numberline {5.1.1}記号表の実現}{75}{}%
+\contentsline {subsubsection}{ハッシュ}{77}{}%
+\contentsline {section}{\numberline {5.2}型チェック}{78}{}%
+\contentsline {subsection}{\numberline {5.2.1}型定義と型チェックアルゴリズム}{79}{}%
+\contentsline {subsection}{\numberline {5.2.2}多相型と型のオーバーロード}{80}{}%
+\contentsline {subsubsection}{多相型}{80}{}%
+\contentsline {subsubsection}{部分型}{81}{}%
+\contentsline {subsubsection}{オーバーロード}{81}{}%
+\contentsline {chapter}{\numberline {第6章}中間コード生成}{83}{}%
+\contentsline {section}{\numberline {6.1}概要}{83}{}%
+\contentsline {subsection}{\numberline {6.1.1}抽象構文と抽象構文木}{83}{}%
+\contentsline {subsection}{\numberline {6.1.2}逆ポーランド記法}{84}{}%
+\contentsline {subsection}{\numberline {6.1.3}3番地コード}{84}{}%
+\contentsline {section}{\numberline {6.2}実行環境}{86}{}%
+\contentsline {subsection}{\numberline {6.2.1}駆動レコードの構成}{86}{}%
+\contentsline {subsubsection}{関数呼び出しとリターン}{87}{}%
+\contentsline {section}{\numberline {6.3}構文主導型変換}{89}{}%
+\contentsline {subsection}{\numberline {6.3.1}構文主導型変換の基礎}{89}{}%
+\contentsline {subsubsection}{実行制御を含む文に対するSDT}{90}{}%
+\contentsline {subsection}{\numberline {6.3.2}上昇型構文主導型変換}{91}{}%
+\contentsline {subsection}{\numberline {6.3.3}下降型構文主導型変換}{93}{}%
+\contentsline {subsection}{\numberline {6.3.4}構文主導定義による意味定義}{95}{}%
+\contentsline {subsection}{\numberline {6.3.5}コンパイラコンパイラによるコード生成}{98}{}%
+\contentsline {subsubsection}{JAVACCによるコード生成}{98}{}%
+\contentsline {subsubsection}{YACCによるコード生成}{98}{}%
+\contentsline {chapter}{\numberline {第7章}コード最適化}{99}{}%
+\contentsline {section}{\numberline {7.1}基本ブロックとフローグラフ}{99}{}%
+\contentsline {section}{\numberline {7.2}局所最適化}{100}{}%
+\contentsline {subsection}{\numberline {7.2.1}局所最適化の例}{100}{}%
+\contentsline {subsubsection}{定数伝播(constant propagation)}{100}{}%
+\contentsline {subsubsection}{共通部分式削除}{100}{}%
+\contentsline {subsubsection}{コピー伝播}{101}{}%
+\contentsline {subsubsection}{代数的性質の利用}{101}{}%
+\contentsline {subsection}{\numberline {7.2.2}基本ブロックのDAG表現}{101}{}%
+\contentsline {section}{\numberline {7.3}大域最適化}{103}{}%
+\contentsline {subsection}{\numberline {7.3.1}意味等価な変換}{103}{}%
+\contentsline {subsubsection}{ループ最適化}{104}{}%
+\contentsline {paragraph}{ループ不変コードの移動}{104}{}%
+\contentsline {paragraph}{ループ内演算の強さ軽減}{104}{}%
+\contentsline {paragraph}{帰納変数の消去}{104}{}%
+\contentsline {paragraph}{ループ融合}{104}{}%
+\contentsline {paragraph}{ループ分解}{104}{}%
+\contentsline {paragraph}{ループ展開}{105}{}%
+\contentsline {paragraph}{ソフトウェアパイプライン}{105}{}%
+\contentsline {subsubsection}{手続き呼び出し最適化}{105}{}%
+\contentsline {paragraph}{インライン展開}{105}{}%
+\contentsline {paragraph}{末尾再帰}{105}{}%
+\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{106}{}%
+\contentsline {subsubsection}{到達定義解析}{106}{}%
+\contentsline {subsubsection}{生存解析}{106}{}%
+\contentsline {subsubsection}{利用可能式解析}{106}{}%
+\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{106}{}%
+\contentsline {subsection}{\numberline {7.4.1}例}{106}{}%
+\contentsline {subsection}{\numberline {7.4.2}$\phi $関数}{106}{}%
+\contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{106}{}%
+\contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{106}{}%
+\contentsline {subsection}{\numberline {7.4.5}逆変換}{106}{}%
+\contentsline {chapter}{\numberline {第8章}目的コード生成}{107}{}%
+\contentsline {section}{\numberline {8.1}算術式のコード生成}{107}{}%
+\contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割り当て}{107}{}%
+\contentsline {subsection}{\numberline {8.2.1}SSAに対するレジスタ割り当て}{107}{}%

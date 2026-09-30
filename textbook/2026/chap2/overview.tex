@@ -15,6 +15,7 @@
 % \newcounter{bean}
 \include{../mymacros.tex}
 \setcounter{chapter}{1}
+\graphicspath{{figures/}}
 \begin{document}
 \chapter{コンパイラの概要}
 
@@ -28,7 +29,7 @@
 
 \begin{figure}[t]
   \centering
-  \includegraphics[scale=0.85]{figures/compilerstruct-crop.pdf}
+  \includegraphics[scale=0.85]{compilerstruct-crop.pdf}
   \caption{コンパイラの構造}\label{compiler_structure}
 \end{figure}
 
@@ -243,9 +244,9 @@ $E\texttt{+}E$の右側の$E$を$\texttt{+}$に置き換えることができな
 \begin{figure}[H]
   \centering
   \begin{tabular}{ccc}
-    \includegraphics{figures/prog-il-1-crop.pdf}
+    \includegraphics{prog-il-1-crop.pdf}
              & \hspace*{5zw} &
-    \includegraphics{figures/prog-il-2-crop.pdf} \\[10pt]
+    \includegraphics{prog-il-2-crop.pdf} \\[10pt]
     (a) 最適化前 &               & (b) 最適化後
   \end{tabular}
   \caption{簡単な最適化の例}\label{il-ex}
