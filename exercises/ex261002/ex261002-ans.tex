@@ -1,0 +1,54 @@
+\documentclass[dvipdfmx]{jarticle}
+\usepackage{tikz}
+\usetikzlibrary{automata,calc,shapes}
+\pagestyle{empty}
+\begin{document}
+\begin{flushright}
+  \verb|2025/10/17|
+\end{flushright}
+\begin{center}
+  {\bf\Large コンパイラ第1回演習課題(解答例)}
+\end{center}
+
+\vspace*{2cm}
+
+\begin{enumerate}
+  \item
+        \begin{enumerate}
+          \item $\{V_1,V_5,V_7\}$ および $\{V_2,V_5,V_7\}$
+
+                考察：独立集合は補グラフにおけるクリークである．補グラフはノード数について多項式時間で生成できる．
+                クリークを求める計算量はNP完全問題なので，独立集合を求めるのは難しい問題である．（７章における
+                レジスタ割当において用られる．）
+
+          \item 弦グラフの条件を満たす．\\
+                完全消去順序は以下の通り
+                2135467
+
+                （この他４７通りある）
+        \end{enumerate}
+  \item\ \\
+        \begin{tikzpicture}
+          \node[draw,circle] (Q0) at (0,3) {$q_0$};
+          \node[draw,circle,double] (Q1) at (3,6) {$q_1$};
+          \node[draw,circle] (Q2) at (3,3) {$q_2$};
+          \node[draw,circle] (Q3) at (3,0) {$q_3$};
+          \node[draw,circle] (Q4) at (0,0) {$q_4$};
+          \path[->] ($(Q0)+(-1,0)$) edge (Q0);
+          \path[->] (Q0) edge [left] node {$3,6,9$} (Q1);
+          \path[->] (Q0) edge [above] node {$1,4,7$} (Q2);
+          \path[->] (Q0) edge [left] node {$2,5,8$} (Q3);
+          \path[->] (Q1) [bend right] edge  node {$1,4,7$} (Q2);
+          \path[->] (Q2) [bend right] edge [right] node {$2,5,8$} (Q1);
+          \path[->] (Q2) [bend right] edge node {$1,4,7$} (Q3);
+          \path[->] (Q3) [bend right] edge [right] node {$2,5,8$} (Q2);
+          \path[->] (Q1) [loop] edge [above] node {$0,3,6,9$} (Q1);
+          \path[->] (Q3) [loop below] edge [below] node {$0,3,6,9$} (Q3);
+          \path[->] (Q2) [loop right] edge [right] node {$0,3,6,9$} (Q2);
+          \path[->] (Q1) [out=330,in=30,looseness=1.5] edge [right] node {$2,5,8$} (Q3);
+          \path[->] (Q3) [out=0,in=0,looseness=2.2] edge node {$1,4,7$} (Q1);
+          \path[->] (Q0) edge [left] node {$0$} (Q4);
+          \path[->] (Q4) [loop below] edge [below] node {$0,1,\cdots,9$} (Q4);
+        \end{tikzpicture}
+\end{enumerate}
+\end{document}

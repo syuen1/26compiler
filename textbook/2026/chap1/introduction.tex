@@ -570,7 +570,142 @@ $T$の部分木の集合$\{S_1,\cdots,S_n\}$の{\bf 交差グラフ(intersection
   \caption{図\ref{fig:graph_and_tree}の部分構造，交差グラフの例}\label{fig:subgraphs}
 \end{figure}
 
+無向グラフ$(V,E)$の頂点$v\in V$を{\bf 消去する操作}は，$(V',E')$というグラフを作成する操作とする．
+\begin{itemize}
+  \item $V'=V\backslash\{v\}$, および
+  \item $E'=(E\backslash E_v)\cup E_f(v)$
+\end{itemize}
+ここで，$E_v=\{(v_1,v_2)|v_1=v\ or\ v_2=v\}$, $E_f(v)=\{(v_{f1},v_{f2})|(v_{f1},v),(v_{f2},v)\in E, v_{f1}\not= v_{f2}, v_{f1}\not=v, v_{f2}\not=v\}$とする．$E_v$は，
+削除する頂点につながっている辺であり，$E_f(v)$は，異なる2辺$e_1,e_2\in E_v$で$v$から
+到達する２つの頂点を結ぶ辺の集合である．このような辺が存在しない場合には，新たに辺を加える．
+すでに存在する場合はそのままとする．このようにして加えられる辺のことを{\bf Fill-in辺}と呼ぶ\footnote{このようなFill-in辺を加えることをクリーク化と呼ぶこともある．}．
 
+図\ref{fig:nodeElimination}において，$v_1$を消去する場合は，$(v_1,v_2)$, $(v_1,v_3)$を消去し，$(v_2,v_3)$というグラフを作成する操作とする辺を追加する．$v_5$を消去する場合は，すでに$(v_2,v_4)$に辺が存在する
+ので，新たに辺を加えることはない．
 
+\begin{figure}[H]
+  \begin{center}
+    \begin{tabular}{ccccc}
+      \begin{tikzpicture}[
+          node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+          edge/.style={-, >=stealth, thick}
+        ]
+        \node[node] (v1) at (0,1.5) {$v_1$};
+        \node[node] (v2) at (2,2.5) {$v_2$};
+        \node[node] (v3) at (2,0.5) {$v_3$};
+        %\node[node] (v4) at (0,0.5) {$v_4$};
+        \node[node] (v4) at (3.5,1.5) {$v_4$};
+        \node[node] (v5) at (4,3) {$v_5$};
+
+        %  \draw[edge] (v1) -> (v2);
+        \draw[edge] (v1) -> (v2);
+        \draw[edge] (v1) -> (v3);
+        %  \draw[edge] (v3) -> (v4);
+        %  \draw[edge] (v4) -> (v1); % サイクル
+        %  \draw[edge] (v2) -> (v4);
+        \draw[edge] (v3) -> (v4);
+        \draw[edge] (v4) -> (v2); % サイクル
+        \draw[edge] (v2) -> (v5);
+        \draw[edge] (v4) -> (v5);
+      \end{tikzpicture}
+       & $\xrightarrow{\parbox{3zw}{$v_1$を消去}}$ &
+      \begin{tikzpicture}[
+          node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+          edge/.style={-, >=stealth, thick}
+        ]
+        %\node[node] (v1) at (0,1.5) {$v_1$};
+        \node[node] (v2) at (2,2.5) {$v_2$};
+        \node[node] (v3) at (2,0.5) {$v_3$};
+        %\node[node] (v4) at (0,0.5) {$v_4$};
+        \node[node] (v4) at (3.5,1.5) {$v_4$};
+        \node[node] (v5) at (4,3) {$v_5$};
+
+        %  \draw[edge] (v1) -> (v2);
+        %\draw[edge] (v1) -> (v2);
+        %\draw[edge] (v1) -> (v3);
+        %  \draw[edge] (v3) -> (v4);
+        %  \draw[edge] (v4) -> (v1); % サイクル
+        %  \draw[edge] (v2) -> (v4);
+        \draw[edge] (v3) -> (v4);
+        \draw[edge] (v4) -> (v2); % サイクル
+        \draw[edge] (v2) -> (v5);
+        \draw[edge] (v4) -> (v5);
+        \draw[edge,color=red] (v2) -> (v3);
+      \end{tikzpicture}
+       & $\xrightarrow{\parbox{3zw}{$v_5$を消去}}$ &
+      \begin{tikzpicture}[
+          node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+          edge/.style={-, >=stealth, thick}
+        ]
+        %\node[node] (v1) at (0,1.5) {$v_1$};
+        \node[node] (v2) at (2,2.5) {$v_2$};
+        \node[node] (v3) at (2,0.5) {$v_3$};
+        %\node[node] (v4) at (0,0.5) {$v_4$};
+        \node[node] (v4) at (3.5,1.5) {$v_4$};
+        %\node[node] (v5) at (4,3) {$v_5$};
+
+        %  \draw[edge] (v1) -> (v2);
+        %\draw[edge] (v1) -> (v2);
+        %\draw[edge] (v1) -> (v3);
+        %  \draw[edge] (v3) -> (v4);
+        %  \draw[edge] (v4) -> (v1); % サイクル
+        %  \draw[edge] (v2) -> (v4);
+        \draw[edge] (v3) -> (v4);
+        \draw[edge] (v4) -> (v2); % サイクル
+        %\draw[edge] (v2) -> (v5);
+        %\draw[edge] (v4) -> (v5);
+        \draw[edge,color=red] (v2) -> (v3);
+      \end{tikzpicture}
+    \end{tabular}
+  \end{center}
+  \caption{グラフ頂点の消去操作}\label{fig:nodeElimination}
+\end{figure}
+
+無向グラフ$G=(V,E)$の閉路とは，相異なる頂点の系列$(e_1,e_2,\ldots,e_k,e_1)$
+($k\geq 3$)で，$(e_{i},e_{i+1})\in E$となる辺が存在する．$k$を閉路の長さと呼ぶ．
+閉路上で隣接していない２頂点を結ぶ$G$の辺を{\bf 弦(chord)}という．
+
+$G$において$k\geq 4$の任意の閉路$C$に対して少なくとも１つの弦が存在するとき
+$G$は{\bf 弦グラフ}という．図\ref{fig:nodeElimination}において，$v_1$消去する
+前のグラフは，長さ$4$の閉路$(v_1,v_2,v_4,v_3,v_1)$に対して，弦が存在しないので，
+弦グラフという．$v_1$を消去してFill-in辺を追加したグラフは弦グラフである．
+
+弦グラフ$G=(V,E)$に対しては，以下の条件を満たす$V$上の全順序が存在する．
+\begin{quote}
+  $v_1<v_2<\ldots<v_n$のとき，$v_n,v_{n-1},\ldots,v_1$の順に$V$に消去動作を
+  適用しても，Fill-in辺として新たに辺が追加されない．
+\end{quote}
+この順序を{\bf 完全消去順序(Perfect Elimination Order,PEO)}という．弦グラフならば，
+かつそのときに限り，完全消去順序が存在することが知られている．
+
+\renewcommand{\tabularxcolumn}[1]{m{#1}}
+
+\begin{center}
+  \begin{tabularx}{.8\linewidth}{XX}
+    \begin{tikzpicture}[
+        node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node] (v1) at (0,0) {$v_1$};
+      \node[node] (v2) at (2,0) {$v_2$};
+      \node[node] (v3) at (4,0) {$v_3$};
+      \node[node] (v4) at (1,2) {$v_4$};
+      \node[node] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture}
+     &
+    \begin{tabular}{l}
+      PEO: $v_3,v_5,v_4,v_1,v_2$ \\
+      PEOでない: $v_2,v_3,v_1,v_5,v_4$
+    \end{tabular}
+  \end{tabularx}
+\end{center}
 これらのグラフの概念は，主にレジスタ割り当ての際に用いる．
 \end{document}
