@@ -1,0 +1,212 @@
+/*
+ * PL-0 grammar from CS experiment 3 guide, Appendix A, pp. 49-51.
+ * Target: classic JavaCC/JJTree (JavaCC 7).
+ *
+ * Build and run:
+ *   jjtree PL0.jjt
+ *   javacc PL0.jj
+ *   javac *.java
+ *   java PL0Parser example.pl0
+ * With no argument, input is read from standard input.
+ *
+ * Each BNF nonterminal creates an AST node. Left-recursive lists and
+ * arithmetic expressions are flattened into ordered children; they must
+ * be evaluated from left to right, respecting Expression/Term precedence.
+ * TRACK_TOKENS preserves operators and identifiers in the token range.
+ * No execution, name resolution or type checking is performed.
+ *
+ * Lexical assumptions (IDENT/NUMBER are not defined in the supplied BNF):
+ *   IDENT = ASCII letter followed by ASCII letters/digits/underscores.
+ *   NUMBER = one or more decimal digits (unsigned integer).
+ *   Keywords are lowercase and case-sensitive. Whitespace is ignored.
+ *   No source-comment syntax is added: 'empty' in the BNF means epsilon.
+ *
+ * The BNF permits an empty statement. Thus begin end, repeated statement
+ * separators, and an empty procedure body are all accepted.
+ * A declaration list repeats the 'var' keyword: var x; var y;
+ * Procedures have no parameters and cannot contain nested procedures.
+ * Unary minus is allowed only at the start of an expression, as in the BNF.
+ */
+options {
+  STATIC = false;
+  MULTI = true;
+  TRACK_TOKENS = true;
+}
+
+PARSER_BEGIN(PL0Parser)
+public class PL0Parser {
+  public static void main(String[] args) throws Exception {
+    if (args.length > 1) {
+      System.err.println("Usage: java PL0Parser [source.pl0]");
+      System.exit(2);
+    }
+    java.io.InputStream input = args.length == 0
+        ? System.in : new java.io.FileInputStream(args[0]);
+    try {
+      PL0Parser parser = new PL0Parser(input);
+      parser.Program();
+      ((SimpleNode) parser.jjtree.rootNode()).dump("");
+    } finally {
+      if (args.length != 0) input.close();
+    }
+  }
+}
+PARSER_END(PL0Parser)
+
+SKIP : { " " | "\t" | "\r" | "\n" | "\f" }
+
+// Keywords precede IDENT so an equal-length match selects the keyword.
+TOKEN : {
+    < PROGRAM: "program" >
+  | < VAR: "var" >
+  | < PROCEDURE: "procedure" >
+  | < IF: "if" >
+  | < THEN: "then" >
+  | < ELSE: "else" >
+  | < WHILE: "while" >
+  | < DO: "do" >
+  | < FOR: "for" >
+  | < TO: "to" >
+  | < BEGIN: "begin" >
+  | < END: "end" >
+  | < READ: "read" >
+  | < WRITE: "write" >
+  | < DIV: "div" >
+  | < ASSIGN: ":=" >
+  | < NE: "<>" >
+  | < LE: "<=" >
+  | < GE: ">=" >
+  | < EQ: "=" >
+  | < LT: "<" >
+  | < GT: ">" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < TIMES: "*" >
+  | < LPAREN: "(" >
+  | < RPAREN: ")" >
+  | < SEMICOLON: ";" >
+  | < COMMA: "," >
+  | < DOT: "." >
+  | < IDENT: ["A"-"Z", "a"-"z"]
+             (["A"-"Z", "a"-"z", "0"-"9", "_"])* >
+  | < NUMBER: (["0"-"9"])+ >
+}
+
+void Program() #Program : {} {
+  <PROGRAM> <IDENT> <SEMICOLON> Outblock() <DOT> <EOF>
+}
+
+void Outblock() #Outblock : {} {
+  VarDeclPart() SubprogDeclPart() Statement()
+}
+
+void VarDeclPart() #VarDeclPart : {} {
+  [ VarDeclList() <SEMICOLON> ]
+}
+
+void VarDeclList() #VarDeclList : {} {
+  VarDecl() ( LOOKAHEAD(2) <SEMICOLON> VarDecl() )*
+}
+
+void VarDecl() #VarDecl : {} {
+  <VAR> IdList()
+}
+
+void SubprogDeclPart() #SubprogDeclPart : {} {
+  [ SubprogDeclList() <SEMICOLON> ]
+}
+
+void SubprogDeclList() #SubprogDeclList : {} {
+  SubprogDecl() ( LOOKAHEAD(2) <SEMICOLON> SubprogDecl() )*
+}
+
+void SubprogDecl() #SubprogDecl : {} {
+  ProcDecl()
+}
+
+void ProcDecl() #ProcDecl : {} {
+  <PROCEDURE> ProcName() <LPAREN> <RPAREN> <SEMICOLON> Inblock()
+}
+
+void ProcName() #ProcName : {} { <IDENT> }
+
+void Inblock() #Inblock : {} { VarDeclPart() Statement() }
+
+void StatementList() #StatementList : {} {
+  Statement() ( <SEMICOLON> Statement() )*
+}
+
+void Statement() #Statement : {} {
+    LOOKAHEAD(2) AssignmentStatement()
+  | IfStatement()
+  | WhileStatement()
+  | ForStatement()
+  | ProcCallStatement()
+  | BlockStatement()
+  | ReadStatement()
+  | WriteStatement()
+  | NullStatement()
+}
+
+void AssignmentStatement() #AssignmentStatement : {} {
+  <IDENT> <ASSIGN> Expression()
+}
+
+void IfStatement() #IfStatement : {} {
+  <IF> Condition() <THEN> Statement() ElseStatement()
+}
+
+void ElseStatement() #ElseStatement : {} {
+  // Resolve dangling else by attaching it to the nearest unmatched if.
+  [ LOOKAHEAD(1) <ELSE> Statement() ]
+}
+
+void WhileStatement() #WhileStatement : {} {
+  <WHILE> Condition() <DO> Statement()
+}
+
+void ForStatement() #ForStatement : {} {
+  <FOR> <IDENT> <ASSIGN> Expression() <TO> Expression() <DO> Statement()
+}
+
+void ProcCallStatement() #ProcCallStatement : {} {
+  ProcCallName() <LPAREN> <RPAREN>
+}
+
+void ProcCallName() #ProcCallName : {} { <IDENT> }
+
+void BlockStatement() #BlockStatement : {} {
+  <BEGIN> StatementList() <END>
+}
+
+void ReadStatement() #ReadStatement : {} {
+  <READ> <LPAREN> <IDENT> <RPAREN>
+}
+
+void WriteStatement() #WriteStatement : {} {
+  <WRITE> <LPAREN> Expression() <RPAREN>
+}
+
+void NullStatement() #NullStatement : {} { {} }
+
+void Condition() #Condition : {} {
+  Expression() ( <EQ> | <NE> | <LT> | <LE> | <GT> | <GE> ) Expression()
+}
+
+void Expression() #Expression : {} {
+  [ <MINUS> ] Term() ( ( <PLUS> | <MINUS> ) Term() )*
+}
+
+void Term() #Term : {} {
+  Factor() ( ( <TIMES> | <DIV> ) Factor() )*
+}
+
+void Factor() #Factor : {} {
+  VarName() | Number() | <LPAREN> Expression() <RPAREN>
+}
+
+void VarName() #VarName : {} { <IDENT> }
+
+void Number() #Number : {} { <NUMBER> }
+
+void IdList() #IdList : {} { <IDENT> ( <COMMA> <IDENT> )* }

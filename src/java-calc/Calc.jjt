@@ -1,0 +1,81 @@
+/** simple calculator **/
+options {
+  STATIC=false;
+  MULTI=true;
+}
+PARSER_BEGIN(Calc)
+public class Calc {
+  public static void main(String args[]) throws ParseException {
+    while (true) {
+      Calc parser = new Calc(System.in);
+      switch (parser.CalcUnit()) {
+        case -1:
+          return;
+        case 0:
+          continue;
+        default:
+ //       ((SimpleNode)parser.jjtree.rootNode()).dump("");
+          parser.jjtree.rootNode().calculate();
+      }
+    }
+  }
+}
+PARSER_END(Calc)
+SKIP:
+{
+  " "|"\r"
+}
+
+TOKEN:
+{
+    < ADDOP: "+" >
+  | < SUBOP: "-" >
+  | < MULOP: "*" >
+  | < DIVOP: "/" >
+  | < LP: "(" >
+  | < RP: ")" >
+  | < LITERAL: (["0"-"9"])* >
+  | < NL: "\n" >
+}
+
+int CalcUnit() :
+{}
+{
+  ( AddExpr() <NL>
+    { return 1; }
+  | <NL>
+    { return 0; }
+  | <EOF>
+    { return -1; }
+  )
+}
+void AddExpr() #void :
+{}
+{
+  MulExpr()
+    (
+      <ADDOP> MulExpr() #AddNode(2)
+    | <SUBOP> MulExpr() #SubNode(2)
+    )*
+}
+void MulExpr() #void :
+{}
+{
+  PrimExpr()
+    (
+      <MULOP> PrimExpr() #MulNode(2)
+    | <DIVOP> PrimExpr() #DivNode(2)
+    )*
+}
+void PrimExpr() #void :
+{}
+{
+    Literal()
+  | <LP> AddExpr() <RP>
+}
+void Literal() :
+{ Token t; }
+{
+  t=<LITERAL>
+    { jjtThis.litValue = Integer.parseInt(t.image); }
+}

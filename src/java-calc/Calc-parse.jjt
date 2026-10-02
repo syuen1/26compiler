@@ -1,0 +1,112 @@
+/**
+ * Simple calculator JJTree file
+ */
+
+options
+{
+  STATIC = false; // parserクラスのメソッドをstaticにしない
+
+  MULTI = true; // ASTXXXクラスを生成する
+  VISITOR = true; // Visitorクラスを生成する
+  UNICODE_INPUT = false; // ユニコードで解析を行わない（日本語等を使わない）
+}
+
+
+
+PARSER_BEGIN(Calc)
+
+package calc0;
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class Calc
+{
+  public static void main(String [] args)
+  {
+    Calc.eval(System.in);
+  }
+  public static void eval(java.io.InputStream in)
+  {
+    Calc parser = new Calc(in);
+    try
+    {
+      parser.Root().dump(" ");
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
+}
+
+
+
+PARSER_END(Calc)
+
+TOKEN :
+{
+  < ADD_OP : "+" | "-" >
+| < MUL_OP : "*" | "/" | "%" >
+| < OPEN_BRACKET : "(" >
+| < CLOSE_BRACKET : ")" >
+| < DECIMAL : (< DIGIT >)+ ("." (< DIGIT >)+)? >
+| < DIGIT : [ "0"-"9" ] >
+}
+
+
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+}
+
+
+SimpleNode Root() :
+{}
+{
+  Expr() "\n"
+  {
+    return jjtThis;
+  }
+}
+
+void Expr() :
+{}
+{
+  AddExpr()
+}
+
+void AddExpr() :
+{}
+{
+  MulExpr()
+  (
+    < ADD_OP >
+    MulExpr()
+  )*
+}
+
+void MulExpr() :
+{}
+{
+  UnaryExpr()
+  (
+    < MUL_OP >
+    UnaryExpr()
+  )*
+}
+
+void UnaryExpr() :
+{}
+{
+  < OPEN_BRACKET >  Expr() < CLOSE_BRACKET >
+| Decimal()
+}
+
+void Decimal() :
+{}
+{
+  < DECIMAL >
+}
