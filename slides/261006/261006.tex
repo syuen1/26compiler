@@ -30,8 +30,7 @@
 %\usepackage{pst-all}
 %\include{prooftree}
 \usepackage{ascmac}
-\include{tscheme}
-\include{mymacros}
+\input{mymacros}
 %\lstloadlanguages{pascal}
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\familydefault}{\sfdefault}
@@ -80,7 +79,7 @@
     字句解析                    & ： & 正規表現(Regular Expression)           \\[10pt]
     \greentext{(トークンにまとめる)} &   & $FA$ : 有限オートマトン                    \\[5pt]
                             &   & $w\stackrel{\mbox{?}}{\in} L(FA)$  \\[10pt]
-    構文解析                    & ： & 文脈自由文法(Context Free Language)      \\[10pt]
+    構文解析                    & ： & 文脈自由文法(Context Free Grammar)       \\[10pt]
     \greentext{(木構造を構成)}    &   & $PDA$ : プッシュダウンオートマトン              \\[5pt]
                             &   & $w\stackrel{\mbox{?}}{\in} L(PDA)$ \\
   \end{tabular}
@@ -114,7 +113,7 @@
             \item $x$と$y$が式であれば、$x+y$,$x*y$,$(x)$は式である。
             \item (1),(2)を有限回適用して得られる表現だけが式である。
           \end{list}
-    \item {\bf BNF(Backus-Nauer-Form)}
+    \item {\bf BNF(Backus-Naur-Form)}
           \[
             \tuple{S}::=\tuple{S}+\tuple{S}\ |\ \tuple{S}*\tuple{S}\ |
             \ {\mathtt{ID}}\ |\ (\tuple{S})
@@ -127,7 +126,7 @@
   \begin{list}{}{\setlength{\itemsep}{5pt}}
     \item [\bluetext{{\bf 導出}}]：$w_1\Rightarrow w_2$\\
           $w_1,w_2\in (N\cup\Sigma)^\ast$
-          $w_1=wAw''$, $w_2=wvw'$ に対して $A\rightarrow v$
+          $w_1=wAw'$, $w_2=wvw'$ に対して $A\rightarrow v$
     \item [\bluetext{{\bf 導出関係}}]\ \\
           $v\stackrel{\ast}{\Rightarrow} v'$:$\Rightarrow$の0回以上の適
           用
@@ -189,13 +188,12 @@
 
   $G'=\tuple{N,T,P,\mbox{関数定義}}$
 
+  {\scriptsize
   \begin{eqnarray*}
-    N & = & {\scriptsize \{\mbox{関数定義},\mbox{型名},\mbox{パラメータリス
-          ト},\mbox{名前},\mbox{パラメータ},\mbox{複文}\}}\\
-    T & = & {\scriptsize
-        \{'(',')',',',\mathtt{VOID},\mathtt{INT},\mathtt{NAME},\mathtt{PARAM},\mathtt{COMPOUND}\}}\\
-    P & = & {\scriptsize
-        \left\{\begin{array}{rcl}
+    N & = & \{\mbox{関数定義},\mbox{型名},\mbox{パラメータリス
+          ト},\mbox{名前},\mbox{パラメータ},\mbox{複文}\}\\
+    T & = & \{'(',')',',',\mathtt{VOID},\mathtt{INT},\mathtt{NAME},\mathtt{PARAM},\mathtt{COMPOUND}\}\\
+    P & = & \left\{\begin{array}{rcl}
           \mbox{関数定義}       & \rightarrow & \mbox{型名}\ \mbox{名前}\ '('\
           \mbox{パラメータリスト}\ ')'\ \mbox{複文}                              \\
           \mbox{関数定義}       & \rightarrow & \mbox{型名}\ \mbox{名前}\
@@ -210,8 +208,9 @@
           \mbox{パラメータ}\     & \rightarrow & \mathtt{PARAM}             \\
           \mbox{複文}\        & \rightarrow & \mathtt{COMPOUND}          \\
         \end{array}
-        \right\}}
+        \right\}
   \end{eqnarray*}
+  }
   % \begin{center}
   %  \includegraphics[height=.2\textheight]{syntree01-crop.pdf}
   % \end{center}
@@ -386,7 +385,7 @@
   \quad \greentext{解析木のサイズは大きくなる}
 
   \[
-    G_2=(\{\mbox{論理式,AND式}\},\{\mathtt{OR},\mathtt{AND},\mathtt{EQT}\},P_1,\mbox{論理式})
+    G_2=(\{\mbox{論理式,AND式}\},\{\mathtt{OR},\mathtt{AND},\mathtt{EQT}\},P_2,\mbox{論理式})
   \]
   \[
     P_2=\left\{\begin{array}{l}
@@ -594,7 +593,7 @@
 \begin{frame}
   \frametitle{構文解析アルゴリズム}
 
-  プリオーダー、インオーダー、ポストオーダ：木構造に対する1次元表現
+  プリオーダー、インオーダー、ポストオーダー：木構造に対する1次元表現
 
   \begin{center}
     \begin{tabular}{ll}
@@ -957,7 +956,7 @@
   }
 
   ($\varepsilon\in First(\alpha)$とすると)
-  最左導出の先頭の文字が$First(\alpha)\backslash\{\varepsilon\}\cup Follow(\alpha)$の場合，規則１を適用\\
+  最左導出の先頭の文字が$First(\alpha)\backslash\{\varepsilon\}\cup Follow(A)$の場合，規則１を適用\\
   最左導出の先頭の文字がFirst($\beta$)である場合，規則２を適用
 
   \vspace*{10pt}
@@ -1086,7 +1085,7 @@
 
   {\small
     \[
-      S\Rightarrow N N'\uncover<2->{\Rightarrow N'' N'}\uncover<3->{\Rightarrow a_1\cdots a_k N'}\uncover<4->{\Rightarrow a_1\cdots a_k M}\uncover<5>{a_1\cdots a_k b_1\cdots b_p}
+      S\Rightarrow N N'\uncover<2->{\Rightarrow N'' N'}\uncover<3->{\Rightarrow a_1\cdots a_k N'}\uncover<4->{\Rightarrow a_1\cdots a_k M}\uncover<5>{\Rightarrow a_1\cdots a_k b_1\cdots b_p}
     \]
   }
   \vspace*{15pt}
@@ -1178,8 +1177,8 @@
 
   {\scriptsize
   \begin{eqnarray*}
-    \mbox{パラメータリスト} & \rightarrow & \mbox{パラメータ}\
-    \mbox{パラメータリスト}\\
+    \mbox{パラメータリスト} & \rightarrow & \mbox{パラメータリスト}\
+    \mbox{パラメータ}\\
     \mbox{パラメータリスト} & \rightarrow & \mbox{パラメータ}
   \end{eqnarray*}
   }
@@ -1406,7 +1405,7 @@
         \item [(1)] $P$中のすべての規則の右辺が$(N\cup\Sigma)^\ast$の要素になるまで以下の操作を繰り返す。
               右辺に$\vert$, $\ast$が現れている規則 $A\rightarrow e$を$P$から除く。
               \begin{itemize}
-                \item $e=e_1\vert e_2$のとき:$P$に$A\rightarrow e_1$. $A\rightarrow e_2$を追加。
+                \item $e=e_1\vert e_2$のとき:$P$に$A\rightarrow e_1$, $A\rightarrow e_2$を追加。
                 \item $e=e_1e_2$のとき: 新しい非終端記号$B$を導入して、$A\rightarrow e_1B$と$B\rightarrow e_2$を追加。
                       非終端記号の集合に$B$を追加。
                 \item $e=e^\ast$のとき: 新しい非終端記号を導入して、$A\rightarrow B$, $B\rightarrow eB$, $B\rightarrow\varepsilon$を$P$に追加。$B$を非終端記号の集合に追加。
@@ -1426,35 +1425,34 @@
 
 \begin{frame}
   \frametitle{拡張CF文法における$\mathsf{First}_1$と$\mathsf{Follow}_1$}
-  \begin{center}{\scriptsize
-      \begin{itembox}[l]{定義4.5 [$First_1(e)$]}
-        \begin{itemize}
-          \item $e=\varepsilon$のとき: $\{\varepsilon\}$, $e\in\Sigma$のとき: $\{e\}$
-          \item $e=e_1\vert e_2$のとき: $\mathsf{First}_1(e_1)\cup\mathsf{First}_2(e_2)$
-          \item $e=e_1e_2$のとき:
-                \begin{list}{}{}
-                  \item $\varepsilon\in\mathsf{First}_1(e_1)$のとき　$\mathsf{First}_1(e_1)\backslash\{\varepsilon\}\cup\mathsf{First}_1(e_2)$
-                  \item $\varepsilon\notin\mathsf{First}_1(e_1)$のとき　$\mathsf{First}_1(e_1)$
-                \end{list}
-          \item $e=e_1^\ast$のとき: $\mathsf{First}_1(e_1)\cup\{\varepsilon\}$
-        \end{itemize}
-      \end{itembox}
-
-      \begin{itembox}[l]{定義4.6 [$Follow_1(e)$]}
-        \begin{itemize}
-          \item $A\rightarrow e\in P$のとき $\mathsf{Follow}_1(e):=\mathsf{Follow_1}(A)$
-          \item $e=e_1|e_2$のとき　$\mathsf{Follow}_1(e_1):=\mathsf{Follow}_1(e)$, $\mathsf{Follow}_1(e_2):=\mathsf{Follow}_1(e)$
-          \item $e=e_1e_2$のとき　$\mathsf{Follow}_1(e_2):=\mathsf{Follow}_1(e)$\\
-                \begin{list}{}{}
-                  \item $\varepsilon\in\mathsf{First}_1(e_2)$のとき$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_2)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(e)$
-                  \item $\varepsilon\notin\mathsf{First}_1(e_2)$のとき$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_2)$
-                \end{list}
-          \item $e=e^\ast$のとき　$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_1)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(e)$
-        \end{itemize}
-      \end{itembox}
-    }
-
-  \end{center}
+  \vspace*{-2mm}
+  {\scriptsize
+    \begin{itembox}[l]{定義4.5 [$First_1(e)$]}
+      \begin{itemize}
+        \item $e=\varepsilon$のとき: $\{\varepsilon\}$, $e\in\Sigma$のとき: $\{e\}$
+        \item $e=e_1\vert e_2$のとき: $\mathsf{First}_1(e_1)\cup\mathsf{First}_1(e_2)$
+        \item $e=e_1e_2$のとき:
+              \begin{list}{}{}
+                \item $\varepsilon\in\mathsf{First}_1(e_1)$のとき　$\mathsf{First}_1(e_1)\backslash\{\varepsilon\}\cup\mathsf{First}_1(e_2)$
+                \item $\varepsilon\notin\mathsf{First}_1(e_1)$のとき　$\mathsf{First}_1(e_1)$
+              \end{list}
+        \item $e=e_1^\ast$のとき: $\mathsf{First}_1(e_1)\cup\{\varepsilon\}$
+      \end{itemize}
+    \end{itembox}
+    \vspace*{-2mm}
+    \begin{itembox}[l]{定義4.6 [$Follow_1(e)$]}
+      \begin{itemize}
+        \item $A\rightarrow e\in P$のとき $\mathsf{Follow}_1(e):=\mathsf{Follow}_1(A)$
+        \item $e=e_1|e_2$のとき　$\mathsf{Follow}_1(e_1):=\mathsf{Follow}_1(e)$, $\mathsf{Follow}_1(e_2):=\mathsf{Follow}_1(e)$
+        \item $e=e_1e_2$のとき　$\mathsf{Follow}_1(e_2):=\mathsf{Follow}_1(e)$\\
+              \begin{list}{}{}
+                \item $\varepsilon\in\mathsf{First}_1(e_2)$のとき$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_2)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(e)$
+                \item $\varepsilon\notin\mathsf{First}_1(e_2)$のとき$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_2)$
+              \end{list}
+        \item $e=e_1^\ast$のとき　$\mathsf{Follow}_1(e_1):=\mathsf{First}_1(e_1)\backslash\{\varepsilon\}\cup\mathsf{Follow}_1(e)$
+      \end{itemize}
+    \end{itembox}
+  }
 \end{frame}
 
 \begin{frame}
@@ -1633,7 +1631,7 @@
   $\Term{Literal}$は数のトークンであるとする。
 
   \greentext{\small $\NTerm{AddExpr}$と$\NTerm{MulExpr}$にはそれぞれ１つしか生成規則はなく，
-    $\NTerm{PrimExpr}$については、$\First{(\Term{(}\ \NTerm{AddExpr}\ \Term{)}}=\{\Term{(}\}$，
+    $\NTerm{PrimExpr}$については、$\First(\Term{(}\ \NTerm{AddExpr}\ \Term{)})=\{\Term{(}\}$，
     $\First(\Term{Literal})$は互いに素であることから$ELL(1)$文法である．}
 
   %以下，例の実行方法については講義ページを参照
@@ -1654,7 +1652,7 @@
     \includegraphics[width=0.45\textwidth]{MulExpr-jjt-crop.pdf} \\
     \includegraphics[width=0.45\textwidth]{PrimeExpr-crop.pdf}
      &
-    \includegraphics[width=0.52\textwidth]{Literal-jjt-crop.pdf}
+    \includegraphics[width=0.48\textwidth]{Literal-jjt-crop.pdf}
   \end{tabular}
 \end{frame}
 
