@@ -8,4 +8,5 @@
 *.snm
 *.synctex.gz
 *.toc
-
+*.vrb
+*.toc
