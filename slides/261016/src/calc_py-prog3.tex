@@ -1,0 +1,28 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+# 単項マイナス (%prec UMINUS に相当)
+    @_('"-" expr %prec UMINUS')
+    def expr(self, p):
+        return -p.expr
+
+    # 括弧
+    @_('"(" expr ")"')
+    def expr(self, p):
+        return p.expr
+
+    # 数値
+    @_('NUMBER')
+    def expr(self, p):
+        return p.NUMBER
+
+    # 構文エラー処理
+    def error(self, p):
+        if p:
+            print(f"構文エラー: '{p.value}' (位置: {p.index})")
+        else:
+            print("構文エラー: 式が途中で終わっています")
+\end{Verbatim}
+\end{document}

@@ -1,0 +1,34 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+from sly import Lexer, Parser
+
+class CalcLexer(Lexer):
+    # トークン名のセット
+    tokens = {NUMBER}
+
+    # 1文字の演算子・記号（そのままリテラルとして扱う）
+    literals = {'+', '-', '*', '/', '(', ')'}
+
+    # 無視する文字（空白とタブ）
+    ignore = ' \t'
+
+    # 数値のトークン化規則（整数と小数の両方に対応）
+    @_(r'\d+(\.\d+)?')
+    def NUMBER(self, t):
+        t.value = float(t.value) if '.' in t.value else int(t.value)
+        return t
+
+    # 改行処理
+    @_(r'\n+')
+    def ignore_newline(self, t):
+        self.lineno += t.value.count('\n')
+
+    # 字句エラー処理
+    def error(self, t):
+        print(f"不正な文字です: '{t.value[0]}' (行 {self.lineno})")
+        self.index += 1
+\end{Verbatim}
+\end{document}

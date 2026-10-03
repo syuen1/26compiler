@@ -1,0 +1,38 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+/* y.tab.h より前に YYSTYPE を定義、または extern 宣言 */
+#ifndef YYSTYPE
+typedef int YYSTYPE;
+#endif
+extern YYSTYPE yylval;
+
+#include "y.tab.h"  /* yacc が生成するトークン定義を取り込む */
+%}
+
+%%
+
+[0-9]+      {
+                yylval = atoi(yytext);
+                return NUMBER;
+            }
+
+[ \t]       ; /* 空白・タブは無視 */
+
+\n          { return '\n'; }
+
+.           { return yytext[0]; }
+
+%%
+
+int yywrap(void) {
+    return 1;
+}
+\end{Verbatim}
+\end{document}

@@ -1,0 +1,36 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+  %{
+  #include <stdio.h>
+  #include <stdlib.h>
+
+  int yylex(void);
+  void yyerror(const char *s);
+  %}
+
+  /* トークン定義 */
+  %token NUMBER
+
+  /* 演算子の優先順位と結合性 */
+  %left '+' '-'
+  %left '*' '/'
+  %nonassoc UMINUS
+
+  %%
+
+  /* 構文規則 */
+  input:
+  /* 空入力を許容 */
+  | input line
+  ;
+
+  line:
+  '\n'            { printf("> "); }
+  | expr '\n'       { printf("= %d\n> ", $1); }
+  | error '\n'      { yyerrok; printf("> "); }
+  ;
+\end{Verbatim}
+\end{document}

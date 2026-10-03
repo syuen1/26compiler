@@ -1,0 +1,25 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+if __name__ == '__main__':
+    lexer = CalcLexer()
+    parser = CalcParser()
+
+    print("SLY 電卓プログラム
+    	(Ctrl+C または Ctrl+D で終了)")
+    while True:
+        try:
+            text = input('> ')
+        except (EOFError, KeyboardInterrupt):
+            print("\n終了します。")
+            break
+
+        if text.strip():
+            result = 
+	        parser.parse(lexer.tokenize(text))
+            if result is not None:
+                print(f"= {result}")
+\end{Verbatim}
+\end{document}

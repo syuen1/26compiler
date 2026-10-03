@@ -1,0 +1,14 @@
+*.aux
+*.dvi
+*.fls
+*.fdb_latexmk
+*.log
+*.out
+*.snm
+*.toc
+*.vrb
+*.nav
+*.synctex.gz
+*:Zone.Identifier
+.DS_Store
+.smb*

@@ -1,0 +1,16 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\begin{document}
+\begin{tabular}{|c|c|c|c|c|c|c|}\hline
+      & \multicolumn{4}{|c}{action} & \multicolumn{2}{|c|}{GOTO}\\\cline{2-7}
+      & \texttt{OR} & \texttt{AND} & \texttt{EQT} & $\#$ & 論理式 & AND式\\\hline
+$S_0$ &             &              & $s_6$ & & 1      &  7   \\
+$S_1$ & $s_2$ &        &              & acc  &        &      \\
+$S_2$ &             &              & $s_6$ & &        &  3   \\
+$S_3$ & $r_1$ & $s_4$ &      & $r_1$ & &   \\
+$S_4$ &             &              & $s_6$ & &        &      \\
+$S_5$ & $r_3$ & $r_3$ & & $r_3$ &      &      \\
+$S_6$ & $r_4$ & $r_4$ & & $r_4$ &      &      \\
+$S_7$ & $r_2$ & $s_4$ &  & $r_2$ &      &      \\\hline
+\end{tabular}
+\end{document}

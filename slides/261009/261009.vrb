@@ -1,54 +1,106 @@
-\frametitle{$G_{Arith}$によるPDTの遷移}
-  \[{\scriptsize\begin{array}{l}
-          First_1(E)=First_1(T)=First_1(F)=\{\verb|'|(\verb|'|,i\}, \\
-          Follow_1(E)=\{\#,+,\verb|'|)\verb|'|\}, Follow_1(T)=Follow_1(F)=\{\#,+,\ast,\verb|'|)\verb|'|\}
-        \end{array}
-      }\]
-  \begin{center}
-    \scalebox{0.6}{
-      $
-        \begin{array}{c|c}
-          \mbox{\sf Shift}                                        & \mbox{\sf Reduce} \\[5pt]\hline
-          \begin{array}{rcl}
-            I_0 & \rightarrow^{(}    & (I_0(I_4,\varepsilon)     \\
-            I_0 & \rightarrow^{i}    & (I_0iI_5,\varepsilon)     \\
-            I_1 & \rightarrow^{+}    & (I_1+I_6,\varepsilon)     \\
-            I_2 & \rightarrow^{\ast} & (I_2\ast I_7,\varepsilon) \\
-            I_4 & \rightarrow^{(}    & (I_4(I_4,\varepsilon)     \\
-            I_6 & \rightarrow^{i}    & (I_6iI_5,\varepsilon)     \\
-            I_7 & \rightarrow^{i}    & (I_7iI_5,\varepsilon)     \\
-            I_7 & \rightarrow^{(}    & (I_7(I_4,\varepsilon)     \\
-            I_8 & \rightarrow^{+}    & (I_8+I_6,\varepsilon)     \\
-            I_8 & \rightarrow^{)}    & (I_8)I_{11},\varepsilon)  \\
-            I_9 & \rightarrow^{\ast} & (I_9\ast I_7,\varepsilon)
-          \end{array} &
-          \begin{array}{rcl}
-            I_0EI_1                & \rightarrow^{(\#)}           & (Acc,\varepsilon) \\
-            I_0EI_1+I_6TI_9        & \rightarrow^{(\#,+,))}       & (I_0EI_1,1)       \\
-            I_0TI_2                & \rightarrow^{(\#,+,))}       & (I_0EI_1,2)       \\
-            I_0TI_2\ast I_7FI_{10} & \rightarrow^{(\#,\ast,+,))}  & (I_0TI_2,3)       \\
-            I_0FI_3                & \rightarrow^{(\#,\ast,+,))}  & (I_0TI_2,4)       \\
-            I_0(I_4EI_8)I_{11}     & \rightarrow^{(\#,\ast,+,))}  & (I_0FI_3,5)       \\
-            I_0iI_5                & \rightarrow^{(\#,\ast,+,))}  & (I_0FI_3,6)       \\
-            I_4EI_8+I_6TI_9        & \rightarrow^{(\#,+,))}       & (I_4EI_8,1)       \\
-            I_4TI_2                & \rightarrow^{(\#,+,))}       & (I_4EI_8,2)       \\
-            I_4TI_2\ast I_7FI_{10} & \rightarrow^{(\#,\ast,+,))}  & (I_4TI_2,3)       \\
-            I_4FI_3                & \rightarrow^{(\#,\ast,+,))}  & (I_4TI_2,4)       \\
-            I_4(I_4EI_8)I_{11}     & \rightarrow^{(\#,\ast,+,))}  & (I_4FI_3,5)       \\
-            I_4iI_5                & \rightarrow^{(\#,\ast,+,))}  &
-            (I_4FI_3,6)                                                               \\
-            I_6TI_9\ast I_7FI_{10} & \rightarrow^{(\#,\ast,+,))}  & (I_6TI_9,3)       \\
-            I_6FI_3                & \rightarrow^{(\#,\ast,+,))}  & (I_6TI_9,4)       \\
-            I_6(I_4EI_8)I_{11}     & \rightarrow^{(\#,\ast,+,))}  & (I_6FI_3,5)       \\
-            I_6iI_5                & \rightarrow^{(\#,)\ast,+,))} &
-            (I_6FI_3,6)                                                               \\
-            I_7(I_4EI_8)I_{11}     & \rightarrow^{(\#,\ast,+,))}  & (I_7FI_{10},5)    \\
-            I_7iI_5                & \rightarrow^{(\#,\ast,+,))}  &
-            (I_7FI_{10},6)                                                            \\
-          \end{array}
-        \end{array}
-      $
+\frametitle{構文木の構成と導出}
+\begin{tikzpicture}
+    {\tiny
+      \node[green] at (0,7) {スタック};
+      \node[green] at (5,7) {入力};
+    }
+    {\scriptsize
+      \only<1>{\node at (1.7,7) {\parbox{8zw}{$I_0$\hfill}};}
+      \only<1>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{(i+n)+i\ast i\#}$\hfill}};}
+      \only<2>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(}$\hfill}};}
+      \only<2>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{i+n)+i\ast i\#}$\hfill}};}
+        \only<3>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(i}$\hfill}};}
+        \only<4>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(E}$\hfill}};}
+        \only<3,4>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{+n)+i\ast i\#}$\hfill}};}
+    \only<5>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(E+}$\hfill}};}
+    \only<5>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{n)+i\ast i\#}$\hfill}};}
+      \only<6>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(E+n}$\hfill}};}
+      \only<7>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(E+E}$\hfill}};}
+      \only<8>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(E}$\hfill}};}
+      \only<6-8>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{)+i\ast i\#}$\hfill}};}
+    \only<9>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{(E)}$\hfill}};}
+    \only<10,18>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E}$\hfill}};}
+    \only<9,10>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{+i\ast i\#}$\hfill}};}
+    \only<11>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+}$\hfill}};}
+    \only<11>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{i\ast i\#}$\hfill}};}
+    \only<12>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+i}$\hfill}};}
+    \only<13>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+E}$\hfill}};}
+    \only<12,13>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{\ast i\#}$\hfill}};}
+    \only<14>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+E\ast}$\hfill}};}
+    \only<14>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{i\#}$\hfill}};}
+    \only<15>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+E\ast i}$\hfill}};}
+    \only<16>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+E\ast E}$\hfill}};}
+    \only<17>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E+E}$\hfill}};}
+    \only<15,16,17,18>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{\#}$\hfill}};}
+    \only<18>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E}$\hfill}};}
+    \only<18>{\node at (1.7,7) {\parbox{8zw}{$I_0\mathtt{E}$\hfill}};}
+    \only<15,16,17,18>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{\#}$\hfill}};}
+    \only<19>{\node at (1.7,7) {\parbox{8zw}{$I_0$\hfill}};}
+    \only<19>{\node at (6.5,7) {\parbox{8zw}{$\mathtt{}$\hfill}};}
     }
 
-    % \includegraphics[height=.7\textheight]{PDTtran-r1.eps}
-  \end{center}
+    {\scriptsize
+    \only<2->{\node (T01) at (0,1.25) {$\mathtt{(}$};}
+    \only<3->{\node (T02) at (0.25,1.25) {$\mathtt{i}$};}
+    \only<4->{\node (N01) at (0.25,2) {$E$}; \path[-] (T02) edge (N01);}
+    \only<5->{\node (T03) at (0.5,1.25) {$\mathtt{+}$};}
+    \only<6->{\node (T04) at (0.75,1.25) {$\mathtt{n}$};}
+    \only<7->{\node (N02) at (0.75,2) {$E$};\path[-] (T04) edge (N02);}
+    \only<8->{\node (N03) at (0.5,2.75) {$E$};\path[-] (N01) edge (N03) (N02) edge (N03);}
+    \only<9->{\node (T05) at (1,1.25) {$\mathtt{)}$};}
+    \only<10->{\node (N04) at (0.5,3.5) {$E$};\path[-] (T01) edge +(0,1.5) +(0,1.5) edge (N04) (T05) edge +(0,1.5) +(0,1.5) edge (N04) (N03) edge (N04);}
+    \only<11->{\node (T06) at (1.25,1.25) {$\mathtt{+}$};}
+    \only<12->{\node (T07) at (1.5,1.25) {$\mathtt{i}$};}
+    \only<13->{\node (N05) at (1.5,2) {$E$};\path[-] (T07) edge (N05);}
+    \only<14->{\node (T08) at (1.75,1.25) {$\mathtt{\ast}$};}
+    \only<15->{\node (T08) at (2,1.25) {$\mathtt{i}$};}
+    \only<16->{\node (N06) at (2,2) {$E$};\path[-] (T08) edge (N06);}
+    \only<17->{\node (N07) at (1.75,2.75) {$E$};\path[-] (N05) edge (N07) (N06) edge (N07);}
+    \only<18->{\node (N08) at (1,4.25) {$E$};\path[-] (N04) edge (N08) (N07) edge (N08);}
+    }
+
+    {\scriptsize
+    \node at (0,0.5) {$E$};
+    \node at (0.4,0.5) {$\rightarrow$};
+    \node at (1,0.5) {$E\ \verb|+|\ E$};
+    \node at (1.75,0.5) {$\vert$};
+    \node at (2.5,0.5) {$E\ \verb|-|\ E$};
+    \node at (3.25,0.5) {$\vert$};
+    \node at (4,0.5) {$E\ \verb|*|\ E$};
+    \node at (4.75,0.5) {$\vert$};
+    \node at (5.5,0.5) {$E\ \verb|/|\ E$};
+    \node at (6.25,0.5) {$\vert$};
+    \node at (7,0.5) {$\verb|(|\ E\ \verb|)|$};
+    \node at (7.75,0.5) {$\vert$};
+    \node at (8.25,0.5) {$i$};
+    \node at (8.75,0.5) {$\vert$};
+    \node at (9.25,0.5) {$n$};
+    \node[blue] at (1,0.25) {$1$};
+    \node[blue] at (2.5,0.25) {$2$};
+    \node[blue] at (4,0.25) {$3$};
+    \node[blue] at (5.5,0.25) {$4$};
+    \node[blue] at (7,0.25) {$5$};
+    \node[blue] at (8.25,0.25) {$6$};
+    \node[blue] at (9.25,0.25) {$7$};
+    }
+
+    {\scriptsize
+    \only<1->{\node at (4.5,6) {\parbox{5zw}{$\mathtt{(i+n)+i\ast i\#}$\hfill}};}
+    \only<4->{\node at (6.2,6) {$\Leftarrow_6$};}
+    \only<4->{\node at (7.2,6) {\parbox{5zw}{$\mathtt{(}E\mathtt{+n)+i\ast i\#}$\hfill}};}
+    \only<7->{\node at (3.5,5.5) {$\Leftarrow_7$};}
+    \only<7->{\node at (4.5,5.5) {\parbox{5zw}{$\mathtt{(}E\mathtt{+}E\mathtt{)+i\ast i\#}$\hfill}};}
+    \only<8->{\node at (6.2,5.5) {$\Leftarrow_1$};}
+    \only<8->{\node at (7.2,5.5) {\parbox{5zw}{$\mathtt{(}E\mathtt{)+i\ast i\#}$\hfill}};}
+    \only<10->{\node at (3.5,5) {$\Leftarrow_5$};}
+    \only<10->{\node at (4.5,5) {\parbox{5zw}{$E\mathtt{+i\ast i\#}$\hfill}};}
+    \only<13->{\node at (6.2,5) {$\Leftarrow_6$};}
+    \only<13->{\node at (7.2,5) {\parbox{5zw}{$E\mathtt{+}E\mathtt{\ast i\#}$\hfill}};}
+    \only<16->{\node at (3.5,4.5) {$\Leftarrow_6$};}
+    \only<16->{\node at (4.5,4.5) {\parbox{5zw}{$E\mathtt{+}E\mathtt{\ast}E\mathtt{\#}$\hfill}};}
+    \only<17->{\node at (6.2,4.5) {$\Leftarrow_3$};}
+    \only<17->{\node at (7.2,4.5) {\parbox{5zw}{$E\mathtt{+}E\mathtt{\#}$\hfill}};}
+    \only<18->{\node at (3.5,4) {$\Leftarrow_1$};}
+    \only<18->{\node at (4.5,4) {\parbox{5zw}{$E\mathtt{\#}$\hfill}};}
+    }
+  \end{tikzpicture}

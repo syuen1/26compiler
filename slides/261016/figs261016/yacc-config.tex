@@ -1,0 +1,35 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node[draw,rectangle,inner sep=10pt] (yacc) at (0,0)
+  {\begin{tabular}{l}yacc記述：\\\hline
+    \multicolumn{1}{c}{$\cdots$}\\
+    \texttt{\%\%}\\
+    \multicolumn{1}{c}{CF文法}\\
+    \texttt{\%\%}\\
+    \multicolumn{1}{c}{$\cdots$}
+  \end{tabular}
+  };
+  \node[draw,rectangle,inner sep=10pt] (lex) at (4,0)
+  {\begin{tabular}{l}lex記述：\\\hline
+    \multicolumn{1}{c}{$\cdots$}\\
+    \texttt{\%\%}\\
+    \multicolumn{1}{c}{正規表現}\\
+    \texttt{\%\%}\\
+    \multicolumn{1}{c}{$\cdots$}
+  \end{tabular}
+  };
+  \node[draw] (ytab) at (0,-3.5) 
+  {\begin{tabular}{l}\texttt{y.tab.c}\\\texttt{y.tab.h}\end{tabular}};
+  \node[draw] (lexcc) at (4,-3.5)
+  {\texttt{yy.lex.c}};
+  \node[draw] (parser) at (2,-5) {\hbox to 5cm{\hfill LALR(1)パーザー\hfill}};
+
+  \path[->,thick] (yacc) edge [right] node {\texttt{yacc}} (ytab) 
+                  (lex) edge [right] node {\texttt{lex}} (lexcc);
+  \path[->,thick] (ytab) edge (parser) (lexcc) edge (parser);
+\end{tikzpicture}
+\end{document}

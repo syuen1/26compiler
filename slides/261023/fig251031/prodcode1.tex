@@ -1,0 +1,17 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\usepackage{tabularx}
+\begin{document}
+\begin{tabularx}{.7\textwidth}{XX}
+  生成規則 & 出力される3番地コード\\\hline
+  $E_3\rightarrow\texttt{NUM}_0$ & $\texttt{t1}=\texttt{NUM}_0.val$\\
+  $E_2\rightarrow E_3\,\texttt{+}\,\texttt{NUM}_1$ &
+  $\texttt{t2}=\texttt{t1}+\texttt{NUM}_1.val$\\
+  $E_1\rightarrow E_2\,\texttt{+}\,\texttt{NUM}_2$ &
+  $\texttt{t3}=\texttt{t2}+\texttt{NUM}_2.val$\\
+  $S\rightarrow\texttt{ID}\,\texttt{=}\,E_1\,\texttt{;}$ &
+  $\texttt{ID}.name=\texttt{t3}$
+\end{tabularx}
+\end{document}

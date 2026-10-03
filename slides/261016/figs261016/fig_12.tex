@@ -1,0 +1,89 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\newcommand{\ANDex}{\mbox{AND式}}
+\newcommand{\LOGex}{\mbox{論理式}}
+\newcommand{\ortx}{\texttt{OR}}
+\newcommand{\andtx}{\texttt{AND}}
+\newcommand{\eqtex}{\texttt{EQT}}
+\begin{document}
+\scalebox{0.5}{
+\begin{tikzpicture}
+\node[draw,rectangle,rounded corners=10,thick,label=155:{$S0$}]
+ (S0) at (0,0) {
+    \begin{tabular}{l}
+      $[S'\rightarrow\bullet\mbox{論理式}\#,\varepsilon]$\\
+      $[\mbox{論理式}\rightarrow\bullet\mbox{論理式}\ \texttt{OR}\ \mbox{AND式},\#/\texttt{OR}]$\\
+      $[\mbox{論理式}\rightarrow\bullet\mbox{AND式},\#/\texttt{OR}]$\\
+      $[\mbox{AND式}\rightarrow\bullet\mbox{AND式}\ \texttt{AND}\ \texttt{EQT},\#/\texttt{AND}/\texttt{OR}]$\\
+      $[\mbox{AND式}\rightarrow\bullet\texttt{EQT},\#/\texttt{AND}/\texttt{OR}]$
+    \end{tabular}
+};
+\node[draw,rectangle,rounded corners=10,thick,label=170:{$S7$}]
+(S7) at (0,-3) {
+    \begin{tabular}{l}
+      $[\ANDex\rightarrow\ANDex\bullet\andtx\ \eqtex,\#/\andtx/\ortx]$\\
+      $[\ANDex\rightarrow\ANDex\bullet,\#/\ortx]$
+    \end{tabular}
+};
+
+\node[draw,rectangle,rounded corners=10,thick,label=165:{$S1$}]
+(S1) at (8,1) {
+  \begin{tabular}{l}
+    $[S\rightarrow\LOGex\bullet\#,\varepsilon]$\\
+    $[\LOGex\rightarrow\LOGex\bullet\ortx\ \ANDex,\#/\ortx]$
+  \end{tabular}
+};
+
+\node[draw,rectangle,rounded corners=10,thick,label=165:{$S6$}]
+(S6) at (8,-1) {
+  \begin{tabular}{l}
+    $[\ANDex\rightarrow\eqtex\bullet,\#/\andtx/\ortx]$
+  \end{tabular}
+};
+
+\node[draw,rectangle,rounded corners=10,thick,label=155:{$S2$}]
+(S2) at (16,0) {
+  \begin{tabular}{l}
+    $[\LOGex\rightarrow\LOGex\ \ortx\bullet\ANDex,\#/\ortx]$\\
+    $[\ANDex\rightarrow\bullet\ANDex\ \andtx\ \eqtex,\#/\andtx/\ortx]$\\
+    $[\ANDex\rightarrow\bullet\eqtex,\#/\andtx/\ortx]$
+  \end{tabular}
+};
+
+\node[draw,rectangle,rounded corners=10,thick,label=165:{$S3$}]
+(S3) at (16,-3) {
+  \begin{tabular}{l}
+    $[\LOGex\rightarrow\LOGex\ \ortx\bullet\ANDex,\#]$\\
+    $[\ANDex\rightarrow\ANDex\bullet\andtx\ \eqtex,\#]$
+  \end{tabular}
+};
+
+\node[draw,rectangle,rounded corners=10,thick,label=165:{$S4$}]
+(S4) at (8,-4) {
+  \begin{tabular}{l}
+    $[\ANDex\rightarrow\ANDex\andtx\bullet\eqtex,\#/\andtx/\ortx]$
+  \end{tabular}
+};
+
+\node[draw,rectangle,rounded corners=10,thick,label=165:{$S5$}]
+(S5) at (8,-6) {
+  \begin{tabular}{l}
+    $[\ANDex\rightarrow\ANDex\andtx\ \eqtex\bullet,\#/\andtx/\ortx]$
+  \end{tabular}
+};
+
+
+\path[->,thick](S0) edge [right] node {$\ANDex$} (S7);
+\path[->,thick](S0) edge [above] node {$\LOGex$} (S1);
+\path[->,thick](S0) edge [above] node {$\eqtex$} (S6);
+\path[->,thick](S1) edge [above] node {$\ortx$} (S2);
+\path[->,thick](S7) edge [above] node {$\andtx$} (S4);
+\path[->,thick](S2) edge [above] node {$\eqtex$}(S6);
+\path[->,thick](S2) edge [right] node {$\ANDex$}(S3);
+\path[->,thick](S3) edge [above] node {$\andtx$}(S4);
+\path[->,thick](S4) edge [right] node {$\eqtex$}(S5);
+\end{tikzpicture}
+}
+\end{document}
