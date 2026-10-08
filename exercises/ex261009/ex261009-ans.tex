@@ -1,0 +1,97 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\setlength{\textheight}{23.5cm}
+\usepackage{tikz}
+\usetikzlibrary{automata,calc,shapes}
+\usepackage{tabularx}
+\pagestyle{empty}
+\newcounter{coffee}
+\newcounter{bean}
+\begin{document}
+% \begin{flushright}
+% \end{flushright}
+\begin{center}
+  {\bf\Large コンパイラ演習課題(2)(解答例)}
+\end{center}
+
+
+\begin{list}{\arabic{coffee}.}{\usecounter{coffee}}
+  \item 逆ポーランド記法
+        \begin{list}{(\alph{bean})}{\usecounter{bean}}
+          \item \verb|a*b+c|\\
+                \verb|ab*c+|
+          \item \verb|a*b-c*(d+e)|\\
+                \verb|ab*cde+*-|
+        \end{list}
+  \item
+        \begin{list}{(\alph{bean})}{\usecounter{bean}}
+          \item\ \\
+                \[\left\{\begin{array}{rcl}
+                    S  & \rightarrow & i E t S S',   \\
+                    S  & \rightarrow & a         ,   \\
+                    S' & \rightarrow & e S       ,   \\
+                    S' & \rightarrow & \varepsilon , \\
+                    E  & \rightarrow                 \\
+                  \end{array}\right\}
+                \]
+          \item \ \\
+                $i\;b\;t\;i\;b\;t\;a\;e\;a$に対して以下の２つの構文解析木が存在する．\\
+                \begin{center}
+                  \begin{tabularx}{.8\linewidth}{XX}
+                    \begin{tikzpicture}
+                      \node (Root) at (0,0) {$S$};
+                      \node (N1) at (-1,-2) {$E$};
+                      \node (N2) at (0.5,-1) {$S$};
+                      \node (N3) at (0.5,-2) {$E$};
+                      \node (N4) at (1.5,-2) {$S$};
+                      \node (N5) at (2.5,-2) {$S$};
+                      \node (N6) at (-1.5,-3) {$i$};
+                      \node (N7) at (-1,-3) {$b$};
+                      \node (N8) at (-0.5,-3) {$t$};
+                      \node (N9) at (0,-3) {$i$};
+                      \node (N10) at (0.5,-3) {$b$};
+                      \node (N11) at (1,-3) {$t$};
+                      \node (N12) at (1.5,-3) {$a$};
+                      \node (N13) at (2,-3) {$e$};
+                      \node (N14) at (2.5,-3) {$a$};
+                      \path[-] (Root) [out=180,in=90] edge (N6);
+                      \path[-] (Root) edge (N1) (Root) edge (N8) (Root) edge (N2);
+                      \path[-] (Root) [out=315,in=90] edge (N13);
+                      \path[-] (Root) [out=0,in=90] edge (N5);
+                      \path[-] (N5) edge (N14);
+                      \path[-] (N1) edge (N7) (N2) edge (N3) (N2) edge (N4);
+                      \path[-] (N2) [out=240,in=90] edge (N9);
+                      \path[-] (N3) edge (N10) (N4) edge (N12);
+                      \path[-] (N2) [out=300,in=90] edge (N11);
+                    \end{tikzpicture}
+                     &
+                    \begin{tikzpicture}
+                      \node (Root) at (0,0) {$S$};
+                      \node (N1) at (-1,-2) {$E$};
+                      \node (N2) at (1.5,-1) {$S$};
+                      \node (N3) at (0.5,-2) {$E$};
+                      \node (N4) at (1.5,-2) {$S$};
+                      \node (N5) at (2.5,-2) {$S$};
+                      \node (N6) at (-1.5,-3) {$i$};
+                      \node (N7) at (-1,-3) {$b$};
+                      \node (N8) at (-0.5,-3) {$t$};
+                      \node (N9) at (0,-3) {$i$};
+                      \node (N10) at (0.5,-3) {$b$};
+                      \node (N11) at (1,-3) {$t$};
+                      \node (N12) at (1.5,-3) {$a$};
+                      \node (N13) at (2,-3) {$e$};
+                      \node (N14) at (2.5,-3) {$a$};
+                      \path[-] (Root) [out=180,in=90] edge (N6);
+                      \path[-] (Root) edge (N1) (N1) edge (N7) (Root) edge (N8);
+                      \path[-] (Root) edge (N2);
+                      \path[-] (N2) [out=180,in=90] edge (N9);
+                      \path[-] (N2) edge (N3) (N3) edge (N10) (N2) edge (N4)
+                      (N2) edge (N5) (N4) edge (N12) (N5) edge (N14);
+                      \path[-] (N2) [out=240,in=90] edge (N11);
+                      \path[-] (N2) [out=300,in=90] edge (N13);
+                    \end{tikzpicture}
+                  \end{tabularx}
+                \end{center}
+        \end{list}
+  \item
+\end{list}
+\end{document}
