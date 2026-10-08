@@ -277,7 +277,7 @@ def print_table(history):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path, help="UTF-8の文法ファイル")
-    parser.add_argument("--all", action="store_true", help="右辺の全接尾語のFIRSTも表示")
+    parser.add_argument("--all", action="store_true", help="互換用オプション（右辺の全接尾語は常に表示）")
     parser.add_argument("-v", "--verbose", action="store_true", help="手順1・2・3・4(a)・4(b)の計算過程を表示")
     parser.add_argument("-T", "--table", action="store_true", help="横軸を計算ステップ、縦軸をFIRSTの全引数とした表を表示")
     parser.add_argument("--csv", type=Path, metavar="出力ファイル", help="全ステップを分割しないCSV表として保存（-Tと併用可）")
@@ -310,13 +310,8 @@ def main():
         return 0
     if args.verbose:
         print("計算結果:")
-    for symbol in sorted(n):
-        print(f"FIRST({symbol}) = {format_set(first[(symbol,)])}")
-    if args.all:
-        print("\n右辺の接尾語:")
-        for alpha in sorted(suffixes, key=lambda x: (len(x), x)):
-            label = " ".join(alpha) if alpha else EPSILON
-            print(f"FIRST({label}) = {format_set(first[alpha])}")
+    for alpha in sorted(first, key=lambda x: (len(x), x)):
+        print(f"FIRST({format_sequence(alpha)}) = {format_set(first[alpha])}")
     return 0
 
 
