@@ -1,4 +1,4 @@
-%token u,v,w,x,y,z
+%token u v w x y z
 %start S
 %%
 S : u B D z;
