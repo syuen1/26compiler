@@ -1,0 +1,23 @@
+\documentclass{jarticle}
+\usepackage{etex}
+\include{cmacros}
+\pagestyle{empty}
+\usepackage{pst-all}
+\begin{document}
+   \begin{pspicture}(0,0)(5,4)
+    \setlength{\normalgap}{0.4pt}
+    \setlength{\indentval}{1pt}
+    \setlength{\rowheight}{7.5pt}
+    \setlength{\colpos}{0pt}
+    \rindent
+    \cstatline{t=1}\nnextline
+    \cstatline{n=10}\nnextline
+    \lindent
+    \cstatline{l1: t=t*n}\nnextline
+    \rindent
+    \cstatline{n=n-1}\nnextline
+    \cstatline{b=n>1}\nnextline
+    \cstatline{if b goto l1}\nnextline
+    \cstatline{f=t}
+   \end{pspicture}
+\end{document}

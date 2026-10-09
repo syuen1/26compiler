@@ -1,0 +1,52 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\begin{document}
+\begin{tikzpicture}
+  \node[draw,label={45:$1$}] (B1) at (0,0) {
+    $\begin{array}{l}
+      i_1\leftarrow 1\\
+      j_1\leftarrow 1\\
+      k_1\leftarrow 0
+  \end{array}$};
+  \node[draw,label={45:$2$}] (B2) at (0,-3) {
+      $\mathrm{if}\ k_2<100$
+    };
+  % \node[draw,label={135:$3$}] (B3) at (-2,-4) {
+  %   \mbox{\ \ \ \ \ }
+  % };
+  \node[draw,label={45:$4$}] (B4) at (1,-4) {
+    $\mathrm{return}\ j_2$
+  };
+  \node[draw,label={135:$5$}] (B5) at (-1,-4) {
+    $
+%      j_3\leftarrow i_1\\
+      k_3\leftarrow k_2+1
+    $
+  };
+  %%
+  \node[draw] (P1B2) at (0,-2) {
+    $k_2\leftarrow k_1$
+  };
+
+  \node[draw] (P2B2) at (-1,-5) {
+    $k_2\leftarrow k_3$
+  };
+  % \node[draw,label={15:$6$}] (B6) at (1,-5.5) {
+  %   $\begin{array}{l}
+  %     j_5\leftarrow k_2\\
+  %     k_5\leftarrow k_2+2
+  %   \end{array}$
+  % };
+%   \node[draw,label={15:$7$}] (B7) at (0,-7.5) {
+%     $\begin{array}{l}
+% %      j_4\leftarrow\phi(j_3,j_5)\\
+%       k_4\leftarrow\phi(k_3)
+%     \end{array}$
+%  };
+  \path[->] (B1) edge (P1B2) (P1B2) edge (B2) (B2) edge (B4);
+  \path[->] (B2) edge (B5) (B5) edge (P2B2);
+  \path[->,out=210,in=150,looseness=2] (P2B2) edge (B2);
+\end{tikzpicture}
+\end{document}

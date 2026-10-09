@@ -1,0 +1,25 @@
+\documentclass{jarticle}
+\usepackage{etex}
+\usepackage{pst-all}
+\include{cmacros}
+\pagestyle{empty}
+\begin{document}
+   \begin{pspicture}(0,0)(5,4)
+    \setlength{\normalgap}{0.4pt}
+    \setlength{\indentval}{1pt}
+    \setlength{\rowheight}{7.5pt}
+    \setlength{\colpos}{0pt}
+    \rindent
+    \cstatline{t$_1$=1}\nnextline
+    \cstatline{n$_1$=10}\nnextline
+    \lindent
+    \cstatline{l1: t$_2$=$\phi$(t$_1$,t$_3$)}\nnextline
+    \rindent
+    \cstatline{n$_2$=$\phi$(n$_1$,n$_3$)}\nnextline
+    \cstatline{t$_3$=t$_2$*n$_2$}\nnextline
+    \cstatline{n$_3$=n$_2$-1}\nnextline
+    \cstatline{b$_1$=n$_3$>1}\nnextline
+    \cstatline{if b$_1$ goto l1}\nnextline
+    \cstatline{f$_1$=t$_3$}
+   \end{pspicture}
+\end{document}
