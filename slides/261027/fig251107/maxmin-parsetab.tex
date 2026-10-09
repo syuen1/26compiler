@@ -1,0 +1,22 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tabularx}
+\begin{document}
+\begin{tabularx}{.8\textwidth}{|X||X|X|X|X|X|X|X||X|X|}\hline
+    & \multicolumn{7}{c||}{action} & \multicolumn{2}{c|}{GOTO}\\\cline{2-10}
+    & \texttt{MIN} & \texttt{MAX} & \texttt{NUM} & \texttt{(} & \texttt{)} & \texttt{,} & \texttt{\#} & T & L \\\hline\hline
+  $I_0$ & s2 & s2 &   &   &   &   &   & 1 &   \\\hline
+  $I_1$ &    &    &   &   &   &   &acc&   &   \\\hline
+  $I_2$ &    &    &   & s4&   &   &   &   &   \\\hline
+  $I_3$ &    &    &   & s4&   &   &   &   &   \\\hline
+  $I_4$ &    &    & s7&   &   &   &   &   & 6 \\\hline
+  $I_5$ &    &    & s7&   &   &   &   &   & 8 \\\hline
+  $I_6$ &    &    &   &   &s9 &s10&   &   &   \\\hline
+  $I_7$ &    &    &   &   &r3 & r3&   &   &   \\\hline
+  $I_8$ &    &    &   &   &s11&s10&   &   &   \\\hline
+  $I_9$ &    &    &   &   &   &   & r1&   &   \\\hline
+  $I_{10}$&    &    &s12&   &   &   &   &   &   \\\hline
+  $I_{11}$&    &    &   &   &   &   & r2&   &   \\\hline
+  $I_{12}$&    &    &   &   & r4& r4&   &   &   \\\hline
+\end{tabularx}
+\end{document}

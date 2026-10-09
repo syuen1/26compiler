@@ -1,0 +1,26 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\usetikzlibrary{decorations.pathreplacing}
+\begin{document}
+\begin{tikzpicture}
+\node at (0,0) {返り値};
+\node at (0,0.5) {\texttt{\%0}};
+\node at (0,1) {$\vdots$};
+\node at (0,1.5) {\texttt{\%(n-1)}};
+\node at (0,2) {\texttt{\%n}};
+\node at (0,2.5) {$\vdots$};
+\node at (0,3) {\texttt{\%(n+m-1)}};
+\draw[draw] (-1.5,-0.25) rectangle (1.5,0.25);
+\draw[draw] (-1.5,0.25) -- (-1.5,1.75) -- (1.5,1.75) -- (1.5,0.25);
+\draw[draw] (-1.5,1.75) -- (-1.5,3.25) -- (1.5,3.25) -- (1.5,1.75);
+\draw[decorate, decoration={brace, mirror, amplitude=6pt}] 
+  ([xshift=1mm]1.5,0.25) -- node[right=5pt]{\begin{minipage}{2zw}引数領域\end{minipage}} ([xshift=1mm]1.5,1.75);
+\draw[decorate, decoration={brace, mirror, amplitude=6pt}] ([xshift=1mm]1.5,1.75) -- node[right=5pt]{\begin{minipage}{2zw}局所領域\end{minipage}}
+ ([xshift=1mm]1.5,3.25);
+ \draw[->,thick] (-2,0) -- (-2,3);
+ \node at (-2,-0.15) {\scriptsize bottom};
+ \node at (-2,3.15) {\scriptsize top};
+\end{tikzpicture}
+\end{document}

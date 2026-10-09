@@ -1,0 +1,16 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\include{figmacros}
+\begin{document}
+$
+\begin{array}{lll}
+1:& E\rightarrow E^{(1)}\ \ttpl\ A & \{\newtemp{\&E.var};\\
+  &                                & \generatefo{E.var}{E^{(1)}}{\ttpl}{A.var}\}\\
+2:& E\rightarrow A                 & \{\newtemp{\&E.var};\\
+  &                                & \generatetw{E.var}{A.var};\}\\
+3:& A\rightarrow A^{(1)}\ \ttmu\ \ttnum & \{\newtemp{\&A.var};\\
+  &                                     & \generatefo{A.var}{A^{(1)}}{\ttmu}{\ttnum.val}\}\\
+4:& A\rightarrow \ttnum & \{\newtemp{\&A.var};\\
+  &                     & \generatetw{A.var}{\ttnum.val}
+\end{array}$
+\end{document}

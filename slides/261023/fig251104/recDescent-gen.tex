@@ -1,0 +1,40 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\include{figmacros}
+\begin{document}
+\begin{tabbing}
+\qquad\=\qquad\=\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\= \kill
+// \verb|nextsym|には先読みトークンがあらかじめ格納されている\\
+{\rm\bf If} \verb|nexsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
+\> \verb|getNextsym()|\\
+\>{\rm\bf If} \verb|nextsym|.kind = `{\sf :=}' {\rm\bf then}\>\>// 代入記号\\
+\>\> Eのコードを生成(\verb|$tempE|に結果を格納)\>// $E$\\
+\>\> $\mathsf{generate}$(`$\mathsf{var}$({\sf ID}.val) = \verb|$tempE|')\>// 代入本体\\
+\>{\rm\bf else} \verb|error()|\\
+{\rm\bf else if} \verb|nextsym|.kind = {\sf if} {\rm\bf then}\>\>\>// 条件文\\
+\> \verb|getNextsym()|\\
+\> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
+\> $L_1=\mathsf{newlabel}$()\>\>// 偽の場合の飛び先\\
+\> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_1$')\>\>// 分岐命令本体\\
+\> Sのコードを生成\>\>// 条件が真の場合の$S$\\
+\> $L_2=\mathsf{newlabel}$()\>\>// 偽の命令の後への飛び先\\
+\> $\mathsf{generate}$(`\verb|goto| $L_2$')\\
+\> $\mathsf{generate}$(`\verb|label| $L_1$')\\
+\> Sのコードを生成\>\>// 条件が偽の場合の$S$\\
+\> $\mathsf{generate}$(`\verb|label| $L_2$')\>\>// 真の$S$のジャンプ先\\
+{\rm\bf else if} \verb|nextsym|.kind = {\sf while} {\rm\bf then}\>\>\>// 繰り返し文\\
+\> \verb|getNextsym()|\\
+\> $L_1=\mathsf{newlabel}$()\\
+\> $\mathsf{generate}$(`\verb|label| $L_1$')\>\>// 繰り返しで戻るラベル\\
+\> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
+\> {\rm\bf If} \verb|nextSym|.kind = {\sf do} {\rm\bf then}\\
+\>\> $L_2=\mathsf{newlabel}$()\\
+\>\> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_2$')\\
+\>\> Sのコードを生成\>// 繰り返し本体の$S$\\
+\>\> $\mathsf{generate}$(`\verb|goto| $L_1$')\>// 繰り返しに戻る\\
+\>\> $\mathsf{generate}$(`\verb|label| $L_2$')\>// 脱出先のラベル\\
+\> {\rm\bf else} \verb|error()|\\
+{\rm\bf else}\\
+\>\verb|error()|
+\end{tabbing}
+\end{document}

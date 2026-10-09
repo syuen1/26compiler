@@ -1,0 +1,21 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\include{figmacros}
+\usepackage{fancyvrb}
+\begin{document}
+\[
+ \begin{array}{l}
+    L1:=\makenewlabel\\
+    \genlabel{L1}\\
+    \genassign{t1}{x<20}\\
+    \genlabel{L2}\\
+    \genifnot{t1}{L2}\\
+    \genassign{t2}{r+x}\\
+    \genassign{r}{t2}\\
+    \genassign{t3}{x+1}\\
+    \genassign{x}{t3}\\
+    \gengoto{L1}\\
+    \genlabel{L2}
+ \end{array}
+\]
+\end{document}

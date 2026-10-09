@@ -1,0 +1,17 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\include{figmacros}
+\begin{document}
+\[
+\begin{array}{rcll}
+ \mbox{文} & \rightarrow & \verb|WHILE|\ \verb|'('|\ &
+  \{\mbox{文}.label_1:=\makenewlabel;\\
+ & & & \gengoto{\mbox{文}.label_1}\}\\
+ & & \mbox{式}\ \verb|')'|\ & \{\mbox{文}.label_2:=\makenewlabel;\\
+ & & & \genifnot{\mbox{式}.var}{\mbox{文}.label_2}\}\\
+ & & \mbox{文}^{(1)}\ &
+  \{\gengoto{\mbox{文}.label_1};\\
+ & & & \genlabel{\mbox{文}.label_2}\}
+\end{array}
+\]
+\end{document}
