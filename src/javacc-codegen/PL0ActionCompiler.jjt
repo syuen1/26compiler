@@ -1,0 +1,323 @@
+/* PL-0, Appendix A. Semantic actions emit Appendix C code during parsing. */
+options {
+  STATIC = false;
+  IGNORE_CASE = true;
+  MULTI = false;
+  VISITOR = false;
+  NODE_DEFAULT_VOID = false;
+  TRACK_TOKENS = true;
+}
+
+PARSER_BEGIN(PL0ActionCompiler)
+import java.io.Reader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class PL0ActionCompiler {
+  public static final class CompileException extends RuntimeException {
+    CompileException(String message) { super(message); }
+  }
+  private static final class Instruction {
+    final String opcode;
+    final int b;
+    long a;
+    Instruction(String opcode, int b, long a) {
+      this.opcode = opcode; this.b = b; this.a = a;
+    }
+    String csv() { return opcode + "," + b + ",0," + a; }
+  }
+  private static final class Symbol {
+    final String name;
+    final boolean procedure;
+    final int b;
+    final int offset;
+    Symbol(String name, boolean procedure, int b, int offset) {
+      this.name = name; this.procedure = procedure; this.b = b; this.offset = offset;
+    }
+  }
+  private static final class Scope {
+    final Scope parent;
+    final int b;
+    final Map<String, Symbol> names = new LinkedHashMap<String, Symbol>();
+    int words;
+    Scope(Scope parent) { this.parent = parent; this.b = parent == null ? 0 : 1; }
+    Symbol find(String name) {
+      Symbol symbol = names.get(name.toLowerCase(Locale.ROOT));
+      return symbol != null || parent == null ? symbol : parent.find(name);
+    }
+  }
+  private final List<Instruction> code = new ArrayList<Instruction>();
+  private Scope scope = new Scope(null);
+  private boolean traceCode;
+
+  private CompileException error(Token token, String message) {
+    return new CompileException("line " + token.beginLine + ", column "
+        + token.beginColumn + ": " + message);
+  }
+  private int emit(String opcode, int b, long a) {
+    if (code.size() >= 65536) throw error(getToken(0), "program exceeds 65536 instructions");
+    int address = code.size();
+    Instruction instruction = new Instruction(opcode, b, a);
+    code.add(instruction);
+    if (traceCode) System.err.println("emit " + address + ": " + instruction.csv());
+    return address;
+  }
+  private int emit(String opcode, long a) { return emit(opcode, 0, a); }
+  private void patch(int address, long operand) {
+    code.get(address).a = operand;
+    if (traceCode) System.err.println("patch " + address + ": " + code.get(address).csv());
+  }
+  private void patchHere(int address) { patch(address, code.size()); }
+  private void patchFrame(int address) {
+    if (scope.words > 65535) throw error(getToken(0), "activation frame too large");
+    patch(address, scope.words);
+  }
+  private void declare(Token token, Symbol symbol) {
+    String key = token.image.toLowerCase(Locale.ROOT);
+    if (scope.names.containsKey(key)) throw error(token, "duplicate declaration: " + token.image);
+    scope.names.put(key, symbol);
+  }
+  private void declareVariable(Token token) {
+    declare(token, new Symbol(token.image, false, scope.b, scope.words++));
+  }
+  private Symbol variable(Token token) {
+    Symbol symbol = scope.find(token.image);
+    if (symbol == null) throw error(token, "undeclared identifier: " + token.image);
+    if (symbol.procedure) throw error(token, "variable required: " + token.image);
+    return symbol;
+  }
+  private void call(Token token) {
+    Symbol symbol = scope.find(token.image);
+    if (symbol == null) throw error(token,
+        "undeclared identifier (procedure not yet declared): " + token.image);
+    if (!symbol.procedure) throw error(token, "procedure required: " + token.image);
+    emit("cal", symbol.offset);
+  }
+  private void load(Symbol symbol) { emit("lod", symbol.b, symbol.offset); }
+  private void store(Symbol symbol) { emit("sto", symbol.b, symbol.offset); }
+  private Symbol temporary() { return new Symbol("<for-bound>", false, scope.b, scope.words++); }
+  private void literal(Token token) {
+    try { emit("lit", Long.parseLong(token.image)); }
+    catch (NumberFormatException e) { throw error(token, "integer literal exceeds signed 64-bit range"); }
+  }
+  private int comparison(Token token) {
+    if (token.kind == EQ) return 5;
+    if (token.kind == NE) return 6;
+    if (token.kind == LT) return 7;
+    if (token.kind == LE) return 8;
+    if (token.kind == GT) return 9;
+    return 10;
+  }
+  private String csv() {
+    StringBuilder output = new StringBuilder();
+    for (Instruction instruction : code) output.append(instruction.csv()).append('\n');
+    return output.toString();
+  }
+  public int instructionCount() { return code.size(); }
+
+  public static void main(String[] args) {
+    String source = null;
+    String destination = null;
+    boolean trace = false;
+    boolean valid = true;
+    for (int i = 0; i < args.length; i++) {
+      if (args[i].equals("--trace-code")) trace = true;
+      else if (args[i].equals("-o") && i + 1 < args.length && destination == null)
+        destination = args[++i];
+      else if (source == null && (!args[i].startsWith("-") || args[i].equals("-")))
+        source = args[i];
+      else valid = false;
+    }
+    if (!valid || source == null) {
+      System.err.println("usage: java PL0ActionCompiler SOURCE|- [-o OUTPUT.csv] [--trace-code]");
+      System.exit(1);
+    }
+    try {
+      Reader input = source.equals("-")
+          ? new InputStreamReader(System.in, StandardCharsets.UTF_8)
+          : Files.newBufferedReader(Paths.get(source), StandardCharsets.UTF_8);
+      String output;
+      try {
+        PL0ActionCompiler parser = new PL0ActionCompiler(input);
+        parser.traceCode = trace;
+        output = parser.Program();
+      } finally {
+        if (!source.equals("-")) input.close();
+      }
+      // Parsing emits into memory; only a successful parse publishes the CSV.
+      if (destination == null) System.out.print(output);
+      else Files.write(Paths.get(destination), output.getBytes(StandardCharsets.UTF_8));
+    } catch (ParseException e) {
+      System.err.println("syntax error: " + e.getMessage()); System.exit(1);
+    } catch (TokenMgrError e) {
+      System.err.println("lexical error: " + e.getMessage()); System.exit(1);
+    } catch (CompileException e) {
+      System.err.println("compile error: " + e.getMessage()); System.exit(1);
+    } catch (IOException e) {
+      System.err.println("input/output error: " + e.getMessage()); System.exit(1);
+    }
+  }
+}
+PARSER_END(PL0ActionCompiler)
+
+SKIP : { " " | "\t" | "\r" | "\n" | "\f" }
+TOKEN : {
+    < PROGRAM: "program" > | < VAR: "var" > | < PROCEDURE: "procedure" >
+  | < IF: "if" > | < THEN: "then" > | < ELSE: "else" >
+  | < WHILE: "while" > | < DO: "do" > | < FOR: "for" > | < TO: "to" >
+  | < BEGIN: "begin" > | < END: "end" > | < READ: "read" > | < WRITE: "write" >
+  | < DIV: "div" > | < ASSIGN: ":=" > | < NE: "<>" > | < LE: "<=" > | < GE: ">=" >
+  | < EQ: "=" > | < LT: "<" > | < GT: ">" >
+  | < PLUS: "+" > | < MINUS: "-" > | < TIMES: "*" >
+  | < LPAREN: "(" > | < RPAREN: ")" > | < SEMICOLON: ";" >
+  | < COMMA: "," > | < DOT: "." >
+  | < IDENT: ["a"-"z", "A"-"Z"] (["a"-"z", "A"-"Z", "0"-"9", "_"])* >
+  | < NUMBER: (["0"-"9"])+ >
+}
+
+String Program() : {} {
+  <PROGRAM> Identifier() <SEMICOLON> Outblock() <DOT> <EOF>
+  { return csv(); }
+}
+
+void Outblock() : { int frame; int mainJump; } {
+  VarDeclPart()
+  { frame = emit("int", 0); mainJump = emit("jmp", 0); }
+  SubprogDeclPart()
+  { patchHere(mainJump); }
+  Statement()
+  { patchFrame(frame); }
+}
+
+void VarDeclPart() : {} { [ VarDeclList() <SEMICOLON> ] }
+void VarDeclList() : {} {
+  VarDecl() ( LOOKAHEAD(<SEMICOLON> <VAR>) <SEMICOLON> VarDecl() )*
+}
+void VarDecl() : {} { <VAR> IdList() }
+void IdList() : { Token name; } {
+  name=Identifier() { declareVariable(name); }
+  ( <COMMA> name=Identifier() { declareVariable(name); } )*
+}
+
+void SubprogDeclPart() : {} { [ SubprogDeclList() <SEMICOLON> ] }
+void SubprogDeclList() : {} {
+  ProcDecl() ( LOOKAHEAD(<SEMICOLON> <PROCEDURE>) <SEMICOLON> ProcDecl() )*
+}
+void ProcDecl() : { Token name; Scope global; } {
+  <PROCEDURE> name=Identifier()
+  {
+    declare(name, new Symbol(name.image, true, 0, code.size()));
+    global = scope;
+    scope = new Scope(global);
+  }
+  <SEMICOLON> Inblock()
+  { emit("rtn", 0); scope = global; }
+}
+void Inblock() : { int frame; } {
+  VarDeclPart()
+  { frame = emit("int", 0); }
+  Statement()
+  { patchFrame(frame); }
+}
+
+void StatementList() : {} { Statement() ( <SEMICOLON> Statement() )* }
+void Statement() #void : {} {
+    LOOKAHEAD(<IDENT> <ASSIGN>) AssignmentStatement()
+  | IfStatement() | WhileStatement() | ForStatement() | ProcCallStatement()
+  | BlockStatement() | ReadStatement() | WriteStatement() | NullStatement()
+}
+
+void AssignmentStatement() : { Token name; Symbol target; } {
+  name=Identifier() { target = variable(name); }
+  <ASSIGN> Expression() { store(target); }
+}
+
+void IfStatement() : { int falseJump; } {
+  <IF> Condition()
+  { falseJump = emit("jpc", 0); }
+  <THEN> Statement() ElseStatement(falseJump)
+}
+void ElseStatement(int falseJump) : { int endJump = -1; } {
+  [ LOOKAHEAD(<ELSE>) <ELSE>
+    { endJump = emit("jmp", 0); patchHere(falseJump); }
+    Statement() ]
+  { if (endJump >= 0) patchHere(endJump); else patchHere(falseJump); }
+}
+
+void WhileStatement() : { int start; int exit; } {
+  <WHILE> { start = code.size(); }
+  Condition() { exit = emit("jpc", 0); }
+  <DO> Statement()
+  { emit("jmp", start); patchHere(exit); }
+}
+
+void ForStatement() : {
+  Token name; Symbol control; Symbol bound;
+  int emptyExit; int start; int doneExit;
+} {
+  <FOR> name=Identifier()
+  { control = variable(name); bound = temporary(); }
+  <ASSIGN> Expression() { store(control); }
+  <TO> Expression()
+  {
+    store(bound);
+    load(control); load(bound); emit("opr", 8);
+    emptyExit = emit("jpc", 0);
+    start = code.size();
+  }
+  <DO> Statement()
+  {
+    load(control); load(bound); emit("opr", 7);
+    doneExit = emit("jpc", 0);
+    load(control); emit("lit", 1); emit("opr", 1); store(control);
+    emit("jmp", start);
+    patchHere(emptyExit); patchHere(doneExit);
+  }
+}
+
+void ProcCallStatement() : { Token name; } { name=Identifier() { call(name); } }
+void BlockStatement() : {} { <BEGIN> StatementList() <END> }
+void ReadStatement() : { Token name; Symbol target; } {
+  <READ> <LPAREN> name=Identifier() { target = variable(name); }
+  <RPAREN> { emit("get", 0); store(target); }
+}
+void WriteStatement() : {} {
+  <WRITE> <LPAREN> Expression() <RPAREN> { emit("put", 0); }
+}
+void NullStatement() : {} { {} }
+
+void Condition() : { Token operator; } {
+  Expression()
+  ( operator=<EQ> | operator=<NE> | operator=<LT>
+  | operator=<LE> | operator=<GT> | operator=<GE> )
+  Expression() { emit("opr", comparison(operator)); }
+}
+
+void Expression() : {} {
+  ( <PLUS> Term() #UnaryPlus(1)
+  | <MINUS> Term() #Negate(1) { emit("opr", 0); }
+  | Term() )
+  ( <PLUS> Term() #Add(2) { emit("opr", 1); }
+  | <MINUS> Term() #Subtract(2) { emit("opr", 2); } )*
+}
+void Term() : {} {
+  Factor()
+  ( <TIMES> Factor() #Multiply(2) { emit("opr", 3); }
+  | <DIV> Factor() #Divide(2) { emit("opr", 4); } )*
+}
+void Factor() : {} { VarName() | Number() | <LPAREN> Expression() <RPAREN> }
+void VarName() : { Token name; } { name=Identifier() { load(variable(name)); } }
+Token Identifier() : { Token token; } {
+  token=<IDENT> { jjtThis.jjtSetValue(token.image); return token; }
+}
+void Number() : { Token token; } {
+  token=<NUMBER> { jjtThis.jjtSetValue(token.image); literal(token); }
+}

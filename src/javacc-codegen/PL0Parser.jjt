@@ -1,0 +1,515 @@
+/* intro2017.pdf, Appendix A, pp. 3-5. JavaCC/JJTree 7.x. */
+options {
+  STATIC = false;
+  IGNORE_CASE = true;
+  MULTI = true;
+  VISITOR = true;
+  NODE_DEFAULT_VOID = false;
+  TRACK_TOKENS = true;
+}
+
+PARSER_BEGIN(PL0Parser)
+import java.io.Reader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class PL0Parser {
+  private static void printTree(SimpleNode node, String indent) {
+    Object value = node.jjtGetValue();
+    System.out.println(indent + node.toString()
+        + (value == null ? "" : "(" + value.toString() + ")"));
+    for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+      printTree((SimpleNode) node.jjtGetChild(i), indent + "  ");
+    }
+  }
+
+  public static void main(String[] args) {
+    boolean check = args.length > 0 && args[0].equals("--check");
+    int offset = check ? 1 : 0;
+    if (args.length > offset + 1) {
+      System.err.println("usage: java PL0Parser [--check] [SOURCE|-]");
+      System.exit(1);
+    }
+    String source = args.length > offset ? args[offset] : "-";
+    try {
+      Reader input = source.equals("-")
+          ? new InputStreamReader(System.in, StandardCharsets.UTF_8)
+          : Files.newBufferedReader(Paths.get(source), StandardCharsets.UTF_8);
+      try {
+        PL0Parser parser = new PL0Parser(input);
+        SimpleNode root = parser.Program();
+        if (check) System.out.println("OK");
+        else printTree(root, "");
+      } finally {
+        if (!source.equals("-")) input.close();
+      }
+    } catch (ParseException e) {
+      System.err.println("syntax error: " + e.getMessage());
+      System.exit(1);
+    } catch (TokenMgrError e) {
+      System.err.println("lexical error: " + e.getMessage());
+      System.exit(1);
+    } catch (IOException e) {
+      System.err.println("input error: " + e.getMessage());
+      System.exit(1);
+    }
+  }
+}
+/* Visitor and compiler entry point are authored in this .jjt file. */
+/** Generate Appendix C instructions by JJTree's double-dispatch Visitor API. */
+final class CodeGenerator extends PL0ParserDefaultVisitor {
+  public static final class CompileException extends RuntimeException {
+    CompileException(String message) { super(message); }
+  }
+
+  private static final class Instruction {
+    final String opcode;
+    final int b;
+    long a;
+    Instruction(String opcode, int b, long a) {
+      this.opcode = opcode; this.b = b; this.a = a;
+    }
+    String csv() { return opcode + "," + b + ",0," + a; }
+  }
+
+  private static final class Symbol {
+    final String name;
+    final boolean procedure;
+    final int b;
+    final int offset;
+    final ASTProcDecl declaration;
+    final int order;
+    int address = -1;
+    Symbol(String name, int b, int offset) {
+      this.name = name; this.procedure = false; this.b = b; this.offset = offset;
+      this.declaration = null; this.order = -1;
+    }
+    Symbol(String name, ASTProcDecl declaration, int order) {
+      this.name = name; this.procedure = true; this.b = 0; this.offset = 0;
+      this.declaration = declaration; this.order = order;
+    }
+  }
+
+  private static final class Scope {
+    final Scope parent;
+    final int b;
+    final Map<String, Symbol> names = new LinkedHashMap<String, Symbol>();
+    int variableCount;
+    int nextTemporary;
+    int frameSize;
+    Scope(Scope parent) { this.parent = parent; this.b = parent == null ? 0 : 1; }
+    Symbol find(String name) {
+      Symbol symbol = names.get(key(name));
+      return symbol != null || parent == null ? symbol : parent.find(name);
+    }
+  }
+
+  private final List<Instruction> code = new ArrayList<Instruction>();
+  private final List<Symbol> procedures = new ArrayList<Symbol>();
+  private Scope scope;
+  private int visibleProcedure = Integer.MAX_VALUE;
+
+  private static String key(String name) { return name.toLowerCase(Locale.ROOT); }
+  private static SimpleNode child(SimpleNode n, int index) {
+    return (SimpleNode) n.jjtGetChild(index);
+  }
+  private static String identifier(SimpleNode n) {
+    while (!(n instanceof ASTIdentifier)) n = child(n, 0);
+    return (String) n.jjtGetValue();
+  }
+  private static CompileException error(SimpleNode node, String message) {
+    Token token = node.jjtGetFirstToken();
+    return new CompileException("line " + token.beginLine + ", column "
+        + token.beginColumn + ": " + message);
+  }
+
+  /** A fresh generator can compile one tree. Nothing is output before success. */
+  public String generate(SimpleNode root) {
+    if (scope != null) throw new IllegalStateException("use a new CodeGenerator per program");
+    root.jjtAccept(this, null);
+    StringBuilder csv = new StringBuilder();
+    for (Instruction instruction : code) csv.append(instruction.csv()).append('\n');
+    return csv.toString();
+  }
+  private int emit(String opcode, int b, long a) {
+    if (code.size() >= 65536) throw new CompileException("program exceeds 65536 instructions");
+    code.add(new Instruction(opcode, b, a));
+    return code.size() - 1;
+  }
+  private int emit(String opcode, long a) { return emit(opcode, 0, a); }
+  private void patch(int instruction) { code.get(instruction).a = code.size(); }
+  private void accept(SimpleNode node) { node.jjtAccept(this, null); }
+  private void load(Symbol symbol) { emit("lod", symbol.b, symbol.offset); }
+  private void store(Symbol symbol) { emit("sto", symbol.b, symbol.offset); }
+
+  private Symbol variable(SimpleNode node) {
+    String name = identifier(node);
+    Symbol symbol = scope.find(name);
+    if (symbol == null) throw error(node, "undeclared identifier: " + name);
+    if (symbol.procedure) throw error(node, "variable required: " + name);
+    return symbol;
+  }
+
+  /** The declaration pass also uses jjtAccept, without visiting procedure bodies. */
+  private final class DeclarationVisitor extends PL0ParserDefaultVisitor {
+    private final Scope target;
+    DeclarationVisitor(Scope target) { this.target = target; }
+    private void declare(SimpleNode node, Symbol symbol) {
+      String normalized = key(symbol.name);
+      if (target.names.containsKey(normalized)) {
+        throw error(node, "duplicate declaration: " + symbol.name);
+      }
+      target.names.put(normalized, symbol);
+    }
+    @Override public Object visit(ASTVarDecl node, Object data) {
+      SimpleNode list = child(node, 0);
+      for (int i = 0; i < list.jjtGetNumChildren(); i++) {
+        SimpleNode id = child(list, i);
+        declare(id, new Symbol(identifier(id), target.b, target.variableCount++));
+      }
+      return data;
+    }
+    @Override public Object visit(ASTProcDecl node, Object data) {
+      Symbol symbol = new Symbol(identifier(child(node, 0)), node, procedures.size());
+      declare(child(node, 0), symbol);
+      procedures.add(symbol);
+      return data;
+    }
+  }
+
+  /** One hidden upper-bound slot per syntactic for, in each activation frame. */
+  private static final class TemporaryCounter extends PL0ParserDefaultVisitor {
+    int count;
+    @Override public Object visit(ASTForStatement node, Object data) {
+      count++;
+      return defaultVisit(node, data);
+    }
+  }
+  private void prepareFrame(SimpleNode body) {
+    TemporaryCounter counter = new TemporaryCounter();
+    body.jjtAccept(counter, null);
+    scope.nextTemporary = scope.variableCount;
+    scope.frameSize = scope.variableCount + counter.count;
+    if (scope.frameSize > 65535) throw error(body, "activation frame too large");
+  }
+
+  @Override public Object visit(ASTProgram node, Object data) {
+    scope = new Scope(null);
+    accept(child(node, 1)); // Program name does not emit a load.
+    return data;
+  }
+
+  @Override public Object visit(ASTOutblock node, Object data) {
+    DeclarationVisitor declarations = new DeclarationVisitor(scope);
+    child(node, 0).jjtAccept(declarations, null);
+    child(node, 1).jjtAccept(declarations, null);
+    SimpleNode body = child(node, 2);
+    prepareFrame(body);
+    emit("int", scope.frameSize);
+    int mainJump = emit("jmp", 0);
+    // Global storage stays below every procedure's call frame.
+    for (Symbol procedure : procedures) accept(procedure.declaration);
+    visibleProcedure = Integer.MAX_VALUE;
+    patch(mainJump);
+    accept(body);
+    // Falling off loaded code is the specified way to terminate the main program.
+    return data;
+  }
+
+  @Override public Object visit(ASTProcDecl node, Object data) {
+    Scope global = scope;
+    Symbol procedure = global.names.get(key(identifier(child(node, 0))));
+    procedure.address = code.size(); // Set before visiting body: self-recursion works.
+    visibleProcedure = procedure.order;
+    scope = new Scope(global);
+    SimpleNode block = child(node, 1);
+    child(block, 0).jjtAccept(new DeclarationVisitor(scope), null);
+    SimpleNode body = child(block, 1);
+    prepareFrame(body);
+    // cal has set R1 to the first local word and R2 to R1-1.
+    emit("int", scope.frameSize);
+    accept(body);
+    emit("rtn", 0);
+    scope = global;
+    return data;
+  }
+
+  @Override public Object visit(ASTAssignmentStatement node, Object data) {
+    Symbol symbol = variable(child(node, 0));
+    accept(child(node, 1));
+    store(symbol);
+    return data;
+  }
+  @Override public Object visit(ASTReadStatement node, Object data) {
+    Symbol symbol = variable(child(node, 0));
+    emit("get", 0);
+    store(symbol);
+    return data;
+  }
+  @Override public Object visit(ASTWriteStatement node, Object data) {
+    accept(child(node, 0));
+    emit("put", 0);
+    return data;
+  }
+  @Override public Object visit(ASTProcCallStatement node, Object data) {
+    String name = identifier(child(node, 0));
+    Symbol symbol = scope.find(name);
+    if (symbol == null) throw error(node, "undeclared identifier: " + name);
+    if (!symbol.procedure) throw error(node, "procedure required: " + name);
+    if (symbol.order > visibleProcedure) {
+      throw error(node, "procedure not yet declared: " + name + " (forward is not in PL-0 BNF)");
+    }
+    emit("cal", symbol.address);
+    return data;
+  }
+  @Override public Object visit(ASTVarName node, Object data) {
+    load(variable(node));
+    return data;
+  }
+  @Override public Object visit(ASTNumber node, Object data) {
+    try {
+      emit("lit", Long.parseLong((String) node.jjtGetValue()));
+    } catch (NumberFormatException e) {
+      throw error(node, "integer literal exceeds signed 64-bit range");
+    }
+    return data;
+  }
+
+  private Object binary(SimpleNode node, Object data, int operation) {
+    node.childrenAccept(this, data); // left operand first, right operand second
+    emit("opr", operation);
+    return data;
+  }
+  @Override public Object visit(ASTAdd n, Object d) { return binary(n, d, 1); }
+  @Override public Object visit(ASTSubtract n, Object d) { return binary(n, d, 2); }
+  @Override public Object visit(ASTMultiply n, Object d) { return binary(n, d, 3); }
+  @Override public Object visit(ASTDivide n, Object d) { return binary(n, d, 4); }
+  @Override public Object visit(ASTNegate n, Object d) {
+    n.childrenAccept(this, d);
+    emit("opr", 0);
+    return d;
+  }
+  @Override public Object visit(ASTCondition node, Object data) {
+    String operator = (String) node.jjtGetValue();
+    int operation;
+    if (operator.equals("=")) operation = 5;
+    else if (operator.equals("<>")) operation = 6;
+    else if (operator.equals("<")) operation = 7;
+    else if (operator.equals("<=")) operation = 8;
+    else if (operator.equals(">")) operation = 9;
+    else if (operator.equals(">=")) operation = 10;
+    else throw error(node, "unknown comparison: " + operator);
+    return binary(node, data, operation);
+  }
+
+  @Override public Object visit(ASTIfStatement node, Object data) {
+    accept(child(node, 0));
+    int falseJump = emit("jpc", 0);
+    accept(child(node, 1));
+    SimpleNode otherwise = child(node, 2);
+    if (otherwise.jjtGetNumChildren() > 0) {
+      int endJump = emit("jmp", 0);
+      patch(falseJump);
+      accept(otherwise);
+      patch(endJump);
+    } else patch(falseJump);
+    return data;
+  }
+  @Override public Object visit(ASTWhileStatement node, Object data) {
+    int start = code.size();
+    accept(child(node, 0));
+    int exit = emit("jpc", 0);
+    accept(child(node, 1));
+    emit("jmp", start);
+    patch(exit);
+    return data;
+  }
+  @Override public Object visit(ASTForStatement node, Object data) {
+    Symbol control = variable(child(node, 0));
+    Symbol bound = new Symbol("<for-bound>", scope.b, scope.nextTemporary++);
+    accept(child(node, 1));
+    store(control);
+    accept(child(node, 2));
+    store(bound);
+    load(control); load(bound); emit("opr", 8); // initial value <= bound
+    int emptyExit = emit("jpc", 0);
+    int start = code.size();
+    accept(child(node, 3));
+    load(control); load(bound); emit("opr", 7); // test BEFORE increment to avoid overflow
+    int doneExit = emit("jpc", 0);
+    load(control); emit("lit", 1); emit("opr", 1); store(control);
+    emit("jmp", start);
+    patch(emptyExit); patch(doneExit);
+    return data;
+  }
+}
+
+/** Parse PL-0, then apply CodeGenerator as a Visitor and output CSV. */
+final class PL0Compiler {
+  public static void main(String[] args) {
+    if (!(args.length == 1 || (args.length == 3 && args[1].equals("-o")))) {
+      System.err.println("usage: java PL0Compiler SOURCE|- [-o OUTPUT.csv]");
+      System.exit(1);
+    }
+    try {
+      Reader input = args[0].equals("-")
+          ? new InputStreamReader(System.in, StandardCharsets.UTF_8)
+          : Files.newBufferedReader(Paths.get(args[0]), StandardCharsets.UTF_8);
+      String csv;
+      try {
+        SimpleNode root = new PL0Parser(input).Program();
+        csv = new CodeGenerator().generate(root);
+      } finally {
+        if (!args[0].equals("-")) input.close();
+      }
+      // Do not create or overwrite output until parsing and code generation succeed.
+      if (args.length == 3) Files.write(Paths.get(args[2]), csv.getBytes(StandardCharsets.UTF_8));
+      else System.out.print(csv);
+    } catch (ParseException e) {
+      System.err.println("syntax error: " + e.getMessage()); System.exit(1);
+    } catch (TokenMgrError e) {
+      System.err.println("lexical error: " + e.getMessage()); System.exit(1);
+    } catch (CodeGenerator.CompileException e) {
+      System.err.println("compile error: " + e.getMessage()); System.exit(1);
+    } catch (IOException e) {
+      System.err.println("input/output error: " + e.getMessage()); System.exit(1);
+    }
+  }
+}
+PARSER_END(PL0Parser)
+
+SKIP : { " " | "\t" | "\r" | "\n" | "\f" }
+
+/* Keywords precede IDENT so that they cannot become identifier tokens. */
+TOKEN : {
+    < PROGRAM: "program" > | < VAR: "var" >
+  | < PROCEDURE: "procedure" >
+  | < IF: "if" > | < THEN: "then" > | < ELSE: "else" >
+  | < WHILE: "while" > | < DO: "do" >
+  | < FOR: "for" > | < TO: "to" >
+  | < BEGIN: "begin" > | < END: "end" >
+  | < READ: "read" > | < WRITE: "write" > | < DIV: "div" >
+  | < ASSIGN: ":=" > | < NE: "<>" > | < LE: "<=" > | < GE: ">=" >
+  | < EQ: "=" > | < LT: "<" > | < GT: ">" >
+  | < PLUS: "+" > | < MINUS: "-" > | < TIMES: "*" >
+  | < LPAREN: "(" > | < RPAREN: ")" >
+  | < SEMICOLON: ";" > | < COMMA: "," > | < DOT: "." >
+  | < IDENT: ["a"-"z", "A"-"Z"]
+      (["a"-"z", "A"-"Z", "0"-"9", "_"])* >
+  | < NUMBER: (["0"-"9"])+ >
+}
+
+SimpleNode Program() : {} {
+  <PROGRAM> Identifier() <SEMICOLON> Outblock() <DOT> <EOF>
+  { return jjtThis; }
+}
+
+void Outblock() : {} {
+  VarDeclPart() SubprogDeclPart() Statement()
+}
+
+void VarDeclPart() : {} {
+  [ VarDeclList() <SEMICOLON> ]
+}
+
+/* A -> A ';' B | B becomes B (';' B)*. The final ';' is in the caller. */
+void VarDeclList() : {} {
+  VarDecl() ( LOOKAHEAD(<SEMICOLON> <VAR>) <SEMICOLON> VarDecl() )*
+}
+
+void VarDecl() : {} { <VAR> IdList() }
+
+void SubprogDeclPart() : {} {
+  [ SubprogDeclList() <SEMICOLON> ]
+}
+
+void SubprogDeclList() : {} {
+  SubprogDecl()
+  ( LOOKAHEAD(<SEMICOLON> <PROCEDURE>) <SEMICOLON> SubprogDecl() )*
+}
+
+void SubprogDecl() : {} { ProcDecl() }
+void ProcDecl() : {} { <PROCEDURE> ProcName() <SEMICOLON> Inblock() }
+void ProcName() : {} { Identifier() }
+/* No procedure declarations here: PL-0 procedures cannot be nested. */
+void Inblock() : {} { VarDeclPart() Statement() }
+
+void StatementList() : {} {
+  Statement() ( <SEMICOLON> Statement() )*
+}
+
+void Statement() #void : {} {
+    LOOKAHEAD(<IDENT> <ASSIGN>) AssignmentStatement()
+  | IfStatement()
+  | WhileStatement()
+  | ForStatement()
+  | ProcCallStatement()
+  | BlockStatement()
+  | ReadStatement()
+  | WriteStatement()
+  | NullStatement()
+}
+
+void AssignmentStatement() : {} { Identifier() <ASSIGN> Expression() }
+void IfStatement() : {} {
+  <IF> Condition() <THEN> Statement() ElseStatement()
+}
+/* Explicit greedy lookahead resolves dangling else to the nearest if. */
+void ElseStatement() : {} {
+  [ LOOKAHEAD(<ELSE>) <ELSE> Statement() ]
+}
+void WhileStatement() : {} { <WHILE> Condition() <DO> Statement() }
+void ForStatement() : {} {
+  <FOR> Identifier() <ASSIGN> Expression() <TO> Expression() <DO> Statement()
+}
+void ProcCallStatement() : {} { ProcCallName() }
+void ProcCallName() : {} { Identifier() }
+void BlockStatement() : {} { <BEGIN> StatementList() <END> }
+void ReadStatement() : {} { <READ> <LPAREN> Identifier() <RPAREN> }
+void WriteStatement() : {} { <WRITE> <LPAREN> Expression() <RPAREN> }
+void NullStatement() : {} { {} }
+
+void Condition() : { Token operator; } {
+  Expression()
+  ( operator=<EQ> | operator=<NE> | operator=<LT>
+  | operator=<LE> | operator=<GT> | operator=<GE> )
+  Expression()
+  { jjtThis.jjtSetValue(operator.image); }
+}
+
+/* Left recursion removed; binary nodes preserve left associativity. */
+void Expression() : {} {
+  ( <PLUS> Term() #UnaryPlus(1)
+  | <MINUS> Term() #Negate(1)
+  | Term() )
+  ( <PLUS> Term() #Add(2) | <MINUS> Term() #Subtract(2) )*
+}
+
+void Term() : {} {
+  Factor() ( <TIMES> Factor() #Multiply(2) | <DIV> Factor() #Divide(2) )*
+}
+
+void Factor() : {} {
+  VarName() | Number() | <LPAREN> Expression() <RPAREN>
+}
+void VarName() : {} { Identifier() }
+
+/* Appendix A lists ArgList, but no PL-0 production calls it. */
+void ArgList() : {} { Expression() ( <COMMA> Expression() )* }
+void IdList() : {} { Identifier() ( <COMMA> Identifier() )* }
+
+void Identifier() : { Token token; } {
+  token=<IDENT> { jjtThis.jjtSetValue(token.image); }
+}
+void Number() : { Token token; } {
+  token=<NUMBER> { jjtThis.jjtSetValue(token.image); }
+}

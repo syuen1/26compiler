@@ -1,0 +1,44 @@
+<program> ::= 'program' 'IDENT' ';' <outblock> '.'
+<outblock> ::= <var_decl_part> <statement>
+<var_decl_part> ::= <var_decl_list> ';' | /* empty */
+<var_decl_list> ::= <var_decl_list> ';' <var_decl> | <var_decl>
+<var_decl> ::= 'var' <id_list>
+<statement_list> ::= <statment_list> ';' <statement> | <statement>
+<statement> ::= <assginment_statement>
+	| <if_statement>
+	| <while_statement>
+	| <for_statement>
+	| <null_statement>
+	| <block_statement>
+	| <read_statement>
+	| <write_statement>
+
+<assignment_statement> ::= 'IDENT' ':=' <expression>
+
+<if_statement> ::= 'if' <condition> 'then' <statment> <else_statement>
+<else_statement> ::= 'else' <statement> | /*empty*/
+<while_statement> ::= 'while' <condition> 'do' <statement>
+<for_statement> ::= 'for' 'IDENT' ':=' <expression> 'to' <expression> 'do' <statement>
+<block_statement> ::= 'begin' <statement_list> 'end'
+<read_statement> ::= 'read' '(' 'IDENT' ')' 
+<write_statement> ::= 'write' '(' <expression> ')'
+<null_statement> ::= /* empty */
+<condition> ::= <expression> '=' <expression>
+	| <expression> '<>' <expression>
+	| <expression> '<' <expression>
+	| <expression> '<=' <expression>
+	| <expression> '>' <expression>
+	| <expression> '>=' <expression>
+<expression> ::= <term>
+	| '+' <term>
+	| '-' <term>
+	| <expression> '+' <term>
+	| <expression> '-' <term>
+<term> ::= <factor>
+	| <term> '*' <factor>
+	| <term> 'div' <factor>
+<factor> ::= <var_name>
+	| 'NUMBER'
+	| '(' <expression> ')'
+<var_name> ::= 'IDENT'
+<id_list> ::= 'IDENT' | <id_list> ',' 'IDENT'
