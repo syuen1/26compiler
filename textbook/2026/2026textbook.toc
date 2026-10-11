@@ -85,41 +85,53 @@
 \contentsline {subsection}{\numberline {6.3.3}下降型構文主導型変換}{95}{}%
 \contentsline {subsection}{\numberline {6.3.4}構文主導定義による意味定義}{97}{}%
 \contentsline {subsection}{\numberline {6.3.5}コンパイラコンパイラによるコード生成}{100}{}%
-\contentsline {subsubsection}{JAVACCによるコード生成}{100}{}%
-\contentsline {subsubsection}{YACCによるコード生成}{100}{}%
-\contentsline {chapter}{\numberline {第7章}コード最適化}{101}{}%
-\contentsline {section}{\numberline {7.1}基本ブロックとフローグラフ}{101}{}%
-\contentsline {section}{\numberline {7.2}局所最適化}{102}{}%
-\contentsline {subsection}{\numberline {7.2.1}局所最適化の例}{102}{}%
-\contentsline {subsubsection}{定数伝播(constant propagation)}{102}{}%
-\contentsline {subsubsection}{共通部分式削除}{102}{}%
-\contentsline {subsubsection}{コピー伝播}{103}{}%
-\contentsline {subsubsection}{代数的性質の利用}{103}{}%
-\contentsline {subsection}{\numberline {7.2.2}基本ブロックのDAG表現}{103}{}%
-\contentsline {section}{\numberline {7.3}大域最適化}{105}{}%
-\contentsline {subsection}{\numberline {7.3.1}意味等価な変換}{105}{}%
-\contentsline {subsubsection}{ループ最適化}{106}{}%
-\contentsline {paragraph}{ループ不変コードの移動}{106}{}%
-\contentsline {paragraph}{ループ内演算の強さ軽減}{106}{}%
-\contentsline {paragraph}{帰納変数の消去}{106}{}%
-\contentsline {paragraph}{ループ融合}{106}{}%
-\contentsline {paragraph}{ループ分解}{106}{}%
-\contentsline {paragraph}{ループ展開}{107}{}%
-\contentsline {paragraph}{ソフトウェアパイプライン}{107}{}%
-\contentsline {subsubsection}{手続き呼び出し最適化}{107}{}%
-\contentsline {paragraph}{インライン展開}{107}{}%
-\contentsline {paragraph}{末尾再帰}{107}{}%
-\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{108}{}%
-\contentsline {subsubsection}{到達定義解析}{108}{}%
-\contentsline {subsubsection}{生存解析}{108}{}%
-\contentsline {subsubsection}{利用可能式解析}{108}{}%
-\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{108}{}%
-\contentsline {subsection}{\numberline {7.4.1}例}{108}{}%
-\contentsline {subsection}{\numberline {7.4.2}$\phi $関数}{108}{}%
-\contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{108}{}%
-\contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{108}{}%
-\contentsline {subsection}{\numberline {7.4.5}逆変換}{108}{}%
-\contentsline {chapter}{\numberline {第8章}目的コード生成}{109}{}%
-\contentsline {section}{\numberline {8.1}算術式のコード生成}{109}{}%
-\contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割り当て}{109}{}%
-\contentsline {subsection}{\numberline {8.2.1}SSAに対するレジスタ割り当て}{109}{}%
+\contentsline {subsubsection}{ソースプログラムの仕様}{100}{}%
+\contentsline {subsubsection}{目的コードの仕様}{101}{}%
+\contentsline {paragraph}{1. Load literal}{101}{}%
+\contentsline {paragraph}{2. Load}{101}{}%
+\contentsline {paragraph}{3. Store}{101}{}%
+\contentsline {paragraph}{4. Move to index register}{101}{}%
+\contentsline {paragraph}{5. Arithmetic operation}{102}{}%
+\contentsline {paragraph}{6. Unconditional Jump}{102}{}%
+\contentsline {paragraph}{7. Jump on condition}{102}{}%
+\contentsline {paragraph}{8. Read data}{102}{}%
+\contentsline {paragraph}{9. Write data}{102}{}%
+\contentsline {subsubsection}{JAVACCによるコード生成}{102}{}%
+\contentsline {subsubsection}{SLYによるコード生成}{104}{}%
+\contentsline {section}{\numberline {6.4}コード生成例}{107}{}%
+\contentsline {chapter}{\numberline {第7章}コード最適化}{109}{}%
+\contentsline {section}{\numberline {7.1}基本ブロックとフローグラフ}{109}{}%
+\contentsline {section}{\numberline {7.2}局所最適化}{110}{}%
+\contentsline {subsection}{\numberline {7.2.1}局所最適化の例}{110}{}%
+\contentsline {subsubsection}{定数伝播(constant propagation)}{110}{}%
+\contentsline {subsubsection}{共通部分式削除}{110}{}%
+\contentsline {subsubsection}{コピー伝播}{111}{}%
+\contentsline {subsubsection}{代数的性質の利用}{111}{}%
+\contentsline {subsection}{\numberline {7.2.2}基本ブロックのDAG表現}{111}{}%
+\contentsline {section}{\numberline {7.3}大域最適化}{113}{}%
+\contentsline {subsection}{\numberline {7.3.1}意味等価な変換}{113}{}%
+\contentsline {subsubsection}{ループ最適化}{114}{}%
+\contentsline {paragraph}{ループ不変コードの移動}{114}{}%
+\contentsline {paragraph}{ループ内演算の強さ軽減}{114}{}%
+\contentsline {paragraph}{帰納変数の消去}{114}{}%
+\contentsline {paragraph}{ループ融合}{114}{}%
+\contentsline {paragraph}{ループ分解}{114}{}%
+\contentsline {paragraph}{ループ展開}{115}{}%
+\contentsline {paragraph}{ソフトウェアパイプライン}{115}{}%
+\contentsline {subsubsection}{手続き呼び出し最適化}{115}{}%
+\contentsline {paragraph}{インライン展開}{115}{}%
+\contentsline {paragraph}{末尾再帰}{115}{}%
+\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{116}{}%
+\contentsline {subsubsection}{定義到達解析}{116}{}%
+\contentsline {subsubsection}{生存変数解析}{117}{}%
+\contentsline {subsubsection}{利用可能式解析}{118}{}%
+\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{119}{}%
+\contentsline {subsection}{\numberline {7.4.1}例}{119}{}%
+\contentsline {subsection}{\numberline {7.4.2}$\phi $関数}{119}{}%
+\contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{119}{}%
+\contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{119}{}%
+\contentsline {subsection}{\numberline {7.4.5}逆変換}{119}{}%
+\contentsline {chapter}{\numberline {第8章}目的コード生成}{121}{}%
+\contentsline {section}{\numberline {8.1}算術式のコード生成}{121}{}%
+\contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割り当て}{121}{}%
+\contentsline {subsection}{\numberline {8.2.1}SSAに対するレジスタ割り当て}{121}{}%
