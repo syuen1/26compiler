@@ -66,3 +66,10 @@
 \newcolumntype{b}{X}
 \newcolumntype{s}{>{\hsize=.5\hsize}X}
 
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcommand{\inst}[1]{\begin{tabularx}{.3\textwidth}{|Y|Y|Y|Y|}\hline\texttt{#1}& $b$ & $i$ &$a$\\\hline\end{tabularx}}
+\newcommand{\ignored}[1]{\par #1は無視される。}
+
+\newcommand{\bnfnts}[1]{\langle\mathrm{#1}\rangle}
+\newcommand{\bnfts}[1]{\texttt{'#1'}}
+\newcommand{\bnfarr}{\texttt{::=}}

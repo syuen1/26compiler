@@ -445,9 +445,9 @@ LRパーザーにコード生成ルーチンを組み込む場合，コード生
         \multicolumn{1}{m{.7\textwidth}}{
             \vspace*{-20pt}
             $\begin{array}{rcll}
-                     S & \rightarrow & \texttt{if}\ \texttt{(}\ E\ \texttt{)} & \{S.label1:=\newLabelnull();    \\
+                     S & \rightarrow & \texttt{if}\ \texttt{(}\ E\ \texttt{)} & \{S.label1=\newLabelnull();    \\
                        &             &                                        & \generateifnot{E.var}{S.label1} \\
-                       &             & S^{(1)}                                & \{S.label2:=\newLabelnull();    \\
+                       &             & S^{(1)}                                & \{S.label2=\newLabelnull();    \\
                        &             &                                        & \generategoto{S.label2};        \\
                        &             &                                        & \generatelabel{S.label1}\}      \\
                        &             & \texttt{else}\ S^{(2)}                 & \{\generatelabel{S.label2}\}
@@ -485,10 +485,10 @@ LRパーザーにコード生成ルーチンを組み込む場合，コード生
 
 \[\begin{array}{rcll}
         I  & \rightarrow                  & \texttt{if}\ \ttlp\ E\ \ttrp
-           & \{I.label:=\newLabelnull();                                                                    \\
+           & \{I.label=\newLabelnull();                                                                    \\
            &                              &                              & \generateifnot{E.var}{I.label}\} \\
         S' & \rightarrow                  & IS^{(1)}
-           & \{S'.label:=\newLabelnull();                                                                   \\
+           & \{S'.label=\newLabelnull();                                                                   \\
            &                              &                              & \generategoto{S'.label};         \\
            &                              &                              & \generatelabel{I.label}\}        \\
         S  & \rightarrow                  & S'\ \texttt{else}\ S^{(2)}   &
@@ -503,9 +503,9 @@ LRパーザーにコード生成ルーチンを組み込む場合，コード生
     S\rightarrow IS'S^{(1)}\}\]
 
 \[\begin{array}{rcll}
-        I  & \rightarrow & \texttt{while}\  & \{I.label:=\newLabelnull();       \\
+        I  & \rightarrow & \texttt{while}\  & \{I.label=\newLabelnull();       \\
            &             &                  & \generatelabel{I.label}\}         \\
-        S' & \rightarrow & \ttlp\ E\ \ttrp  & \{S'.label:=\newLabelnull();      \\
+        S' & \rightarrow & \ttlp\ E\ \ttrp  & \{S'.label=\newLabelnull();      \\
            &             &                  & \generateifnot{E.var}{S'.label}\} \\
         S  & \rightarrow & IS'S^{(1)}       & \{\generategoto{I.label};         \\
            &             &                  & \generatelabel{S'.label}\}
@@ -531,15 +531,15 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
 \begin{Exmp}
     以下の拡張BNFで定義されるプログラム$P$を考える．
     \[\begin{array}{crl}
-            P & ::= & S\ (\ttsc S)^\ast                                                                                                           \\
-            S & ::= & \mathsf{ID}\ \ttassgn\ E\ |\ \ttif B\ \ttthen\ S\ \ttelse S\ \ttfi\ |\ \ttwhile\ B\ \ttdo\ S\ \ttod                         \\
-            E & ::= & T((\ttpl|\ttsb)T)^\ast                                                                                                      \\
-            T & ::= & F((\ttmu|\ttdv)F)^\ast                                                                                                      \\
-            F & ::= & \ttlp\ E\ \ttrp\ |\ \mathsf{ID}\ |\ \mathsf{NUM}                                                                            \\
-            B & ::= & A(\ttor A)^\ast                                                                                                             \\
-            A & ::= & N(\ttand N)^\ast                                                                                                            \\
-            N & ::= & C\ |\ \ttneg\,C                                                                                                             \\
-            C & ::= & \ttlp\ B\ttrp\ |\ \mathsf{ID}\,\ttlt\,\mathsf{ID}\ |\ \mathsf{ID}\,\ttlt\,\mathsf{NUM}\ |\ \mathsf{NUM}\,\ttlt\,\mathsf{ID}
+            P & := & S\ (\ttsc S)^\ast                                                                                                           \\
+            S & := & \mathsf{ID}\ \ttassgn\ E\ |\ \ttif B\ \ttthen\ S\ \ttelse S\ \ttfi\ |\ \ttwhile\ B\ \ttdo\ S\ \ttod                         \\
+            E & := & T((\ttpl|\ttsb)T)^\ast                                                                                                      \\
+            T & := & F((\ttmu|\ttdv)F)^\ast                                                                                                      \\
+            F & := & \ttlp\ E\ \ttrp\ |\ \mathsf{ID}\ |\ \mathsf{NUM}                                                                            \\
+            B & := & A(\ttor A)^\ast                                                                                                             \\
+            A & := & N(\ttand N)^\ast                                                                                                            \\
+            N & := & C\ |\ \ttneg\,C                                                                                                             \\
+            C & := & \ttlp\ B\ttrp\ |\ \mathsf{ID}\,\ttlt\,\mathsf{ID}\ |\ \mathsf{ID}\,\ttlt\,\mathsf{NUM}\ |\ \mathsf{NUM}\,\ttlt\,\mathsf{ID}
         \end{array}\]
     これらの構文図式は図\ref{SynDiagramExample}のようになる．
 
@@ -558,7 +558,7 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
                 // \verb|nextsym|には先読みトークンがあらかじめ格納されている\\
                 {\rm\bf If} \verb|nexsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
                 \> \verb|getNextsym()|\\
-                \>{\rm\bf If} \verb|nextsym|.kind = `{\sf :=}' {\rm\bf then}\>\>// 代入記号\\
+                \>{\rm\bf If} \verb|nextsym|.kind = `{\sf =}' {\rm\bf then}\>\>// 代入記号\\
                 \>\> Eのコードを生成(\verb|$tempE|に結果を格納)\>// $E$\\
                 \>\> $\mathsf{generate}$(`$\mathsf{var}$({\sf ID}.val) = \verb|$tempE|')\>// 代入本体\\
                 \>{\rm\bf else} \verb|error()|\\
@@ -795,166 +795,470 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
 
 \subsection{コンパイラコンパイラによるコード生成}
 
+\subsubsection{ソースプログラムの仕様}
+
+ブロック構造とループ構造を持つ単純なプログラミング言語PL-Simpleを以下のように
+定義する．
+
+\begin{align*}
+\bnfnts{program} & \bnfarr \bnfts{program}\ \bnfts{IDENT}\ \bnfts{;}\ \bnfnts{outblock}\ \bnfts{.}\\
+\bnfnts{outblock} & \texttt{::=} 
+\bnfnts{var\_decl\_part}\ \bnfnts{statement}\\
+\bnfnts{var\_decl\_part} & \texttt{::=} \bnfnts{var\_decl\_list} \bnfts{;} \vert \texttt{/* empty */}\\
+\bnfnts{var\_decl\_list} & \bnfarr \bnfnts{var\_decl\_list} \bnfts{;} \bnfnts{var\_decl} \vert \bnfnts{var\_decl}\\
+\bnfnts{var\_decl} & \bnfarr \bnfts{var} \bnfnts{id\_list}\\
+\bnfnts{id\_list} & \bnfarr \bnfts{IDENT} \vert \bnfnts{id\_list} \bnfts{,} \bnfts{IDENT}\\
+\bnfnts{statement\_list} & \bnfarr \bnfnts{statement\_list} \bnfts{;} \bnfnts{statement} \vert \bnfnts{statement}\\
+\bnfnts{statement} & \bnfarr \bnfnts{assignment\_statement}
+             \vert \bnfnts{if\_statement}\\
+            & \vert \bnfnts{while\_statement}
+             \vert \bnfnts{for\_statement}
+             \vert \bnfnts{null\_statement}\\
+            & \vert \bnfnts{block\_statement}
+             \vert \bnfnts{read\_statement}
+             \vert \bnfnts{write\_statement}\\
+\bnfnts{assignment\_statement} & \bnfarr \bnfts{IDENT} \bnfts{:=} \bnfnts{expression}\\
+\bnfnts{if\_statement} & \bnfarr \bnfts{if} \bnfnts{condition} \bnfts{then} \bnfnts{statement} \bnfnts{else\_statement}\\
+\bnfnts{else\_statement} & \bnfarr \bnfts{else} \bnfnts{statement} \vert /* empty */\\
+\bnfnts{while\_statement} & \bnfarr \bnfts{while} \bnfnts{condition} \bnfts{do} \bnfnts{statement}\\
+\bnfnts{for\_statement} & \bnfarr \bnfts{for} \bnfts{IDENT} \bnfts{:=} \bnfnts{expression} \bnfts{to} \bnfnts{expression} \bnfts{do} \bnfnts{statement}\\
+\bnfnts{block\_statement} & \bnfarr \bnfts{begin} \bnfnts{statement\_list} \bnfts{end}\\
+\bnfnts{read\_statement} & \bnfarr \bnfts{read} \bnfts{(} \bnfts{IDENT} \bnfts{)}\\
+\bnfnts{write\_statement} & \bnfarr \bnfts{write} \bnfts{(} \bnfnts{expression} \bnfts{)}\\
+\bnfnts{null\_statement} & \bnfarr \texttt{/* empty */}\\
+\bnfnts{condition} & \bnfarr \bnfnts{expression} \bnfts{=} \bnfnts{expression}
+            \vert \bnfnts{expression} \bnfts{<>} \bnfnts{expression}\\
+            & \vert \bnfnts{expression} \bnfts{<} \bnfnts{expression}
+            \vert \bnfnts{expression} \bnfts{<=} \bnfnts{expression}\\
+            & \vert \bnfnts{expression} \bnfts{>} \bnfnts{expression}
+            \vert \bnfnts{expression} \bnfts{>=} \bnfnts{expression}\\
+\bnfnts{expression} & \bnfarr \bnfnts{term}
+              \vert \bnfts{+} \bnfnts{term}
+              \vert \bnfts{-} \bnfnts{term}
+              \vert \bnfnts{expression} \bnfts{+} \bnfnts{term}
+              \vert \bnfnts{expression} \bnfts{-} \bnfnts{term}\\
+\bnfnts{term} & \bnfarr \bnfnts{factor}
+        \vert \bnfnts{term} \bnfts{*} \bnfnts{factor}
+        \vert \bnfnts{term} \bnfts{div} \bnfnts{factor}\\
+\bnfnts{factor} & \bnfarr \bnfnts{var\_name}
+          \vert \bnfts{NUMBER}
+          \vert \bnfts{(} \bnfnts{expression} \bnfts{)}\\
+\bnfnts{var\_name} & \bnfarr \bnfts{IDENT}\\
+\end{align*}
+
+ここで，識別子トークン$\texttt{IDENT}$は\verb|[a-zA-Z][a-zA-Z_0-9]*|, 数値トークン$\texttt{NUMBER}$は\verb|(+|-|)?[0-9]+|で定義されるとする．ここで\verb|?|は０回または１回にマッチする文字列，\verb|+|は１回以上の繰り返しに
+マッチする文字列を表す．
+
+\subsubsection{目的コードの仕様}
+
+生成の対象とする目的コードセットを以下のようなものとする．
+$\texttt{s}$は実行時に用いられるデータを格納するための配列であり十分な領域が確保されているとする．
+$\texttt{s}$は評価においてはスタックとして用いられる．
+
+命令長は1 wordであり、命令は次の形式を持つ。
+\begin{center}
+\begin{tabularx}{.3\textwidth}{|c|Y|Y|Y|Y|}\hline
+    OPCODE & $b$ & $i$ & $a$\\\hline
+\end{tabularx}
+\end{center}
+% \[
+% \begin{array}{|c|c|c|c|}\hline
+% \mathrm{OPCODE}&b&i&a\\\hline
+% \end{array}
+% \]
+\begin{description}
+\item[$b$] ベースレジスタの指定。
+\item[$i$] インデックスレジスタの指定。
+\item[$a$] アドレス（displacement）。命令により定数や演算の指定にも使う。
+\end{description}
+命令領域（読出し専用）はword単位で番地を持ち、0番地から実行する。
+PCが示す番地の命令をIRに格納し、PCを1増加させてから、IRの命令を実行する。
+初期状態は次のとおりである。
+\[
+\mathrm{PC}=0,\quad R_1=0,\quad R_2=-1,\quad R_3=0,\quad R_4=0.
+\]
+以下では動作をC言語風に記述する。スタックは整数データを読み書きする領域であり、
+\texttt{s[Rn]}はレジスタ\texttt{Rn}が示す番地の内容を表す。
+各動作は記述順に実行する。
+
+\paragraph{1. Load literal}
+\inst{lit}
+\begin{verbatim}
+R2 = R2 + 1; s[R2] = a
+\end{verbatim}
+\ignored{$b$と$i$}
+\noindent 原文の\texttt{'a'}は即値$a$を表す。
+
+\paragraph{2. Load}
+\inst{lod}
+\begin{verbatim}
+R2 = R2 + 1; s[R2] = s[Rb + Ri + a]
+\end{verbatim}
+$b$と$i$が指定するレジスタの内容と$a$を加えたものをオペランドアドレスとする。
+ただし、$b=0$のときベースによるアドレス修飾は行わず、$i=0$のときも同様である。
+
+\paragraph{3. Store}
+\inst{sto}
+\begin{verbatim}
+s[Rb + Ri + a] = s[R2]; R2 = R2 - 1
+\end{verbatim}
+アドレスの計算は\texttt{lod}と同様であり、$b=0$または$i=0$の項は加えない。
+
+\paragraph{4. Move to index register}
+\inst{mvx}
+\begin{verbatim}
+Ri = s[R2]; R2 = R2 - 1
+\end{verbatim}
+\ignored{$b$と$a$}
+
+\paragraph{5. Arithmetic operation}
+\inst{opr}
+\par $a$により次の11種類の演算を指定する。
+\ignored{$b$と$i$}
+\begin{longtable}{|c|p{0.83\linewidth}|}
+\hline $a$ & 動作\\\hline
+\endhead
+0 & \texttt{s[R2] = -s[R2]}\\\hline
+1 & \texttt{R2 = R2 - 1; s[R2] = s[R2] + s[R2+1]}\\\hline
+2 & \texttt{R2 = R2 - 1; s[R2] = s[R2] - s[R2+1]}\\\hline
+3 & \texttt{R2 = R2 - 1; s[R2] = s[R2] * s[R2+1]}\\\hline
+4 & \texttt{R2 = R2 - 1; s[R2] = s[R2] div s[R2+1]}\\\hline
+5 & \texttt{R2 = R2 - 1;} $s[R_2]=s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+6 & \texttt{R2 = R2 - 1;} $s[R_2]\ne s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+7 & \texttt{R2 = R2 - 1;} $s[R_2]<s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+8 & \texttt{R2 = R2 - 1;} $s[R_2]\le s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+9 & \texttt{R2 = R2 - 1;} $s[R_2]>s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+10 & \texttt{R2 = R2 - 1;} $s[R_2]\ge s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+\end{longtable}
+
+% \paragraph{6. Increment stack top}
+% \inst{int}
+% \begin{verbatim}
+% R2 = R2 + a
+% \end{verbatim}
+% \ignored{$b$と$i$}
+
+% \paragraph{7. Procedure call}
+% \inst{cal}
+% \begin{verbatim}
+% s[R2+1] = R1; s[R2+2] = PC;
+% s[R2+3] = R3; s[R2+4] = R4;
+% R1 = R2 + 5; R2 = R2 + 4; PC = a
+% \end{verbatim}
+% \ignored{$b$と$i$}
+
+% \paragraph{8. Return}
+% \inst{rtn}
+% \begin{verbatim}
+% R2 = R1 - 5; PC = s[R1-3];
+% R3 = s[R1-2]; R4 = s[R1-1]; R1 = s[R1-4]
+% \end{verbatim}
+% \ignored{$b$、$i$、$a$}
+
+\paragraph{6. Unconditional Jump}
+\inst{jmp}
+\begin{verbatim}
+PC = a
+\end{verbatim}
+\ignored{$b$と$i$}
+
+\paragraph{7. Jump on condition}
+\inst{jpc}
+\begin{verbatim}
+if s[R2] = 0 then PC = a;
+R2 = R2 - 1
+\end{verbatim}
+\ignored{$b$と$i$}
+
+\paragraph{8. Read data}
+\inst{get}
+\par \texttt{R2 = R2 + 1}として、標準入力から次のデータ（整数値）を読み、
+\texttt{s[R2]}に格納する。
+\ignored{$b$、$i$、$a$}
+
+\paragraph{9. Write data}
+\inst{put}
+\par \texttt{s[R2]}の内容を標準出力に出力し、\texttt{R2 = R2 - 1}とする。
+\ignored{$b$、$i$、$a$}
+
 \subsubsection{JAVACCによるコード生成}
 
-\subsubsection{YACCによるコード生成}
+{\tt newlabel()}はラベルの記号を生成して表に登録し，表のエントリーポイント
+を返す．{\tt genlabel(label)}は{\tt label}のエントリーに対して，次に
+生成される命令へのポインタを格納する．
 
+{\tt while}文については以下のようにコード生成ルーチンを生成規則に挿入する．
 
+\begin{verbatim}
+void WhileStatement() : { Label startlabel; Label exitlabel; } {
+  <WHILE> { startlabel = newlabel(); genlabel(startlabel); }
+  Condition() { exitlabel = newlabel(); emit("jpc", exitlabel); }
+  <DO> Statement() { emit("jmp", startlabel); genlabel(exitlabel); }
+}
+\end{verbatim}
 
-% \subsection{LLVM-IRによる3番地コードの実現}
+if文については，以下のように生成規則を拡張する．{\tt LOOKHEAD}は，{\tt else}が次にあるかどうかを先読みする．
 
-% LLVMはコンパイラ研究でよく用いられる研究基盤である．３番地コードを基本として
-% 中間コードとしてLLVM-IRが提案されている．LLVM-IRでは静的単一代入形式でデータフローが
-% 式の解析によって得られ，最適化を容易にしている．
-% 図\ref{LLVMIR-example}に変換例を示す．
+\begin{verbatim}
+void IfStatement() : { Label falselabel; } {
+  <IF> Condition() { falselabel = newlabel(); emit("jpc", falselabel); }
+  <THEN> Statement() ElseStatement(falselabel)
+}
+void ElseStatement(Label falselabel) : { Label endlabel = null; } {
+  [ LOOKAHEAD(<ELSE>) <ELSE>
+    { endlabel = newlabel(); emit("jmp", endlabel); genlabel(falselabel); }
+    Statement() ]
+  { if (endlabel != null) genlabel(endlabel); else genlabel(falselabel); }
+}
+\end{verbatim}
 
-% \begin{figure}[H]
-%   \centering
-%   \begin{tabular}{ccc}
-%     \multicolumn{1}{m{.35\textwidth}}{
-%     \fbox{\includegraphics[width=0.35\textwidth]{fib_src-crop.pdf}}}
-%     & &
-%     \multicolumn{1}{m{.5\textwidth}}{
-%     \fbox{\includegraphics[scale=0.75,width=.5\textwidth]{fib_llvm-crop.pdf}}}
-%   \end{tabular}
-%   \caption{LLVM-IRへの変換例}\label{LLVMIR-example}
-% \end{figure}
+式については以下のようにコード生成する．BNFが左再帰製をもつため，$_{tail}$
+をもつ非終端記号を導入する．
 
-% \verb|%|$n$は，レジスタ$n$を表す．中間コードでは，レジスタは任意数あるとする．
-% LLVM-IRは，代入ごとにレジスタの番号を変えることによって静的単一代入(static single assignment
-% ,SSA)を実現する．LLVM-IRは実用的な中間コードであり，基本的なデータ型やビット長などが
-% 詳細に記述される．以下に主な命令を示す．(「きつねさんにもわかるLLVM」より引用)
+\begin{verbatim}
+void Expression() : {} {
+  ( Term() | <PLUS> Term() #UnaryPlus(1)
+  | <MINUS> Term() #Negate(1) { emit("opr", 0); } )
+  Expression_tail()
+}
+/* <expression_{tail}>. Emit before recursion to preserve left associativity. */
+void Expression_tail() #void : {} {
+  [ ( <PLUS> Term() #Add(2) { emit("opr", 1); }
+    | <MINUS> Term() #Subtract(2) { emit("opr", 2); } )
+    Expression_tail() ]
+}
+void Term() : {} { Factor() Term_tail() }
+/* <term_{tail}> */
+void Term_tail() #void : {} {
+  [ ( <TIMES> Factor() #Multiply(2) { emit("opr", 3); }
+    | <DIV> Factor() #Divide(2) { emit("opr", 4); } )
+    Term_tail() ]
+}
+void Factor() : {} { VarName() | Number() | <LPAREN> Expression() <RPAREN> }
+void VarName() : { Token name; } { name=Identifier() { load(variable(name)); } }
+Token Identifier() : { Token token; } {
+  token=<IDENT> { jjtThis.jjtSetValue(token.image); return token; }
+}
+\end{verbatim}
 
-% \begin{figure}[H]
-% \begin{center}
-% {\scriptsize
-% \begin{tabularx}{\textwidth}{|l|X|X|}\hline
-% {\tt alloca} & 
-%   result=alloca$\langle$type$\rangle$\newline
-%     \quad [,$\langle$type$\rangle$ $\langle$NumElements$\rangle$]\newline
-%     \quad [,align$\langle$alignment$\rangle$]
-% & メモリ確保命令\newline type $\times$ NumElementsの領域を関数のスタックフレーム上に確保\\\hline
-% {\tt load} & 
-%   result=load [volatile]\newline
-%   \quad $\langle$type$\rangle^\ast$ $\langle$pointer$\rangle$\newline
-%   \quad [,align$\langle$alignment$\rangle$]\newline
-%   \quad [,!nontemporal!$\langle$index$\rangle$]\newline
-%   \quad [,!invariant.load !$\langle$index$\rangle$]\newline 
-%   result=load atomic [volatile]\newline
-%   \quad $\langle$type$\rangle^\ast$ $\langle$pointer$\rangle$\newline
-%   \quad $\langle$singlethread$\rangle$ $\langle$ordering$\rangle$\newline
-%   !index=! i32 1\newline
-%   \quad align $\langle$alignment$\rangle$
-% & ロード命令\newline
-%     pointerが指すメモリアドレスから値を読み出す\newline
-%     volatileが指定されている場合、最適化はload命令の実行順や実行数をほかのvolatileな命令に変更することができない\\\hline
-%     {\tt store} &
-%     store [volatile]\newline
-%     \quad $\langle$type$\rangle$ $\langle$value$\rangle$\newline
-%     \quad $\langle$type$\rangle^\ast$ $\langle$pointer$\rangle$\newline
-%     \quad [,align $\langle$alignment$\rangle$]\newline
-%     \quad [,!nontemporal !$\langle$index$\rangle$]\newline
-%     store atomic [volatile]\newline
-%     \quad $\langle$type$\rangle$ $\langle$value$\rangle$\newline
-%     \quad $\langle$type$\rangle^\ast$ $\langle$pointer$\rangle$\newline
-%     \quad [singlethread] $\langle$ordering$\rangle$\newline
-%     \quad align $\langle$alignment$\rangle$
-%     & ストア命令\newline poinerが指すメモリアドレスに値を格納する\newline volatileが指定されている場合、最適化はstore命令の実行順や実行数をほかのvolatileな命令に変更することができない\\\hline
-%     {\tt getelementptr} &
-%     result = getelemntptr\newline
-%     \quad $\langle$ptyple$\rangle^\ast$ $\langle$ptrval$\rangle$\newline
-%     \quad \{, $\langle$type$\rangle$ $\langle$idx$\rangle$ \}$^\ast$\newline
-%     result = getelementptr inbounds\newline
-%     \quad $\langle$ptyple$\rangle^\ast$ $\langle$ptrval$\rangle$\newline
-%     \quad \{, $\langle$type$\rangle$ $\langle$idx$\rangle$ \}$^\ast$\newline
-%     result = getelementptr\newline
-%     \quad $\langle$ptr vector$\rangle$,\newline
-%     \quad $\langle$vector index type$\rangle$ $\langle$idex$\rangle$
-%     &
-%     要素アドレス取得命令\newline
-%     合成型内の要素のアドレスを計算する\newline
-%     prtvalが指す青dレスをベースとしてidxで指定したインデックスの要素アドレスを計算する\\\hline  
-%   \end{tabularx}
-% }
-% \end{center}
-% \caption{LLVMIR(メモリアクセス)}\label{LLVMIR-memory}
-% \end{figure}
+フルセットのjavacc記述を\url{https://github.com/syuen1/26compiler-support/PLsimple-javacc}で公開する．
 
-% \begin{figure}[H]
-%   \begin{center}
-% {\scriptsize
-% \begin{tabularx}{\textwidth}{|l|X|X|}\hline
-% {\tt add} & {\tiny
-% result = add $\langle$type$\rangle$ $\langle$op1$\rangle$ $\langle$op2$\rangle$	\newline
-% result = add nuw $\langle$type$\rangle$ $\langle$op1$\rangle$ $\langle$op2$\rangle$	\newline
-% result = add nsw $\langle$type$\rangle$ $\langle$op1$\rangle$ $\langle$op2$\rangle$	\newline
-% result = add nuw nsw $\langle$type$\rangle$ $\langle$op1$\rangle$ $\langle$op2$\rangle$}
-% &
-% 加算命令\newline op1とop2を加算して結果を返す。op1, op2は整数か整数のベクタ。\newline
-% nuw = No Unsigned Wrap, nsw = No Signed Wrap/ オーバーフローが発生したときに結果が未定義\\\hline
-% \end{tabularx}
-% }
-% \end{center}
-% 同様な演算命令 fadd, sub, fsub, mul, fmul, udiv, sdiv, fdiv, urem,srem,frem(剰余)
-% \caption{LLVMIR(演算命令)}\label{LLVMIR-opr}
-% \end{figure}
+\subsubsection{SLYによるコード生成}
 
-% \begin{figure}[H]
-% \begin{center}
-% {\scriptsize
-% \begin{tabularx}{\textwidth}{|l|X|X|}\hline
-% {\tt ret} & 
-% ret $\langle$type$\rangle$ $\langle$value$\rangle$\newline ret void
-% &
-% return 命令\newline
-% 関数の呼び出し元へ制御を戻す\newline
-% valueが指定されていればvalueを戻す
-% \\\hline
-% {\tt br} &
-% br i1 $\langle$cond$\rangle$, label $\langle$iftrue$\rangle$, label $\langle$iffalse$\rangle$\newline
-% br label $\langle$dest$\rangle$
-% &
-% 分岐命令\newline
-% condのtrue/falseに応じて分岐先が変わる\newline
-% condが指定されない場合はラベルdestに無条件分岐する\\\hline
-% {\tt icmp} & 
-% result=icmp $\langle$cond$\rangle$ $\langle$type$\rangle$ $\langle$op1$\rangle$ $\langle$op2$\rangle$
-% &
-% 比較命令\newline
-% op1, op2をcondで指定した条件で比較し、真偽を返す。op1, op2は整数、ポインタか整数のベクトル\\\hline
-% {\tt call} &
-% result = [tail] call [cconv] [ret attrs] $\langle$type$\rangle$\newline
-% \quad [$\langle$ fnty$\rangle^\ast$] $\langle$fnptrval$\rangle$\newline
-% \quad ($\langle$function args$\rangle$)[fn attrs]
-% &
-% 関数呼び出し命令\newline
-% 関数fnptrvalをfunction argsを引数として呼び出す。\\\hline
-% \end{tabularx}
-% }
-% \end{center}
-% \caption{LLVMIR(制御命令)}
-% \end{figure}
+SLYを用いてコード生成する場合，LALR(1)による構文解析によるので，
+還元時にコード生成する．コード生成規則を生成のタイミングで以下のように
+分割する．
 
-% \begin{figure}[H]
-% \begin{center}
-%   {\scriptsize
-% \begin{tabularx}{\textwidth}{|l|X|}\hline
-% {\tt eq} & 
-% equal ２つの引数が同値の場合true, それ以外false\\\hline
-% {\tt ne} & equalの否定\\\hline
-% {\tt ugt} & ２つの引数を符号なし値として扱って第一引数が第二引数よりも大きい場合にtrue, それ以外false\\\hline
-% {\tt uge} & ２つの引数を符号なし値として扱って第一引数が第二引数よりも大きいか同じ場合にtrue, それ以外false\\\hline
-% {\tt ult} & ２つの引数を符号なし値として扱って第一引数が第二引数よりも小さい場合にtrue, それ以外false\\\hline
-% {\tt ule} & ２つの引数を符号なし値として扱って第一引数が第二引数よりも小さいか同じ場合にtrue, それ以外false\\\hline
-% {\tt sgt} & ２つの引数を符号付き値として扱って第一引数が第二引数よりも大きい場合にtrue, それ以外false\\\hline
-% {\tt sge} & ２つの引数を符号付き値として扱って第一引数が第二引数よりも大きいか同じ場合にtrue, それ以外false\\\hline
-% {\tt slt} & ２つの引数を符号付き値として扱って第一引数が第二引数よりも小さい場合にtrue, それ以外false\\\hline
-% {\tt sle} & ２つの引数を符号付き値として扱って第一引数が第二引数よりも小さいか同じ場合にtrue, それ以外false\\\hline
-% \end{tabularx}
-% }
-% \end{center}
-% \caption{LLVMIR(比較命令)}
-% \end{figure}
+\begin{align*}
+\bnfnts{assignment\_target} & \bnfarr \bnfts{IDENT} \bnfts{ASSIGN}\\
+\bnfnts{assignment\_statement} & \bnfarr \bnfnts{assignment\_target} \bnfnts{expression}
+\end{align*}
 
+\begin{verbatim}
+    @_("IDENT ASSIGN")
+    def assignment_target(self, p):
+        return self.variable(p.IDENT)
 
+    @_("assignment_target expression")
+    def assignment_statement(self, p):
+        self.emit("sto", p.assignment_target)
+\end{verbatim}
+
+\begin{align*}
+\bnfnts{if\_head} & \bnfarr \bnfts{IF} \bnfnts{condition} \bnfts{THEN}\\
+\bnfnts{if\_statement} & \bnfarr \bnfnts{if\_head} \bnfnts{statement} \bnfnts{else\_statement}\\
+\bnfnts{else\_statement} & \bnfarr \bnfts{ELSE} \bnfnts{else\_start} \bnfnts{statement} \vert \texttt{/* empty */}\\
+\bnfnts{else\_start} & \bnfarr \texttt{/* empty */}\\
+\end{align*}
+
+\begin{Verbatim}[frame=single]
+    @_("IF condition THEN")
+    def if_head(self, p):
+        return self.emit("jpc")
+        label = self.newlabel()
+        self.emit("jpc", label)
+        return label
+
+    @_("if_head statement else_statement")
+    def if_statement(self, p):
+        # An absent else patches the false jump; a present else patches its end jump.
+        self.patch(p.if_head if p.else_statement is None else p.else_statement)
+        # Define the false label for an absent else, or the end label for a present else.
+        self.genlabel(p.if_head if p.else_statement is None else p.else_statement)
+
+    @_("ELSE else_start statement")
+    def else_statement(self, p):
+        return p.else_start
+
+    @_("%prec IF_WITHOUT_ELSE")
+    def else_statement(self, p):
+        return None
+
+    @_("")
+    def else_start(self, p):
+        # Stack immediately to the left: if_head, statement, ELSE.
+        false_jump = p[-3]
+        end_jump = self.emit("jmp")
+        self.patch(false_jump)
+        end_jump = self.newlabel()
+        self.emit("jmp", end_jump)
+        self.genlabel(false_jump)
+        return end_jump
+\end{Verbatim}
+
+\begin{align*}
+\bnfnts{loop\_start} & \bnfarr \texttt{/* empty */}\\
+\bnfnts{while\_head} & \bnfarr \bnfts{WHILE} \bnfnts{loop\_start} \bnfnts{condition} \bnfts{DO}\\
+\bnfnts{while\_statement} & \bnfarr \bnfnts{while\_head} \bnfnts{statement}
+\end{align*}
+
+\begin{Verbatim}[frame=single]
+    @_("")
+    def loop_start(self, p):
+        return len(self.code)
+        label = self.newlabel()
+        self.genlabel(label)
+        return label
+
+    @_("WHILE loop_start condition DO")
+    def while_head(self, p):
+        exit_label = self.newlabel()
+        self.emit("jpc", exit_label)
+        return WhileContext(p.loop_start, self.emit("jpc"))
+        return WhileContext(p.loop_start, exit_label)
+
+    @_("while_head statement")
+    def while_statement(self, p):
+        context = p.while_head
+        self.emit("jmp", context.start)
+        self.patch(context.exit_jump)
+        self.genlabel(context.exit_jump)
+\end{Verbatim}
+
+還元時にコード生成を行う場合は，上記のようにコード生成をするタイミングで
+$\varepsilon$規則を追加することによって，プログラミング言語を定義する
+文法の生成規則を拡張してコード生成を行うことができる． if文においては，
+条件のコードを生成した後，条件が偽であった場合の飛び先命令{\tt jpc}を
+生成し，else の前でthenで実行した命令が終了後の{\tt jmp}命令を
+$\varepsilon$規則で生成し，elseの後で条件が偽であった場合の飛び先
+番地を決定している．
+while文では，ループ条件の前にループ本体の実行後のジャンプ先ラベルを
+生成し，条件の直後にループの脱出条件をチェックする命令{\tt jpc}を
+生成している．
+
+フルセットのsly記述を\url{https://github.com/syuen1/26compiler-support/PLsimple-sly}で公開する．
+
+\section{コード生成例}
+
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0A;
+var n, sum;
+begin
+  n := 10;
+  sum := 0;
+  while n > 0 do
+  begin
+    sum := sum + n;
+    n := n - 1;
+  end;
+  write(sum)
+end.
+\end{Verbatim}
+{\tt PL0A.pl0} (1から10までの和を表示)
+    \end{minipage}
+    & \hspace*{3cm}& 
+    \begin{minipage}{.2\linewidth}
+\begin{Verbatim}[numbers=left]
+int,0,0,2
+lit,0,0,10
+sto,0,0,0
+lit,0,0,0
+sto,0,0,1
+lod,0,0,0
+lit,0,0,0
+opr,0,0,9
+jpc,0,0,18
+lod,0,0,1
+lod,0,0,0
+opr,0,0,1
+sto,0,0,1
+lod,0,0,0
+lit,0,0,1
+opr,0,0,2
+sto,0,0,0
+jmp,0,0,5
+lod,0,0,1
+put,0,0,0
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+
+\begin{tabular}{ccc}
+        \begin{minipage}{.5\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0B;
+var m, n, x;
+begin
+  read(n);
+  while 1 < n do
+    begin
+      x := n;
+      begin
+        m := x div 2;
+        while x <> (x div m) * m do
+          m := m - 1;
+        if m = 1 then
+          write(x)
+      end;
+      n := n - 1
+    end
+end.
+\end{Verbatim}
+{\tt PL0B.pl0} (入力した値より小さい素数を出力)
+    \end{minipage}
+     & \hspace*{3cm} &
+    \begin{minipage}{.2\linewidth}
+\begin{Verbatim}[numbers=left]
+int,0,0,3
+get,0,0,0
+sto,0,0,1
+lit,0,0,1
+lod,0,0,1
+opr,0,0,7
+jpc,0,0,37
+lod,0,0,1
+sto,0,0,2
+lod,0,0,2
+lit,0,0,2
+opr,0,0,4
+sto,0,0,0
+lod,0,0,2
+lod,0,0,2
+lod,0,0,0
+opr,0,0,4
+lod,0,0,0
+opr,0,0,3
+opr,0,0,6
+jpc,0,0,26
+lod,0,0,0
+lit,0,0,1
+opr,0,0,2
+sto,0,0,0
+jmp,0,0,13
+lod,0,0,0
+lit,0,0,1
+opr,0,0,5
+jpc,0,0,32
+lod,0,0,2
+put,0,0,0
+lod,0,0,1
+lit,0,0,1
+opr,0,0,2
+sto,0,0,1
+jmp,0,0,3
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
 \end{document}

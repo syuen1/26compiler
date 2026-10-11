@@ -41,26 +41,26 @@ L1: t=t*n
 & \qquad &
 \begin{minipage}{.5\linewidth}
     \begin{tikzpicture}
-    \node (B1) at (0,0) {$\begin{array}{c}
+    \node[label={160:{$B_1$}}] (B1) at (0,0) {$\begin{array}{c}
         \texttt{t=1}\\
         \texttt{n=10}
     \end{array}$};
     \draw ($(B1)+(-0.75,0.75)$) rectangle +(1.5,-1.5);
-    \node (B2) at ($(B1)+(0,-3)$) {$\begin{array}{ll}
+    \node[label={140:{$B_2$}}] (B2) at ($(B1)+(0,-3)$) {$\begin{array}{ll}
         L1: & {\texttt{t=t*n}}\\
             & {\texttt{n=n-1}}\\
             & {\texttt{b=n>1}}\\
             & {\texttt{if\ b\ goto\ }L1}\end{array}$};
     \draw ($(B2)+(-2,1.25)$) rectangle +(4,-2.5);
-    \node (B3) at ($(B2)+(0,-2.5)$) {$\texttt{f=t}$};
+    \node[label={160:{$B_3$}}] (B3) at ($(B2)+(0,-2.5)$) {$\texttt{f=t}$};
     \draw ($(B3)+(-0.5,0.5)$) rectangle +(1,-1);
-    \draw[->] ($(B1)+(0,-0.75)$) -- ($(B2)+(0,1.25)$);
-    \draw[->] ($(B2)+(0,-1.25)$) -- ($(B3)+(0,0.5)$);
-    \path[->,out=315,in=45,looseness=3.0] ($(B2)+(1,-1.25)$) edge ($(B2)+(1,1.25)$);
+    \draw[-{Stealth[scale=1.5]}] ($(B1)+(0,-0.75)$) -- ($(B2)+(0,1.25)$);
+    \draw[-{Stealth[scale=1.5]}] ($(B2)+(0,-1.25)$) -- ($(B3)+(0,0.5)$);
+    \path[-{Stealth[scale=1.5]},out=315,in=45,looseness=3.0] ($(B2)+(1,-1.25)$) edge ($(B2)+(1,1.25)$);
 \end{tikzpicture}
 \end{minipage}
 \end{tabular}
-\caption{3番地コードとそのCFG}
+\caption{3番地コードとそのCFG}\label{flg:flowgraph}
 \end{figure}
 
 基本ブロックでは，すべての命令の前提としてそれより前にある命令が必ず実行されている．
@@ -614,19 +614,167 @@ int sum(int n,int acc) {
 
 \subsection{データフロー解析}
 
-\subsubsection{到達定義解析}
+プログラムの実行意味が状態遷移に基づいて決まるとすると，プログラムの状態を決定する
+変数の実行に従った更新（{\bf データフロー}）を解析することでプログラムの
+実行意味を
+捉えることが可能になる．基本ブロックを越えて最適化を行うためには，フローグラフ上で
+各基本ブロックにどの変数が入力されてどの変数を出力するか，ということを解析して，
+代入された値がどこまで参照として有効か（定義到達解析），以降の実行でどこまでその
+変数が用いられるか（生存解析），同じ値を計算する式の検出（利用可能式解析）などの
+解析手法が用いられる．このような解析はプログラムを実行することなく行われるため，
+{\bf 静的解析}という．この解析において，一般にプログラムの成魚がループを
+持つことから変数の更新は自身の更新に依存するため，この解析においては
+データフロー方程式を解く必要が生じる．
 
-\subsubsection{生存解析}
+\subsubsection{定義到達解析}
+
+定義到達解析は，$v\texttt{=}E$という形の３番地コードは$v$を定義しているとし，
+ここで定義された$v$の値がどこまで変更されずに到達するか，ということを
+解析する．$v$が別の命令で上書きされるとき，先の定義はkillされる．
+各定義の３番地命令にラベル$d_i$をつけ，基本ブロック$B$ごとに
+以下の定義ラベルの集合を定める．
+\begin{list}{$\cdot$}{}
+    \item $Gen[B]$: $B$のなかで定義され，上書きされない定義の集合
+    \item $Kill[B]$ $B$のなかで上書きされる定義の集合
+    \item $In[B]$ $B$が実行される際に参照する変数に対する定義の集合
+    \item $Out[B]$ $B$が実行された後に有効な定義の集合
+\end{list}
+ここで$Gen$, $Kill$は定義の実行順は関係なく，定義集合全体に
+対して定める．
+
+基本ブロックから構成されるフローグラフが与えられたとき，以下の関係がある．
+\begin{eqnarray}
+In[B] & = & \cup_{P\in\mathsf{Pred}(B)}Out[P]\\
+Out[B] & = & Gen[B]\cup (In[B]\backslash Kill[B])
+\end{eqnarray}
+ここで，$\mathsf{Pred}(B)$は，フローグラフにおいて，$B$の先行頂点
+(predecessor)の集合を表す．基本ブロック内では，制御の分岐はない．
+基本ブロックには，その直是のブロックから出力されるフローが入力され，
+ブロックからの出力フローは，ブロック内で新たに発生した定義と，入力定義
+のうちkillされなかった定義となる．
+
+図\ref{fig:flowgraph}のコードにおいて以下のように定義のラベル付けをする．
+\[
+\begin{array}{rrl}
+d_1: & &    \texttt{t=1}\\
+d_2: & &    \texttt{n=10}\\
+d_3: & L1: & \texttt{t=t*n}\\
+d_4: & &    \texttt{n=n-1}\\
+d_5: & &    \texttt{b=(n>1)}\\
+    & &\texttt{if b goto }L1\\
+d_6: & &    \texttt{f=t}\\
+\end{array}
+\]
+$B_i$に対する$Gen$, $Kill$は以下のようになる．
+\begin{trivlist}
+    \item $Gen[B_1]=\{d_1,d_2\}$, $Kill[B_1]=\{d_3,d_4\}$
+    \item $Gen[B_2]=\{d_3,d_4,d_5\}$, $Kill[B_2]=\{d_1,d_2\}$
+    \item $Gen[B_3]=\{d_6\}$, $Kill[B_3]=\varnothing$
+\end{trivlist}
+$In$, $Out$については以下の関係がなりたつ．
+\begin{trivlist}
+    \item $In[B_1]=\varnothing$, $Out[B_1]=Gen[B_1]=\{d_1,d_2\}$
+    \item $In[B_2]=Out[B_1]\cup Out[B_2]$, $Out[B_2]=\{d_3,d_4,d_5\}\cup(In[B_2]\backslash\{d_1,d_2\})$
+    \item $In[B_3]=Out[B_2]$, $Out[B_3]=\{d_6\}\cup(In[B_2]\backslash\{d_6\})$
+\end{trivlist}
+$In[B_2]$についての式を代入すると，
+\[In[B_2]=\{d_1,d_2\}\cup(\{d_3,d_4,d_5\}\cup(In[B_2]\backslash\{d_1,d_2\}))\]となる．$In[B_2]=X$とおくと，
+$X=\{d_1,d_2,d_3,d_4,d_5\}\cup (X\backslash\{d_1,d_2\})$を満たす$X$を
+求める必要がある．これを解くには，$X_0=\varnothing$として，
+$X_{i+1}=\{d_1,d_2,d_3,d_4,d_5\}\cup (X_i\backslash\{d_1,d_2\})$
+で，$X_{i+1}=x_i$となるまで繰り返す．
+
+$X_1=\{d_1,d_2,d_3,d_4,d_5\}$, $X_2=\{d_1,d_2,d_3,d_4,d_5\}$となるので
+$X=\{d_1,d_2,d_3,d_4,d_5\}$が条件を満たす．したがって，$Out[B_2]=\{d_3,d_4,d_5\}$，$out[B_3]=\{d_3,d_4,d_5,d_6\}$である．
+
+この解析によってこのプログラムが終了した時点での，$\texttt{t},\texttt{n}$の
+有効な定義は，$d_3$および$d_4$であり，$d_1$, $d_2$の定義は伝播しないという
+ことがわかる．また，$In[B_2]$において，$\texttt{t}$, $\texttt{n}$に
+対する定義は一意的に定まらないので，$B_2$中でそれらの変数を定数に置き換えることは
+できないこともわかる．
+
+\subsubsection{生存変数解析}
+
+基本ブロック$B$において，$In[B]$に含まれる定義の変数がKillされる前に
+参照されるとき，その定義は$B$で実際に使用される．この変数の集合を$Use[B]$
+とする．$B$の中で定義される変数の集合を$Def[B]$とすると，以下の関係が
+成り立つ．
+\begin{eqnarray}
+In[B] & = & Use[B]\cup(Out[B]\backslash Def[B])\label{eqn:lvin}\\
+Out[B] & = & \cup_{S\in\mathsf{Succ}(B)}In[S]\label{eqn:lvout}
+\end{eqnarray}
+ここで，$\mathsf{Succ}(B)$はフローグラフでの$B$の後続頂点集合である．
+
+図\ref{flg:flowgraph}について，生存変数解析は以下のようになる．
+\begin{trivlist}
+\item $Use[B_1]=\varnothing$, $Def[B_1]=\{t,n\}$
+\item $Use[B_2]=\{t,n\}$, $Def=\{t,n,b\}$
+\item $Use[B_3]=\{t\}$, $Def[B_3]=\{f\}$
+\end{trivlist}
+(\ref{eqn:lvin})(\ref{eqn:lvout})を適用する．
+
+\begin{trivlist}
+\item $In[B_1]=Out[B_1]\backslash\{t,n\}$, $Out[B_1]=In[B_2]$
+\item $In[B_2]=\{t,n\}\cup(Out[B_2]\backslash\{t,n,b\})$, $Out[B_2]=In[B_2]\cup In[B_3]$
+\item $In[B_3]=\{t\}\cup(Out[B_3]\backslash\{f\})$,$Out[B_3]=\varnothing$
+\end{trivlist}
+
+$In$, $Out$は出口から計算できる．$In[B_3]=\{t\}$
+$Out[B_2]=In[B_2]\cup\{t\}$, 
+$In[B_2]=\{t,n\}\cup((In[B_2]\cup\{t\})\backslash\{t,n,b\})$
+$In[B_2]=X$とすると，$X=\{t,n\}\cup(X\backslash\{n,b\})$となる．
+$X_0=\varnothing$として$X_{i+1}=\{t,n\}\cup(X_i\backslash\{n,b\})$
+に代入すると$X_1=\{t,n\}$, $X_2=\{t,n\}$となる．
+よって，$Out[B_2]=\{t,n\}$, $Out[B_1]=\{t,n\}$, $In[B_1]=\varnothing$
+と決定できる．
+
+生存変数解析によって，基本ブロックの実行の後で使用されない変数を特定できる．
+この解析に基づいて使われない変数の計算を基本ブロックから消去することができる．
+
+図\ref{flg:flowgraph}に対する利用可能式解析は以下のようになる．
+\begin{trivlist}
+\item $Gen[B_1]=\varnothing$, $Kill[B_1]=\{\texttt{t*n},\texttt{n-1},\texttt{n>1}\}$
+\item $Gen[B_2]=\{\texttt{n>1}\}$, $Kill[B_2]=\{\texttt{t*n},\texttt{n-1},\texttt{n>1}\}$
+\item $Gen[B_3]=\varnothing$, $Kill[B_3]=\varnothing$
+\end{trivlist}
+
+IN,OUTは以下のようになる．
+\begin{trivlist}
+\item $IN[B_1]=\varnothing$, $OUT[B_1]=\varnothing$
+\item $IN[B_2]=OUT[B_1]\cap OUT[B_2]=\varnothing$
+$OUT[B_2]=\{\texttt{n>1}\}$
+\item $IN[B_3]=OUT[B_2]=\{\texttt{n>1}\}$, $OUT[B_3]=\{\texttt{n>1}\}$
+\end{trivlist}
+
+実際に利用可能解析は，配列のアドレス計算において\texttt{a[i]}のデータにアクセスするのに$\texttt{a}$のアドレス計算に$\texttt{i*4}$を計算する場合などに有効である．
 
 \subsubsection{利用可能式解析}
 
+$v\;=\;a\;\texttt{+}\;b$という代入コードがある場合，この基本ブロックの後で
+$a\;\texttt{+}\;b$という式が出現しているとき$a$, $b$の値が更新されて
+いなければ，計算の重複を避けることが可能になる．変数や定義の代わりに評価式を
+蓄積する．式はその要素が一つでも更新されるとkillされる．各基本ブロック$B$
+について，$B$の中において計算された後$B$を抜けるまでにkillされることのない
+式の集合を$Gen[B]$，$B$の中でkillされる式の集合を$Kill[B]$とする．
+ここでは，以下の関係が成り立つ．
+\begin{eqnarray}
+IN[B] & = & \cap_{\mathsf{Pred}[B]}Out[P]\\
+OUT[B] & = & Gen[B]\cup(In[B]\backslash Kill[B])
+\end{eqnarray}
+
+
+
+% \begin{trivlist}
+% \item 
+% \end{trivlist}
+
 \section{静的単一代入形式と最適化}
 
-最近のコンパイラにおける最適化では，静的単一代入形式(Static single assignment, SSA)を用いる
-事が多い．SSA形式では中間コード列の中に各変数の定義（３番地コードの場合は代入の左辺）が一箇所しか
-現れないという制約を持つ．定義が１つしかないため，どこで定義された変数がどこで参照されるかが，
-プログラムとして明示される．プログラムを解析すれば，プログラムの構文情報からデータフローを
-解析することができる．
+% 最近のコンパイラにおける最適化では，静的単一代入形式(Static single assignment, SSA)を用いる
+% 事が多い．SSA形式では中間コード列の中に各変数の定義（３番地コードの場合は代入の左辺）が一箇所しか
+% 現れないという制約を持つ．定義が１つしかないため，どこで定義された変数がどこで参照されるかが，
+% プログラムとして明示される．プログラムを解析すれば，プログラムの構文情報からデータフローを
+% 解析することができる．
 
 \subsection{例}
 
