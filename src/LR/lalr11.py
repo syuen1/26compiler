@@ -4,15 +4,18 @@
 from __future__ import annotations
 
 import argparse
+from importlib import import_module
 import sys
 from pathlib import Path
 from typing import Sequence
 
-from lalr1 import lalr_automaton
 from lr1 import Item
 from lr11 import lr1_table
 from slr import Grammar, GrammarError, Production, parse_grammar, write_graph
 from slr1 import latex_table, parsing_table_dot, render_table, table_listing
+
+
+lalr_automaton = import_module("lalr-common").lalr_automaton
 
 
 def format_analysis(grammar: Grammar) -> tuple[str, bool, list[Production], list[frozenset[Item]], dict[tuple[int, str], int], dict[tuple[int, str], list[str]], dict[tuple[int, str], int]]:

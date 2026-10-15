@@ -6,13 +6,12 @@ from __future__ import annotations
 import argparse
 import re
 import shlex
+import shutil
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
-
-from slr import write_graph
-
 
 ENDMARK = "#"
 
@@ -266,6 +265,23 @@ def run(table: ParsingTable, input_symbols: list[str], verbose: bool = False) ->
                 tape.append(0)
             trace(action)
             return tape
+
+
+def write_graph(path: Path, source: str, output_format: str | None = None) -> None:
+    suffix = output_format or path.suffix.lower().lstrip(".")
+    if not suffix:
+        raise ParseError("--graph の出力ファイル名には .png、.svg、.pdf、.dot などの拡張子が必要です")
+    if suffix == "dot":
+        path.write_text(source, encoding="utf-8")
+        return
+    dot = shutil.which("dot")
+    if dot is None:
+        raise ParseError("Graphviz の dot コマンドが見つかりません（.dot 出力は利用できます）")
+    try:
+        subprocess.run([dot, f"-T{suffix}", "-o", str(path)], input=source, text=True, check=True, capture_output=True)
+    except subprocess.CalledProcessError as error:
+        detail = error.stderr.strip() or "dot の実行に失敗しました"
+        raise ParseError(detail) from error
 
 
 def main(argv: Sequence[str] | None = None) -> int:
