@@ -9,13 +9,21 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from lr1 import Item
-from lr11 import lr1_table
-from slr import Grammar, GrammarError, Production, parse_grammar, write_graph
-from slr1 import latex_table, parsing_table_dot, render_table, table_listing
 
-
-lalr_automaton = import_module("lalr-common").lalr_automaton
+# ハイフンを含む共有モジュール名は import_module で読み込む。
+_common = import_module("lr-common")
+GrammarError = _common.GrammarError
+Production = _common.Production
+Grammar = _common.Grammar
+parse_grammar = _common.parse_grammar
+write_graph = _common.write_graph
+Item = _common.LR1Item
+render_table = _common.render_table
+latex_table = _common.latex_table
+parsing_table_dot = _common.parsing_table_dot
+table_listing = _common.table_listing
+lr1_table = _common.lr1_table
+lalr_automaton = _common.lalr_automaton
 
 
 def format_analysis(grammar: Grammar) -> tuple[str, bool, list[Production], list[frozenset[Item]], dict[tuple[int, str], int], dict[tuple[int, str], list[str]], dict[tuple[int, str], int]]:

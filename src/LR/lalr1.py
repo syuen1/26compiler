@@ -9,11 +9,19 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from lr1 import Item, dot_source as lr1_dot_source, format_automaton, format_transition_table
-from slr import Grammar, GrammarError, Production, parse_grammar, write_graph
 
-
-lalr_automaton = import_module("lalr-common").lalr_automaton
+# ハイフンを含む共有モジュール名は import_module で読み込む。
+_common = import_module("lr-common")
+GrammarError = _common.GrammarError
+Production = _common.Production
+Grammar = _common.Grammar
+parse_grammar = _common.parse_grammar
+write_graph = _common.write_graph
+Item = _common.LR1Item
+format_automaton = _common.format_lr1_automaton
+format_transition_table = _common.format_transition_table
+lr1_dot_source = _common.lr1_dot_source
+lalr_automaton = _common.lalr_automaton
 
 
 def dot_source(

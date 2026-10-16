@@ -126,3 +126,9 @@ python3 lalr11.py --tex-table expression-lalr1-table.tex expression.y
 python3 lalr11.py --eps expression-lalr1-table.eps expression.y
 python3 lalr11.py --outtab expression-lalr1-table.tab expression.y
 ```
+
+## 共通モジュール
+
+`slr.py`、`slr1.py`、`lr1.py`、`lr11.py`、`lalr1.py`、`lalr11.py` は、文法の読み込み、FIRST 集合、オートマトン生成、表・図の出力処理を `lr-common.py` で共有します。実行ファイル同士の import は不要で、各スクリプトと `lr-common.py` を同じディレクトリに置けば実行できます。ハイフンを含むファイル名のため、共有モジュールは `importlib.import_module("lr-common")` で読み込みます。
+
+`lalr-common.py` は既存の利用者向けの互換入口として残し、`lr-common.py` の実装を参照します。
