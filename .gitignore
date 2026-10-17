@@ -2,3 +2,4 @@
 slides/261002/figs261002/sly-template.log
 slides/261002/figs261002/sly-template.synctex.gz
 src/.DS_Store
+src/LR/__pycache__/lr-common.cpython-314.pyc
