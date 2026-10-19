@@ -30,7 +30,7 @@
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\familydefault}{\sfdefault}
 
-\include{mymacros}
+\input{mymacros}
 
 %\include{cmacros}
 \graphicspath{{figs261020/}}
@@ -59,6 +59,35 @@
 %     \includegraphics[height=0.8\textheight]{compilerstruct-crop.pdf}
 %   \end{center}
 % \end{frame}
+
+\begin{frame}
+  \frametitle{コンパイラの基本構成(再掲)}
+ \begin{tabularx}{\textwidth}{Xcp{.7\textwidth}}
+  \centering
+  \raisebox{-6zw}{\includegraphics[scale=0.5]{compilerstruct-crop.pdf}}
+  & \hspace*{2.5cm} &
+  \begin{minipage}{.7\textwidth}
+   {\scriptsize
+   \begin{itemize}
+    \item 字句解析\\
+	  ソースプログラムから単語を切りだす\\
+	  \greentext{オートマトン}
+    \item 構文解析\\
+	  文法に従って、単語間の関係として木構造を生成\\
+	  \greentext{再帰降下構文解析、LR構文解析}
+    \item 中間コード生成\\
+	  木構造が示す意味に従って中間的な実行コードを作成\\
+	  \greentext{3番地コード、記号表}
+    \item コード最適化\\
+	  意味を変えずによりより実行が高速なコードに変換\\
+	  \greentext{DAG, データフロー解析、SSA}
+    \item コード生成系\\
+	  実行アーキテクチャに適した高速な目的コードを生成\\
+	  \greentext{レジスタ割り当て}
+   \end{itemize}}
+  \end{minipage}
+ \end{tabularx}
+\end{frame}
 
 \section{記号表}
 
@@ -100,7 +129,7 @@
     \draw[red] (3,0) circle (0.2);
 
     \node[anchor=west] at (5,2.5) {\greentext{$x$は構文木上では無関係}};
-    \only<2>{\node[anchor=west] at (5,1) {\parbox{10zw}{\redtext{構文木上の要素の関連付けて同じアドレスを使ったコードを生成\newline $\Rightarrow$ 表に記録}}};}
+    \only<2>{\node[anchor=west] at (5,1) {\parbox{10zw}{\redtext{構文木上の要素を関連付けて同じアドレスを使ったコードを生成\newline $\Rightarrow$ 表に記録}}};}
   \end{tikzpicture}
 
 \end{frame}
@@ -245,7 +274,7 @@
           \node[anchor=west] at (0,1.5)
           {\verb|void main() {|};
           \node[anchor=west] at (0,1)
-          {\verb|    int a=3;|};
+          {\verb|    int a=1;|};
           \node[anchor=west] at (0,0.5)
           {\verb|    f();g();|};
           \node[anchor=west] at (0,0)
@@ -389,7 +418,7 @@
   \frametitle{スコープルール}
   スコープルール=識別子の有効範囲\\
   \begin{trivlist}
-    \item C言語の場合：大域変数、ファイル内大域、関数内局所変数、プロック
+    \item C言語の場合：大域変数、ファイル内大域、関数内局所変数、ブロック
     内局所変数
     \item Java言語の場合：{\tt public}、{\tt protected}、{\tt private}、ブロック内局所
   \end{trivlist}
@@ -406,7 +435,7 @@
 
   解決法:
   \begin{list}{}{}
-    \item 2以上同じ識別子のエントリを許して参照する順序を決める
+    \item 2つ以上同じ識別子のエントリを許して参照する順序を決める
     \item 局所変数のラベルをつけて局所環境から出たら破棄\\
           (局所関数のレベルが1段階なので非常に単純)\\
           % $\Rightarrow$教科書の場合はレベルを記号表に含めている。
@@ -505,7 +534,7 @@
 \begin{frame}
   \frametitle{ハッシング(Hashing)}
 
-  中間コード生成：{\tt lod 0,0,x}の{\tt x}のアドレスを記号表を参照する必
+  中間コード生成：{\tt lod 0,0,x}の{\tt x}のアドレスを記号表から参照する必
   要あり：高速にデータアクセスするテクニック
 
   Open Hashing: $f(x)=f(y)$となる$x$, $y$をリストでつなぐ。
@@ -626,16 +655,16 @@
     }
   \end{center}
   ハッシュ関数 $h(s)$:$s$に対して数をわりあてる。できるだけばらばらになる
-  ようにする=ハッシュ表につながるリストを短かくする
+  ようにする=ハッシュ表につながるリストを短くする
 \end{frame}
 
 \begin{frame}
   \frametitle{ハッシュ関数}
 
   \[
-    h(a_n\cdots a_1)=\{\sum^n_i ord(a_i)\times 63^{n-1}\}\ \mathsf{mod}\ N +1
+    h(a_n\cdots a_1)=\left\{\sum^n_{i=1} \mathrm{ord}(a_i)\times 63^{i-1}\right\}\ \mathsf{mod}\ N +1
   \]
-  $N=1009$のとき：$h(main)=h(bqn)=h(aculvI)=949$
+  $N=1009$のとき：$h(\mathtt{main})=h(\mathtt{bqn})=h(\mathtt{aculvI})=949$
 
   リストの実現にはさまざまな方法がある。例5.4
 
@@ -782,14 +811,18 @@
   \end{center}
 \end{frame}
 
+\section{型チェック}
+
+\subsection{型チェックと型定義}
+
 \begin{frame}[fragile]
   \frametitle{型チェック}
   \begin{itemize}
-    \item 駆動レコードや記号表において，変数と必要な記憶領域量の対応をとる必要がある．\\
-          内部表現：32/64bit 整数，固定小数点，浮動小数点（単精度，倍精度）
-    \item 演算によって計算するデータの型が異なる．\\
-          型によって発行する命令が異なる．データ型が混在するとき，エラーとするか？
-    \item 構造体，オブジェクトなどのより複雑なデータ型の場合，整合性があるか？
+    \item 駆動レコードや記号表において、変数と必要な記憶領域量の対応をとる必要がある。\\
+          内部表現：32/64bit 整数、固定小数点、浮動小数点（単精度、倍精度）
+    \item 演算によって計算するデータの型が異なる。\\
+          型によって発行する命令が異なる。データ型が混在するとき、エラーとするか？
+    \item 構造体、オブジェクトなどのより複雑なデータ型の場合、整合性があるか？
           リストの内容は同じ型でないといけないか？
   \end{itemize}
 
@@ -802,7 +835,7 @@
       \includegraphics[width=0.45\textwidth]{typeErr-crop.pdf}}
      &
     \multicolumn{1}{m{0.5\textwidth}}{
-      \greentext{\small\texttt{+}の両辺の型が違うとき，構文的に正しくても
+      \greentext{\small\texttt{+}の両辺の型が違うとき、構文的に正しくても
         有効な命令に変換可能か？}}
   \end{tabular}
 \end{frame}
@@ -810,16 +843,16 @@
 \begin{frame}[fragile]
   \frametitle{型定義}
 
-  $T$は，整数($\mathsf{integer}$)か浮動小数点数($\mathsf{float}$)の変数型，および，
-  その配列の型を生成する．例：\verb|int[2][3]|, \verb|float[10]|
+  $T$は、整数($\mathsf{integer}$)か浮動小数点数($\mathsf{float}$)の変数型、および、
+  その配列の型を生成する。例：\verb|int[2][3]|, \verb|float[10]|
 
   \[\begin{array}{l|p{0.5\textwidth}}
       \mbox{生成規則}                                           & \mbox{意味ルール}                           \\\hline
       T \rightarrow B\;C                                    & $T.t=B.t$, $C.b=B.t$                   \\
       B \rightarrow \mathbf{int}                            & $B.t=\mathsf{integer}$                 \\
       B \rightarrow \mathbf{float}                          & $B.t=\mathsf{float}$                   \\
-      C \rightarrow \texttt{[}\,\mathbf{num}\,\texttt{]}C_1 & $C.t=array(\mathsf{number}.val,C_1.t)$ \\
-                                                            & $C_1.b=C_b$                            \\
+      C \rightarrow \texttt{[}\,\mathbf{num}\,\texttt{]}C_1 & $C.t=\mathsf{array}(\mathbf{num}.val,C_1.t)$ \\
+                                                            & $C_1.b=C.b$                            \\
       C \rightarrow \varepsilon                             & $C.t=C.b$
     \end{array}\]
 
@@ -827,29 +860,31 @@
     \item \verb|int[2][3]|が割り当てる領域 32bit$\times$6
     \item \verb|float[10]|が割り当てる領域 64bit$\times$10
   \end{list}
-  配列の大きさは予め決定されている必要がある：駆動レコード，ヒープのため
+  配列の大きさは予め決定されている必要がある：駆動レコード、ヒープのため
 \end{frame}
+
+\subsection{型整合性と多相型}
 
 \begin{frame}
   \frametitle{型整合性}
-  型が一致しない場合の対応はプログラミング言語ごとに異なる．
+  型が一致しない場合の対応はプログラミング言語ごとに異なる。
 
   \begin{itemize}
-    \item 型が一致しない場合はエラーとする．\\
-          型ごとに演算を用意する．MLの\texttt{+}(整数)と\texttt{+.}(固定小数点)\\
+    \item 型が一致しない場合はエラーとする。\\
+          型ごとに演算を用意する。MLの\texttt{+}(整数)と\texttt{+.}(浮動小数点)\\
           OCaml, Haskell, C, Javaなど
-    \item 型変換する．\\
-          型キャストによって明示的に変換するか，暗黙的に変換する．
-          部分型の定義によって柔軟に適用させるようにする．\\
-          Lisp, SmallTalk, Perlなど
+    \item 型変換する。\\
+          型キャストによって明示的に変換するか、暗黙的に変換する。
+          部分型の定義によって柔軟に適用させるようにする。\\
+          Lisp, Smalltalk, Perlなど
   \end{itemize}
 
   型チェック：
   \begin{itemize}
     \item {\bf 静的型チェック}\quad
-          コンパイル時に型整合性を検査して，型が合わない場合はコード生成しない．
+          コンパイル時に型整合性を検査して、型が合わない場合はコード生成しない。
     \item {\bf 動的型チェック}\quad
-          コンパイル時は整合性を厳しく検査せず，実行時にできるだけ型が合うように実行する．
+          コンパイル時は整合性を厳しく検査せず、実行時にできるだけ型が合うように実行する。
   \end{itemize}
 
 \end{frame}
@@ -860,22 +895,22 @@
   \begin{itemize}
     \item 多相型(polymorphism)：リストなど共通の操作を持つデータ型
 
-          Listはその要素の型にかかわらず同じ性質を持つ．\\
-          結合(append)，先頭要素(head)，先頭を除いたリスト(tail)，i番目の取り出し(i-th) etc.
+          Listはその要素の型にかかわらず同じ性質を持つ。\\
+          結合(append)、先頭要素(head)、先頭を除いたリスト(tail)、i番目の取り出し(i-th) etc.
 
           \vspace*{10pt}
 
           型変数を持つデータ型:\verb|List<X>|
 
-          型変数に具体的なデータ型を適用して，データ型を構成する．
+          型変数に具体的なデータ型を適用して、データ型を構成する。
 
           整数リスト＝\verb|List<Int>|, 文字リスト＝\verb|List<Char>|
 
     \item オーバーロード：異なる型に対して同じ操作を認める
 
-          加算：整数，実数などに対して同じ記号\texttt{+}を用いる
+          加算：整数、実数などに対して同じ記号\texttt{+}を用いる
 
-          \texttt{x+y}は，$x$,$y$の型に応じて操作を切り替える．
+          \texttt{x+y}は、$x$,$y$の型に応じて操作を切り替える。
           \begin{trivlist}
             \item $\texttt{x}$, $\texttt{y}$がともに整数の場合：整数の加算
             \item $\texttt{x}$, $\texttt{y}$がともに実数の場合：実数の加算
