@@ -1,0 +1,15 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\begin{document}
+\begin{tabular}{llcll}
+               & \verb|t=1|          &               &            & \verb|t|$_0$\verb|=1|                                        \\
+               & \verb|n=10|         &               &            & \verb|n|$_0$\verb|=10|                                       \\
+    \verb|L1|: & \verb|t=t*n|        &               & \verb|L1|: & \verb|t|$_1$\verb|=|$\phi$\verb|(t|$_1$\verb|,t|$_2$\verb|)| \\
+               & \verb|n=n-1|        &               &            & \verb|n|$_1$\verb|=|$\phi$\verb|(n|$_0$\verb|,n|$_2$\verb|)| \\
+               & \verb|b=n>1|        & $\Rightarrow$ &            & \verb|t|$_2$\verb|=t|$_1$\verb|*n|$_1$                       \\
+               & \verb|if b goto L1| &               &            & \verb|n|$_2$\verb|=n|$_1$\verb|-1|                           \\
+               & \verb|f=t|          &               &            & \verb|b|$_0$\verb|=n|$_2$\verb|>1|                           \\
+               &                     &               &            & \verb|if b|$_0$\verb| goto L1|                               \\
+               &                     &               &            & \verb|f|$_0$\verb|=t|$_2$                                    \\
+\end{tabular}
+\end{document}

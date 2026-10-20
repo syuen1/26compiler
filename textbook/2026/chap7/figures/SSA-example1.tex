@@ -1,0 +1,14 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\begin{document}
+\begin{tabular}{lcl}
+    \verb|scanf("%d",&x);| &               & \verb|scanf("%d",&x|$_0$\verb|);|                             \\
+    \verb|a=1;|            &               & \verb|a|$_0$\verb|=1;|                                        \\
+    \verb|b=2;|            &               & \verb|b|$_0$\verb|=2;|                                        \\
+    \verb|c=a+b;|          & $\Rightarrow$ & \verb|c|$_0$\verb|=a|$_0$\verb|+b|$_0$\verb|;|                \\
+    \verb|if(x>0)a=3;|     &               & \verb|if(x|$_0$\verb|>0)a|$_1$\verb|=3;|                      \\
+    \verb|d=b;|            &               & \verb|a|$_2$\verb|=|$\phi$\verb|(a|$_0$\verb|,a|$_1$\verb|);| \\
+    \verb|c=a+b;|          &               & \verb|d|$_0$\verb|=b|$_0$\verb|;|                             \\
+                           &               & \verb|c|$_1$\verb|=a|$_2$\verb|+b|$_0$\verb|;|                \\
+\end{tabular}
+\end{document}

@@ -1,3 +1,5 @@
+
+
 \documentclass[dvipdfmx,a4j]{jbook}
 \include{../mypackage}
 \include{../mymacros}
@@ -25,42 +27,42 @@
 実行制御がその系列の先頭から最後まで，条件付きジャンプおよび無条件ジャンプは最後の場所でのみ出現し，他の命令からのジャンプ先は必ず系列の先頭しかない．
 
 \begin{figure}[H]
-\centering
-\begin{tabular}{ccc}
-\begin{minipage}{.3\linewidth}
-\begin{Verbatim}[frame=single]
-    t=1
-    n=10
-L1: t=t*n
-    n=n-1
-    b=(n>1)
-    if b goto L1
-    f=t
-\end{Verbatim}
-\end{minipage}
-& \qquad &
-\begin{minipage}{.5\linewidth}
-    \begin{tikzpicture}
-    \node[label={160:{$B_1$}}] (B1) at (0,0) {$\begin{array}{c}
-        \texttt{t=1}\\
-        \texttt{n=10}
-    \end{array}$};
-    \draw ($(B1)+(-0.75,0.75)$) rectangle +(1.5,-1.5);
-    \node[label={140:{$B_2$}}] (B2) at ($(B1)+(0,-3)$) {$\begin{array}{ll}
-        L1: & {\texttt{t=t*n}}\\
-            & {\texttt{n=n-1}}\\
-            & {\texttt{b=n>1}}\\
-            & {\texttt{if\ b\ goto\ }L1}\end{array}$};
-    \draw ($(B2)+(-2,1.25)$) rectangle +(4,-2.5);
-    \node[label={160:{$B_3$}}] (B3) at ($(B2)+(0,-2.5)$) {$\texttt{f=t}$};
-    \draw ($(B3)+(-0.5,0.5)$) rectangle +(1,-1);
-    \draw[-{Stealth[scale=1.5]}] ($(B1)+(0,-0.75)$) -- ($(B2)+(0,1.25)$);
-    \draw[-{Stealth[scale=1.5]}] ($(B2)+(0,-1.25)$) -- ($(B3)+(0,0.5)$);
-    \path[-{Stealth[scale=1.5]},out=315,in=45,looseness=3.0] ($(B2)+(1,-1.25)$) edge ($(B2)+(1,1.25)$);
-\end{tikzpicture}
-\end{minipage}
-\end{tabular}
-\caption{3番地コードとそのCFG}\label{flg:flowgraph}
+    \centering
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}[frame=single]
+                t=1
+                n=10
+                L1: t=t*n
+                n=n-1
+                b=(n>1)
+                if b goto L1
+                f=t
+            \end{Verbatim}
+        \end{minipage}
+         & \qquad &
+        \begin{minipage}{.5\linewidth}
+            \begin{tikzpicture}
+                \node[label={160:{$B_1$}}] (B1) at (0,0) {$\begin{array}{c}
+                                \texttt{t=1} \\
+                                \texttt{n=10}
+                            \end{array}$};
+                \draw ($(B1)+(-0.75,0.75)$) rectangle +(1.5,-1.5);
+                \node[label={140:{$B_2$}}] (B2) at ($(B1)+(0,-3)$) {$\begin{array}{ll}
+                                L1: & {\texttt{t=t*n}}           \\
+                                    & {\texttt{n=n-1}}           \\
+                                    & {\texttt{b=n>1}}           \\
+                                    & {\texttt{if\ b\ goto\ }L1}\end{array}$};
+                \draw ($(B2)+(-2,1.25)$) rectangle +(4,-2.5);
+                \node[label={160:{$B_3$}}] (B3) at ($(B2)+(0,-2.5)$) {$\texttt{f=t}$};
+                \draw ($(B3)+(-0.5,0.5)$) rectangle +(1,-1);
+                \draw[-{Stealth[scale=1.5]}] ($(B1)+(0,-0.75)$) -- ($(B2)+(0,1.25)$);
+                \draw[-{Stealth[scale=1.5]}] ($(B2)+(0,-1.25)$) -- ($(B3)+(0,0.5)$);
+                \path[-{Stealth[scale=1.5]},out=315,in=45,looseness=3.0] ($(B2)+(1,-1.25)$) edge ($(B2)+(1,1.25)$);
+            \end{tikzpicture}
+        \end{minipage}
+    \end{tabular}
+    \caption{3番地コードとそのCFG}\label{flg:flowgraph}
 \end{figure}
 
 基本ブロックでは，すべての命令の前提としてそれより前にある命令が必ず実行されている．
@@ -84,10 +86,10 @@ CFGはプログラムの振舞いを抽象的に表現していることにな�
 プログラムとして値を埋め込んでメモリ上の値の参照を減らす．
 
 \begin{center}
-\begin{tabular}{lclp{6cm}}
-$\texttt{a=2*3.14}$ & $\rightarrow$ & $\texttt{a=6.28}$ & 定数計算をコンパイル時に行う．\\
-$\texttt{b=a/100}$ & $\rightarrow$ & $\texttt{b=0.0628}$ & $\texttt{b}$はコンパイル時に値が決定できる．
-\end{tabular}
+    \begin{tabular}{lclp{6cm}}
+        $\texttt{a=2*3.14}$ & $\rightarrow$ & $\texttt{a=6.28}$   & 定数計算をコンパイル時に行う．              \\
+        $\texttt{b=a/100}$  & $\rightarrow$ & $\texttt{b=0.0628}$ & $\texttt{b}$はコンパイル時に値が決定できる．
+    \end{tabular}
 \end{center}
 
 変数の値を参照する場合には，メモリから値を読み出す必要があるが，定数にすると値自体を
@@ -98,12 +100,12 @@ $\texttt{b=a/100}$ & $\rightarrow$ & $\texttt{b=0.0628}$ & $\texttt{b}$はコン
 同じ部分式で同じ計算の繰り返しをまとめて，計算の繰り返しを防ぐ．
 
 \begin{center}
-\begin{tabular}{lcl}
-    $\texttt{x=a*b}$ & & $\texttt{x=a*b}$\\
-    $\texttt{y=x+c}$ & & $\texttt{y=x+c}$\\
-    $\texttt{d=a*b}$ & $\Rightarrow$ & $\texttt{d=x}$\\
-    $\texttt{e=d-c}$ & & $\texttt{e=d-c}$
-\end{tabular}
+    \begin{tabular}{lcl}
+        $\texttt{x=a*b}$ &               & $\texttt{x=a*b}$ \\
+        $\texttt{y=x+c}$ &               & $\texttt{y=x+c}$ \\
+        $\texttt{d=a*b}$ & $\Rightarrow$ & $\texttt{d=x}$   \\
+        $\texttt{e=d-c}$ &               & $\texttt{e=d-c}$
+    \end{tabular}
 \end{center}
 
 以下の系列では，同じ形の部分式$\texttt{b+c}$があるが，$\texttt{a}$
@@ -111,12 +113,12 @@ $\texttt{b=a/100}$ & $\rightarrow$ & $\texttt{b=0.0628}$ & $\texttt{b}$はコン
 ような消去はできない．
 
 \begin{center}
-\begin{tabular}{lcl}
-$\texttt{a=b+c}$ & & $\texttt{a=b+c}$\\
-$\texttt{b=b-d}$ & & $\texttt{b=b-c}$\\
-$\texttt{c=c+d}$ & & $\texttt{c=c+d}$\\
-$\texttt{e=b+c}$ & $\not\Rightarrow$ & $\texttt{e=a}$
-\end{tabular}
+    \begin{tabular}{lcl}
+        $\texttt{a=b+c}$ &                   & $\texttt{a=b+c}$ \\
+        $\texttt{b=b-d}$ &                   & $\texttt{b=b-c}$ \\
+        $\texttt{c=c+d}$ &                   & $\texttt{c=c+d}$ \\
+        $\texttt{e=b+c}$ & $\not\Rightarrow$ & $\texttt{e=a}$
+    \end{tabular}
 \end{center}
 
 \subsubsection{コピー伝播}
@@ -124,11 +126,11 @@ $\texttt{e=b+c}$ & $\not\Rightarrow$ & $\texttt{e=a}$
 $\texttt{a=b}$のような変数のコピーがある場合，$a$と$b$は同じ値を保持しているので，$a$を代入する必要はない．
 
 \begin{center}
-\begin{tabular}{lcl}
-    $\texttt{a=b}$ & & $\texttt{a=b}$\\
-    $\texttt{c=a+d}$ & $\Rightarrow$ & $\texttt{c=b+d}$\\
-    $\texttt{e=e-a}$ & & $\texttt{e=e-b}$
-\end{tabular}
+    \begin{tabular}{lcl}
+        $\texttt{a=b}$   &               & $\texttt{a=b}$   \\
+        $\texttt{c=a+d}$ & $\Rightarrow$ & $\texttt{c=b+d}$ \\
+        $\texttt{e=e-a}$ &               & $\texttt{e=e-b}$
+    \end{tabular}
 \end{center}
 
 このブロックの後で，$\texttt{a}$が使われることがなければ，$\texttt{a=b}$は
@@ -139,14 +141,14 @@ $\texttt{a=b}$のような変数のコピーがある場合，$a$と$b$は同じ
 \subsubsection{代数的性質の利用}
 
 \begin{center}
-\begin{tabular}{lcl}
-    $\texttt{a+0}$ & $\Rightarrow$ & $\texttt{0}$\\
-    $\texttt{b*1}$ & $\Rightarrow$ & $\texttt{b}$\\
-    $\texttt{1+(c+2)}$ & $\Rightarrow$ & $\texttt{3+c}$\\
-    $\texttt{d*(1+e/d)}$ & $\Rightarrow$ & $\texttt{d+e}$\\
-    $\texttt{x*2}$ & $\Rightarrow$ & $\texttt{x+x}$\\
-    $\texttt{x/5}$ & $\Rightarrow$ & $\texttt{x*0.2}$\\
-\end{tabular}
+    \begin{tabular}{lcl}
+        $\texttt{a+0}$       & $\Rightarrow$ & $\texttt{0}$     \\
+        $\texttt{b*1}$       & $\Rightarrow$ & $\texttt{b}$     \\
+        $\texttt{1+(c+2)}$   & $\Rightarrow$ & $\texttt{3+c}$   \\
+        $\texttt{d*(1+e/d)}$ & $\Rightarrow$ & $\texttt{d+e}$   \\
+        $\texttt{x*2}$       & $\Rightarrow$ & $\texttt{x+x}$   \\
+        $\texttt{x/5}$       & $\Rightarrow$ & $\texttt{x*0.2}$ \\
+    \end{tabular}
 \end{center}
 
 演算の単位元などによる簡単化，分配則による簡単化などによって式を短縮化する．
@@ -165,149 +167,149 @@ $\texttt{a=b}$のような変数のコピーがある場合，$a$と$b$は同じ
 以下のアルゴリズムによってDAGを生成する．
 
 \begin{Alg}
-DAGの頂点が始点となる辺を持たない頂点を葉頂点と呼ぶ．葉頂点には，変数
-または定数のラベルをつける．葉以外の頂点には，演算$\theta$と，演算の
-結果が収納される変数のラベルのリストをつける．
-\begin{enumerate}
-\item 基本ブロックに入る前に定義された値を参照する変数名と定数値に対して，
-葉頂点を生成し，変数$x$に対して，$x_0$を頂点にラベルづけし，$[x]$を変数
-リストとする．定数$c$に対しては，$c$を頂点にラベル付けする．
-\item 基本ブロック内のすべての代入文について上から順に以下の操作を適用する．
-\begin{list}{}{}
-    \item [(a)]
-代入文$X=A\theta B$に対して，$A$,$B$が変数であるときは変数ラベルに持つ
-頂点を$v_A$, $v_B$とする．定数の場合は定数をラベルにもつ
-$v_A$, $v_B$を選ぶ． 
-\item [(b)] $X$を変数リストに含む頂点があれば，その変数リストから$X$を削除する．
-\item [(c)] $v_A$, $v_B$を子に持ち，$\theta$を演算ラベルとする
-ノード$v_\theta$がすでに存在するならば，$v_\theta$の変数リストに$X$を追加する．
-$v_\theta$が存在しないならば，$v_\theta$を新たに生成して，$v_A$, $v_B$を子ノードとする辺を追加し，$\theta$を$v_\theta$の演算ラベルとし，$[X]$を変数リストとする．
-\item [(d)] $X=A$の場合は，すでに存在する頂点の変数リストに$X$が含まれれば，消去した上で，$v_A$の変数リストに$X$を追加する．
-\end{list}
-\end{enumerate}
+    DAGの頂点が始点となる辺を持たない頂点を葉頂点と呼ぶ．葉頂点には，変数
+    または定数のラベルをつける．葉以外の頂点には，演算$\theta$と，演算の
+    結果が収納される変数のラベルのリストをつける．
+    \begin{enumerate}
+        \item 基本ブロックに入る前に定義された値を参照する変数名と定数値に対して，
+              葉頂点を生成し，変数$x$に対して，$x_0$を頂点にラベルづけし，$[x]$を変数
+              リストとする．定数$c$に対しては，$c$を頂点にラベル付けする．
+        \item 基本ブロック内のすべての代入文について上から順に以下の操作を適用する．
+              \begin{list}{}{}
+                  \item [(a)]
+                        代入文$X=A\theta B$に対して，$A$,$B$が変数であるときは変数ラベルに持つ
+                        頂点を$v_A$, $v_B$とする．定数の場合は定数をラベルにもつ
+                        $v_A$, $v_B$を選ぶ．
+                  \item [(b)] $X$を変数リストに含む頂点があれば，その変数リストから$X$を削除する．
+                  \item [(c)] $v_A$, $v_B$を子に持ち，$\theta$を演算ラベルとする
+                        ノード$v_\theta$がすでに存在するならば，$v_\theta$の変数リストに$X$を追加する．
+                        $v_\theta$が存在しないならば，$v_\theta$を新たに生成して，$v_A$, $v_B$を子ノードとする辺を追加し，$\theta$を$v_\theta$の演算ラベルとし，$[X]$を変数リストとする．
+                  \item [(d)] $X=A$の場合は，すでに存在する頂点の変数リストに$X$が含まれれば，消去した上で，$v_A$の変数リストに$X$を追加する．
+              \end{list}
+    \end{enumerate}
 \end{Alg}
 
 \begin{Exmp}\label{example:DAG}
-以下にアルゴリズムで生成されるDAGを示す．５行の基本ブロックにおいて，
-最初の３行までで，まず(a)に示すDAGが生成される．
-\begin{center}
-\begin{tabular}{ccc}
-    \begin{tikzpicture}
-    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
-    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
-    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
-    \node[draw,circle,label={180:$[\texttt{x},\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
-    \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
-    \path[->] (X1) edge (A0) (X1) edge (B0);
-    \path[->] (Y1) edge (X1) (Y1) edge (C0); 
-    \end{tikzpicture}
-    & & 
-    \begin{minipage}{.2\linewidth}
-        \vspace*{-2cm}
-        \begin{Verbatim}
-        x=a*b
-        y=x+c
-        d=a*b
-        \end{Verbatim}
-    \end{minipage}\\
-    \multicolumn{3}{c}{(a) ３行目までで生成されるDAG}\\[5mm]
-    \begin{tikzpicture}
-    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
-    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
-    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
-    \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
-    \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
-    \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
-    \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
-    \path[->] (X1) edge (A0) (X1) edge (B0);
-    \path[->] (Y1) edge (X1) (Y1) edge (C0);
-    \path[->] (E1) edge (X1) (E1) edge (C0);
-        \path[->] (X2) edge (X1) (X2) edge (E1);
-    \end{tikzpicture}
-    & & 
-    \begin{minipage}{.2\linewidth}
-        \vspace*{-3cm}
-        \begin{Verbatim}
-        x=a*b
-        y=x+c
-        d=a*b
-        e=d-c
-        x=d+e
-        \end{Verbatim}
-    \end{minipage}\\
-    \multicolumn{3}{c}{(b) 5行目までで生成されるDAG} 
-\end{tabular}
-\end{center}
-４行目の命令でさらに$\texttt{e}$に対するノードが新たに生成され，
-５行目では$\texttt{x}$が更新されるため，既存の変数リストから
-$\texttt{x}$を消去して新しく一番上のノードに$\texttt{x}$を変数
-リストに追加している．
+    以下にアルゴリズムで生成されるDAGを示す．５行の基本ブロックにおいて，
+    最初の３行までで，まず(a)に示すDAGが生成される．
+    \begin{center}
+        \begin{tabular}{ccc}
+            \begin{tikzpicture}
+                \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+                \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+                \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+                \node[draw,circle,label={180:$[\texttt{x},\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+                \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
+                \path[->] (X1) edge (A0) (X1) edge (B0);
+                \path[->] (Y1) edge (X1) (Y1) edge (C0);
+            \end{tikzpicture}
+             &  &
+            \begin{minipage}{.2\linewidth}
+                \vspace*{-2cm}
+                \begin{Verbatim}
+                    x=a*b
+                    y=x+c
+                    d=a*b
+                \end{Verbatim}
+            \end{minipage}          \\
+            \multicolumn{3}{c}{(a) ３行目までで生成されるDAG} \\[5mm]
+            \begin{tikzpicture}
+                \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+                \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+                \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+                \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+                \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
+                \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
+                \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
+                \path[->] (X1) edge (A0) (X1) edge (B0);
+                \path[->] (Y1) edge (X1) (Y1) edge (C0);
+                \path[->] (E1) edge (X1) (E1) edge (C0);
+                \path[->] (X2) edge (X1) (X2) edge (E1);
+            \end{tikzpicture}
+             &  &
+            \begin{minipage}{.2\linewidth}
+                \vspace*{-3cm}
+                \begin{Verbatim}
+                    x=a*b
+                    y=x+c
+                    d=a*b
+                    e=d-c
+                    x=d+e
+                \end{Verbatim}
+            \end{minipage}          \\
+            \multicolumn{3}{c}{(b) 5行目までで生成されるDAG}
+        \end{tabular}
+    \end{center}
+    ４行目の命令でさらに$\texttt{e}$に対するノードが新たに生成され，
+    ５行目では$\texttt{x}$が更新されるため，既存の変数リストから
+    $\texttt{x}$を消去して新しく一番上のノードに$\texttt{x}$を変数
+    リストに追加している．
 
-例\ref{example:DAG}の(a)において，$[\texttt{x},\texttt{d}]$のように
-複数の変数が一つのノードにつけられる場合は，共通部分式が存在するということであるので
-共有部分式の消去が適用できる．さらに，コピー伝播を適用すると(c)のようになる．
+    例\ref{example:DAG}の(a)において，$[\texttt{x},\texttt{d}]$のように
+    複数の変数が一つのノードにつけられる場合は，共通部分式が存在するということであるので
+    共有部分式の消去が適用できる．さらに，コピー伝播を適用すると(c)のようになる．
 
-\begin{center}
-\begin{tabular}{ccc}
-    \begin{tikzpicture}
-    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
-    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
-    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
-    \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
-    \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
-    \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
-    \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
-    \path[->] (X1) edge (A0) (X1) edge (B0);
-    \path[->] (Y1) edge (X1) (Y1) edge (C0);
-    \path[->] (E1) edge (X1) (E1) edge (C0);
-        \path[->] (X2) edge (X1) (X2) edge (E1);
-    \end{tikzpicture}
-    & &
-    \begin{minipage}{.2\linewidth}
-        \vspace*{-3cm}
-        \begin{Verbatim}
-        x=a*b
-        y=x+c
-        d=x
-        e=x-c
-        x=x+e
-        \end{Verbatim}
-    \end{minipage}\\
-    \multicolumn{3}{c}{(c) 共有部分式とコピー伝播の適用}   
-\end{tabular}
-\end{center}
+    \begin{center}
+        \begin{tabular}{ccc}
+            \begin{tikzpicture}
+                \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+                \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+                \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+                \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+                \node[draw,circle,label={180:$[\texttt{y}]$}] (Y1) at (1.25,2) {$\texttt{+}$};
+                \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
+                \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
+                \path[->] (X1) edge (A0) (X1) edge (B0);
+                \path[->] (Y1) edge (X1) (Y1) edge (C0);
+                \path[->] (E1) edge (X1) (E1) edge (C0);
+                \path[->] (X2) edge (X1) (X2) edge (E1);
+            \end{tikzpicture}
+             &  &
+            \begin{minipage}{.2\linewidth}
+                \vspace*{-3cm}
+                \begin{Verbatim}
+                    x=a*b
+                    y=x+c
+                    d=x
+                    e=x-c
+                    x=x+e
+                \end{Verbatim}
+            \end{minipage} \\
+            \multicolumn{3}{c}{(c) 共有部分式とコピー伝播の適用}
+        \end{tabular}
+    \end{center}
 
-この基本ブロックの後で$\texttt{y}$が使われない場合は，$[\texttt{y}]$を
-変数リストにもつ頂点とその辺を消去しても意味は変わらない．これに対して，
-$\texttt{d}$が使われない場合は，$[\texttt{d}]$の頂点を消すことはできない．
-これは，$\texttt{x}$が$\texttt{d}$の頂点に依存しているためである．
+    この基本ブロックの後で$\texttt{y}$が使われない場合は，$[\texttt{y}]$を
+    変数リストにもつ頂点とその辺を消去しても意味は変わらない．これに対して，
+    $\texttt{d}$が使われない場合は，$[\texttt{d}]$の頂点を消すことはできない．
+    これは，$\texttt{x}$が$\texttt{d}$の頂点に依存しているためである．
 
-\begin{center}
-\begin{tabular}{ccc}
-    \begin{tikzpicture}
-    \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
-    \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
-    \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
-    \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
-    \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
-    \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
-    \path[->] (X1) edge (A0) (X1) edge (B0);
-    \path[->] (E1) edge (X1) (E1) edge (C0);
-        \path[->] (X2) edge (X1) (X2) edge (E1);
-    \end{tikzpicture}
-    & &
-    \begin{minipage}{.2\linewidth}
-        \vspace*{-3cm}
-        \begin{Verbatim}
-        x=a*b
-        d=x
-        e=x-c
-        x=x+e
-        \end{Verbatim}
-    \end{minipage}\\
-    \multicolumn{3}{c}{(d) 不要コード消去の適用}   
-\end{tabular}
-\end{center}
+    \begin{center}
+        \begin{tabular}{ccc}
+            \begin{tikzpicture}
+                \node[draw,circle,label={180:$[\texttt{a}]$}] (A0) at (0,0) {$a_0$};
+                \node[draw,circle,label={0:$[\texttt{b}]$}] (B0) at (1,0) {$b_0$};
+                \node[draw,circle,label={0:$[\texttt{c}]$}] (C0) at (2,1) {$c_0$};
+                \node[draw,circle,label={180:$[\texttt{d}]$}] (X1) at (0.5,1) {$\texttt{*}$};
+                \node[draw,circle,label={180:$[\texttt{e}]$}] (E1) at (1.25,3) {$\texttt{-}$};
+                \node[draw,circle,label={180:$[\texttt{x}]$}] (X2) at (0.35,4) {$\texttt{+}$};
+                \path[->] (X1) edge (A0) (X1) edge (B0);
+                \path[->] (E1) edge (X1) (E1) edge (C0);
+                \path[->] (X2) edge (X1) (X2) edge (E1);
+            \end{tikzpicture}
+             &  &
+            \begin{minipage}{.2\linewidth}
+                \vspace*{-3cm}
+                \begin{Verbatim}
+                    x=a*b
+                    d=x
+                    e=x-c
+                    x=x+e
+                \end{Verbatim}
+            \end{minipage} \\
+            \multicolumn{3}{c}{(d) 不要コード消去の適用}
+        \end{tabular}
+    \end{center}
 \end{Exmp}
 
 \section{大域最適化}
@@ -334,25 +336,25 @@ $\texttt{d}$が使われない場合は，$[\texttt{d}]$の頂点を消すこと
 同じ意味を表現するようにする．
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-i=1;
-do {
-    c=a/b;x=i*c; .... i++;
-} while(i<n);
-    \end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-i=1;t=a/b;
-do {
-    c=t;x=i*c;...i++;
-} while(i<n);
-\end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                i=1;
+                do {
+                        c=a/b;x=i*c; .... i++;
+                    } while(i<n);
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                i=1;t=a/b;
+                do {
+                        c=t;x=i*c;...i++;
+                    } while(i<n);
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれも
@@ -360,26 +362,26 @@ $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれ�
 同じ計算となる．
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-for(i=1;i<n;i++) {
-    c=a/b;x=i*c;...
-}
-    \end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-if(n>1) {
-    t=a/b;
-    for(i=1;i<n;i++) {
-        c=t;x=i*c;...
-    }
-}
-\end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++) {
+                        c=a/b;x=i*c;...
+                    }
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                if(n>1) {
+                        t=a/b;
+                        for(i=1;i<n;i++) {
+                                c=t;x=i*c;...
+                            }
+                    }
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 一般的な{\tt for}ループでは，条件によってループの内容が実行されないこともあるため，
 不変コードはループが実行された場合だけ，実行されるように変換する必要がある．
@@ -387,147 +389,147 @@ if(n>1) {
 \paragraph{ループ内演算の強さ軽減}
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-for(i=1;i<n;i++)
-    a=a+b*i;
-    \end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-t=0;
-for(i=1;i<n;i++) {
-    t=t+b;a=a+t;
-}
-\end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++)
+                a=a+b*i;
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                t=0;
+                for(i=1;i<n;i++) {
+                        t=t+b;a=a+t;
+                    }
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 \paragraph{帰納変数の消去}
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-t=b;
-for(i=1;i<n;i++) {
-    a=a+t;t=t+b;
-}
-    \end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-m=n*b;
-for(t=b;t<m;t=t+b)
-    a=a+t;
-\end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                t=b;
+                for(i=1;i<n;i++) {
+                        a=a+t;t=t+b;
+                    }
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                m=n*b;
+                for(t=b;t<m;t=t+b)
+                a=a+t;
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 \paragraph{ループ融合}
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-for(i=1;i<n;i++)
-    a[i+1]=a[i]+i;
-for(i=1;i<n;i++)
-    b[i]=a[i]+i;
-    \end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-for(i=1;i<n;i++) {
-    a[i+1]=a[i]+i;
-    b[i]=a[i]+i;
-}
-\end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++)
+                a[i+1]=a[i]+i;
+                for(i=1;i<n;i++)
+                b[i]=a[i]+i;
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++) {
+                a[i+1]=a[i]+i;
+                b[i]=a[i]+i;
+                }
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 \paragraph{ループ分解}
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-for(i=1;i<n;i++) {
-    a[i+1]=a[i]+i;
-    b[i]=a[i]+i;
-}
-\end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-for(i=1;i<n;i++)
-    a[i+1]=a[i]+i;
-for(i=1;i<n;i++)
-    b[i]=a[i]+i;
-    \end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++) {
+                a[i+1]=a[i]+i;
+                b[i]=a[i]+i;
+                }
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++)
+                a[i+1]=a[i]+i;
+                for(i=1;i<n;i++)
+                b[i]=a[i]+i;
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 \paragraph{ループ展開}
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-for(i=1;i<n;i++) {
-    a[i+1]=a[i]+i;
-    b[i]=a[i]+b[i-1];
-}
-\end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-for(i=1;i<n;i++) {
-    a[i]=a[i-1]+i;
-    b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
-    b[i+1]=a[i+1]+b[i];
-}
-    \end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++) {
+                a[i+1]=a[i]+i;
+                b[i]=a[i]+b[i-1];
+                }
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<n;i++) {
+                a[i]=a[i-1]+i;
+                b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
+                b[i+1]=a[i+1]+b[i];
+                }
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 \paragraph{ソフトウェアパイプライン}
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-for(i=1;i<1000;i++) {
-    a[i]=a[i-1]+1; // Ai
-    b[i]=a[i]+b[i-1]; // Bi
-    c[i]=b[i]+2; // Ci
-}
-\end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-    A1;
-    B1; A2;
-    for(i=3;i<1000;i++) {
-        Ci-2;Bi-1;Ai;
-    }
-    C998;B999;
-    C999;
-    \end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                for(i=1;i<1000;i++) {
+                a[i]=a[i-1]+1; // Ai
+                b[i]=a[i]+b[i-1]; // Bi
+                c[i]=b[i]+2; // Ci
+                }
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                A1;
+                B1; A2;
+                for(i=3;i<1000;i++) {
+                        Ci-2;Bi-1;Ai;
+                    }
+                C998;B999;
+                C999;
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 \subsubsection{手続き呼び出し最適化}
@@ -539,22 +541,22 @@ for(i=1;i<1000;i++) {
 よい場合もあり，ループ構造内では大きな高速化の効果が期待できる．
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-int square(int x) {
-    return x*x;
-}
-y = square(a);
-\end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.3\linewidth}
-    \begin{Verbatim}
-y = a * a;
-    \end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                int square(int x) {
+                        return x*x;
+                    }
+                y = square(a);
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.3\linewidth}
+            \begin{Verbatim}
+                y = a * a;
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 
 c言語では，関数の前に{\tt inline}を付加することでスタックを用いずに呼び出しを
@@ -572,44 +574,44 @@ c言語では，関数の前に{\tt inline}を付加することでスタック�
 変換としては，再帰呼び出しをgotoに置き換えることで高速化が可能である．
 
 \begin{center}
-\begin{tabular}{ccc}
-    \begin{minipage}{.4\linewidth}
-\begin{Verbatim}
-int sum_tail(int n, int acc) {
-    if (n == 0) {
-        return acc;
-    }
-    return sum_tail(n-1,acc+n);
-}
-\end{Verbatim}
-    \end{minipage}
-    & $\Rightarrow$ &
-    \begin{minipage}{.4\linewidth}
-    \begin{Verbatim}
-int sum_tail(int n, int acc) {
-L:  if (n == 0) {
-        return acc;
-    }
-    acc+=n; n--;
-    goto L;
-}
-    \end{Verbatim}
-\end{minipage}
-\end{tabular}
+    \begin{tabular}{ccc}
+        \begin{minipage}{.4\linewidth}
+            \begin{Verbatim}
+                int sum_tail(int n, int acc) {
+                        if (n == 0) {
+                                return acc;
+                            }
+                        return sum_tail(n-1,acc+n);
+                    }
+            \end{Verbatim}
+        \end{minipage}
+         & $\Rightarrow$ &
+        \begin{minipage}{.4\linewidth}
+            \begin{Verbatim}
+                int sum_tail(int n, int acc) {
+                        L:  if (n == 0) {
+                                return acc;
+                            }
+                        acc+=n; n--;
+                        goto L;
+                    }
+            \end{Verbatim}
+        \end{minipage}
+    \end{tabular}
 \end{center}
 gotoによるループ構造をgotoなしで記述すると以下のプログラムと等価である．
 
 \begin{center}
-\begin{minipage}{.3\linewidth}
-\begin{Verbatim}
-int sum(int n,int acc) {
-    while(n!=0) {
-        acc+=n; n--;
-    }
-    return acc;
-}
-\end{Verbatim}
-\end{minipage}
+    \begin{minipage}{.3\linewidth}
+        \begin{Verbatim}
+            int sum(int n,int acc) {
+                    while(n!=0) {
+                            acc+=n; n--;
+                        }
+                    return acc;
+                }
+        \end{Verbatim}
+    \end{minipage}
 \end{center}
 
 \subsection{データフロー解析}
@@ -644,8 +646,8 @@ int sum(int n,int acc) {
 
 基本ブロックから構成されるフローグラフが与えられたとき，以下の関係がある．
 \begin{eqnarray}
-In[B] & = & \cup_{P\in\mathsf{Pred}(B)}Out[P]\\
-Out[B] & = & Gen[B]\cup (In[B]\backslash Kill[B])
+    In[B] & = & \cup_{P\in\mathsf{Pred}(B)}Out[P]\\
+    Out[B] & = & Gen[B]\cup (In[B]\backslash Kill[B])
 \end{eqnarray}
 ここで，$\mathsf{Pred}(B)$は，フローグラフにおいて，$B$の先行頂点
 (predecessor)の集合を表す．基本ブロック内では，制御の分岐はない．
@@ -655,15 +657,15 @@ Out[B] & = & Gen[B]\cup (In[B]\backslash Kill[B])
 
 図\ref{fig:flowgraph}のコードにおいて以下のように定義のラベル付けをする．
 \[
-\begin{array}{rrl}
-d_1: & &    \texttt{t=1}\\
-d_2: & &    \texttt{n=10}\\
-d_3: & L1: & \texttt{t=t*n}\\
-d_4: & &    \texttt{n=n-1}\\
-d_5: & &    \texttt{b=(n>1)}\\
-    & &\texttt{if b goto }L1\\
-d_6: & &    \texttt{f=t}\\
-\end{array}
+    \begin{array}{rrl}
+        d_1: &     & \texttt{t=1}          \\
+        d_2: &     & \texttt{n=10}         \\
+        d_3: & L1: & \texttt{t=t*n}        \\
+        d_4: &     & \texttt{n=n-1}        \\
+        d_5: &     & \texttt{b=(n>1)}      \\
+             &     & \texttt{if b goto }L1 \\
+        d_6: &     & \texttt{f=t}          \\
+    \end{array}
 \]
 $B_i$に対する$Gen$, $Kill$は以下のようになる．
 \begin{trivlist}
@@ -700,27 +702,27 @@ $X=\{d_1,d_2,d_3,d_4,d_5\}$が条件を満たす．したがって，$Out[B_2]=\
 とする．$B$の中で定義される変数の集合を$Def[B]$とすると，以下の関係が
 成り立つ．
 \begin{eqnarray}
-In[B] & = & Use[B]\cup(Out[B]\backslash Def[B])\label{eqn:lvin}\\
-Out[B] & = & \cup_{S\in\mathsf{Succ}(B)}In[S]\label{eqn:lvout}
+    In[B] & = & Use[B]\cup(Out[B]\backslash Def[B])\label{eqn:lvin}\\
+    Out[B] & = & \cup_{S\in\mathsf{Succ}(B)}In[S]\label{eqn:lvout}
 \end{eqnarray}
 ここで，$\mathsf{Succ}(B)$はフローグラフでの$B$の後続頂点集合である．
 
 図\ref{flg:flowgraph}について，生存変数解析は以下のようになる．
 \begin{trivlist}
-\item $Use[B_1]=\varnothing$, $Def[B_1]=\{t,n\}$
-\item $Use[B_2]=\{t,n\}$, $Def=\{t,n,b\}$
-\item $Use[B_3]=\{t\}$, $Def[B_3]=\{f\}$
+    \item $Use[B_1]=\varnothing$, $Def[B_1]=\{t,n\}$
+    \item $Use[B_2]=\{t,n\}$, $Def=\{t,n,b\}$
+    \item $Use[B_3]=\{t\}$, $Def[B_3]=\{f\}$
 \end{trivlist}
 (\ref{eqn:lvin})(\ref{eqn:lvout})を適用する．
 
 \begin{trivlist}
-\item $In[B_1]=Out[B_1]\backslash\{t,n\}$, $Out[B_1]=In[B_2]$
-\item $In[B_2]=\{t,n\}\cup(Out[B_2]\backslash\{t,n,b\})$, $Out[B_2]=In[B_2]\cup In[B_3]$
-\item $In[B_3]=\{t\}\cup(Out[B_3]\backslash\{f\})$,$Out[B_3]=\varnothing$
+    \item $In[B_1]=Out[B_1]\backslash\{t,n\}$, $Out[B_1]=In[B_2]$
+    \item $In[B_2]=\{t,n\}\cup(Out[B_2]\backslash\{t,n,b\})$, $Out[B_2]=In[B_2]\cup In[B_3]$
+    \item $In[B_3]=\{t\}\cup(Out[B_3]\backslash\{f\})$,$Out[B_3]=\varnothing$
 \end{trivlist}
 
 $In$, $Out$は出口から計算できる．$In[B_3]=\{t\}$
-$Out[B_2]=In[B_2]\cup\{t\}$, 
+$Out[B_2]=In[B_2]\cup\{t\}$,
 $In[B_2]=\{t,n\}\cup((In[B_2]\cup\{t\})\backslash\{t,n,b\})$
 $In[B_2]=X$とすると，$X=\{t,n\}\cup(X\backslash\{n,b\})$となる．
 $X_0=\varnothing$として$X_{i+1}=\{t,n\}\cup(X_i\backslash\{n,b\})$
@@ -733,17 +735,17 @@ $X_0=\varnothing$として$X_{i+1}=\{t,n\}\cup(X_i\backslash\{n,b\})$
 
 図\ref{flg:flowgraph}に対する利用可能式解析は以下のようになる．
 \begin{trivlist}
-\item $Gen[B_1]=\varnothing$, $Kill[B_1]=\{\texttt{t*n},\texttt{n-1},\texttt{n>1}\}$
-\item $Gen[B_2]=\{\texttt{n>1}\}$, $Kill[B_2]=\{\texttt{t*n},\texttt{n-1},\texttt{n>1}\}$
-\item $Gen[B_3]=\varnothing$, $Kill[B_3]=\varnothing$
+    \item $Gen[B_1]=\varnothing$, $Kill[B_1]=\{\texttt{t*n},\texttt{n-1},\texttt{n>1}\}$
+    \item $Gen[B_2]=\{\texttt{n>1}\}$, $Kill[B_2]=\{\texttt{t*n},\texttt{n-1},\texttt{n>1}\}$
+    \item $Gen[B_3]=\varnothing$, $Kill[B_3]=\varnothing$
 \end{trivlist}
 
 IN,OUTは以下のようになる．
 \begin{trivlist}
-\item $IN[B_1]=\varnothing$, $OUT[B_1]=\varnothing$
-\item $IN[B_2]=OUT[B_1]\cap OUT[B_2]=\varnothing$
-$OUT[B_2]=\{\texttt{n>1}\}$
-\item $IN[B_3]=OUT[B_2]=\{\texttt{n>1}\}$, $OUT[B_3]=\{\texttt{n>1}\}$
+    \item $IN[B_1]=\varnothing$, $OUT[B_1]=\varnothing$
+    \item $IN[B_2]=OUT[B_1]\cap OUT[B_2]=\varnothing$
+    $OUT[B_2]=\{\texttt{n>1}\}$
+    \item $IN[B_3]=OUT[B_2]=\{\texttt{n>1}\}$, $OUT[B_3]=\{\texttt{n>1}\}$
 \end{trivlist}
 
 実際に利用可能解析は，配列のアドレス計算において\texttt{a[i]}のデータにアクセスするのに$\texttt{a}$のアドレス計算に$\texttt{i*4}$を計算する場合などに有効である．
@@ -758,8 +760,8 @@ $a\;\texttt{+}\;b$という式が出現しているとき$a$, $b$の値が更新
 式の集合を$Gen[B]$，$B$の中でkillされる式の集合を$Kill[B]$とする．
 ここでは，以下の関係が成り立つ．
 \begin{eqnarray}
-IN[B] & = & \cap_{\mathsf{Pred}[B]}Out[P]\\
-OUT[B] & = & Gen[B]\cup(In[B]\backslash Kill[B])
+    IN[B] & = & \cap_{\mathsf{Pred}[B]}Out[P]\\
+    OUT[B] & = & Gen[B]\cup(In[B]\backslash Kill[B])
 \end{eqnarray}
 
 
@@ -770,13 +772,42 @@ OUT[B] & = & Gen[B]\cup(In[B]\backslash Kill[B])
 
 \section{静的単一代入形式と最適化}
 
-% 最近のコンパイラにおける最適化では，静的単一代入形式(Static single assignment, SSA)を用いる
-% 事が多い．SSA形式では中間コード列の中に各変数の定義（３番地コードの場合は代入の左辺）が一箇所しか
-% 現れないという制約を持つ．定義が１つしかないため，どこで定義された変数がどこで参照されるかが，
-% プログラムとして明示される．プログラムを解析すれば，プログラムの構文情報からデータフローを
-% 解析することができる．
+最近のコンパイラにおける最適化では，静的単一代入形式(Static single assignment, SSA)を用いる
+事が多い．SSA形式では中間コード列の中に各変数の定義（３番地コードの場合は代入の左辺）が一箇所しか
+現れないという制約を持つ．定義が１つしかないため，どこで定義された変数がどこで参照されるかが，
+プログラムとして明示される．プログラムを解析すれば，プログラムの構文情報からデータフローを
+解析することができる．
 
 \subsection{例}
+
+C言語をSSAに変換する例を示す．
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics{figures/SSA-example1-crop.pdf}
+    \end{center}
+\end{figure}
+
+この例では，変換前の変数に対して更新される毎に添字を更新して変数を新たに割り当てる．
+更新を一回に限定することで，添字が同じ変数は，実行フローにおいて同じ値を持つことが保証される．
+\verb|b|は，最初に2に更新された後，このプログラムの中では更新されることがないので，
+\verb|b|$_0$が最後まで用いられるので，この値が伝播していることがわかる．\verb|a|$_0$
+は，最初に1に更新され，再度更新されると\verb|a|$_1$に変数名を変えて，3に更新する．
+ここでは，\verb|x|に入力される値は，ユーザーからの入力なのでプログラムを走らせないと
+わからない．この入力に応じて，最終行の\verb|a|は，1または3の値となり，プログラムだけで
+どちらの値になるか不明であるが，どちらかの値になることは解析できる．SSAでは，このような
+静的に解析できないフローに対して$\phi$という特別な関数の形で表す．
+このために\verb|a|$_2$という新たな変数を割り当て，$\phi$\verb|(a|$_0$\verb|,a|$_1$\verb|)|
+によって値を更新する．$\phi$関数は，評価する対象でなく，いずれかの選択が実行時になされる
+ことを表現している．
+
+ループを持つ場合においても，データのフローを単一代入の形で表すことができる．
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics{figures/SSA-example2-crop.pdf}
+    \end{center}
+\end{figure}
 
 \subsection{$\phi$関数}
 
