@@ -809,6 +809,8 @@ C言語をSSAに変換する例を示す．
     \end{center}
 \end{figure}
 
+ここでは，\verb|L1|の時点で，ループ内の変数は，ループに入る前のデータか，ループの繰り返しからくるデータなのかプログラムからはわからない．\verb|t=t*n|の右辺の\verb|t|は，\verb|t|$_0$か\verb|t|$_2$のどちらかである．
+
 \subsection{$\phi$関数}
 
 \subsection{SSA形式への変換}
