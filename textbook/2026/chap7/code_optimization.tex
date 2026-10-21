@@ -13,10 +13,8 @@
 ソースコードから構文的に生成された中間コードは不要な繰り返しや変数間のコピーが多く生成されるため，
 制御フローとデータフローを中間コードを解析して同じ効果をもつより効率的なコードに変換する．この
 過程を{\bf コード最適化(code optimization)}と呼ぶ．
-さらに，最近のコンパイラで用いられている　{\bf 静的単一代入形式(Static single assignment, SSA)}を用いた
-最適化手法を紹介する．SSAの特徴は，その名前の通り，変数に対する代入を一度に制限して上書きしない．
-このことによって，変数がより多く必要になる一方，変数の名前によってデータフローを追跡することができ，
-基本ブロックを越えた最適化がより明確に可能になる．
+さらに，最近のコンパイラで用いられている　{\bf 静的単一代入形式(static single assignment, SSA)}を用いた
+最適化手法を紹介する．SSAの特徴は，その名前の通り，変数に対する代入を一度に制限して上書きしない．SSAでは，変数がより多く必要になる一方，変数の名前によってデータフローが構文として表現されるため，コンパイラの最適化の際に必要なフロー解析が容易になる．
 
 \section{基本ブロックとフローグラフ}
 
@@ -791,9 +789,9 @@ C言語をSSAに変換する例を示す．
 
 SSA形式のプログラムに変換するためには，プログラムから解析可能な各変数の依存関係を計算し，
 依存関係が実行によって決まるポイントに$\varphi$関数を挿入する．以下に，$\varphi$関数を挿入する
-場所を決定するアルゴリズムについて示す．
+場所を決定する手法について示す．
 
-３番地コードから構成されるコントロールグラフは，有向グラフ$(V,E,v_{init})$として与えられているとする．
+ここで，コントロールグラフは，有向グラフ$(V,E,v_{init})$として与えられているとする．
 
 \begin{Def}[定義合流条件]\label{def:definitionConfluence}
 変数$x$に対する$\varphi$関数が頂点$v$に挿入されるための必要十分条件は，以下に示す条件(1)$\sim$(4)を満たす
@@ -836,10 +834,7 @@ $\varphi$関数が含まれていないならば，$v$に\verb|x=|$\varphi$\verb
 \caption{$\varphi$関数の挿入}\label{fig:phiFuncInsert}
 \end{figure}
 
-フローグラフにおいて，条件の適用をチェックして$\varphi$関数を挿入する方法は正しいが，条件をチェックするために
-グラフのノード同士の到達可能性を毎回チェックする必要があり，効率的とは言えない．
-実際には，支配関係を用いたより効率のよい挿入が可能である．以下にそのアルゴリズムについて
-説明する．
+フローグラフにおいて，条件の適用をチェックして$\varphi$関数を挿入する方法をそのまま実装しようとすると，グラフの頂点の組み合わせ$(v_0,u_0,v)$を尽くして，頂点間の到達可能性と合流可能性を毎回チェックする必要があり，効率的とは言えない．コンパイラへの実装においては，有向グラフの支配関係を用いたより効率のよい挿入アルゴリズムが用いられる．
 
 \begin{Def}
 フローグラフを$(V,E,v_{init})$とする．
@@ -856,16 +851,17 @@ $u$の支配頂点の集合$\domv{u}=\{v\;|\;u\domll v\}$で定義する．
     \item (推移律) $v\domll u$かつ$u\domll w$ならば$v\domll w$ 
 \end{itemize}
 
-$u\not= v_{init}$には$\domv{u}\backslash\{u\}$には$\ll$の意味で最小の頂点が一つ存在する．
+$u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で最小の頂点が一つ存在する．
 もし複数の頂点$v_1,v_2\in\domv{u}\backslash\{u\}$が存在したとすると，$v_1$, $v_2$はともに$v_{init}$から$u$の
 すべての路に出現することになるため，$v_1\domll v_2$, $v_2\domll v_1$となるので，
 反対称律から$v_1=v_2$でなければならない．$v_{init}$から$v_{init}$に長さ0の路があるので，
 $\domv{v_{init}}=\{v_{init}\}$であり，$\domv{v_{init}}\backslash\{v_{init}\}=\varnothing$なので
 以上のような最小頂点は存在しない．$u\not=v_{init}$のとき，$\domv{u}\backslash\{u\}$の中の最小頂点を
-$\idomv{u}$と書くことにする．
+$\idomv{u}$と書くことにする．このとき，$\idomv{v}\rightarrow\cdots\rightarrow v$である．
 
-フローグラフ$G$の頂点集合$V$に対して，$u$に対する親ノードを$\idomv{u}$とする辺$D=\{(\idomv{v},v)\}$
-から構成される有向グラフ$T=(V,D)$は$v_{init}$を根とする木構造である．
+フローグラフ$G=(V,E,v_{init})$に対して，$u$に対する親ノードを$\idomv{u}$とする辺$D=\{(\idomv{v},v)\}$
+から構成される有向グラフ$T=(V,D)$は，$v_{init}$から$V$の各頂点
+への路が存在することから，$v_{init}$を根とする木構造が構成される\footnote{$v_{init}$は$\mathsf{idom}$をもたないことから，親となる頂点がない}．
 この木構造$T$を$G$に対する{\bf 支配木(dominator tree)}という．
 
 \begin{Exmp}
@@ -898,8 +894,7 @@ $\idomv{u}$と書くことにする．
 % \item \verb|x|が$\varphi$関数以外で頂点$v$で参照される場合，その定義をしている頂点が$v$を支配する．
 % \end{enumerate}
 
-頂点$v,u$に対して，$u\not=v$かつ$u\domll v$であるとき，$v$は$u$を{\bf 真に支配する}という．
-
+頂点$v,u$に対して，$u\not=v$かつ$u\domll v$であるとき，$v$は$u$を{\bf 真に支配する}といい，$u\ll v$と書くことにする．
 \begin{Def}
 フローグラフ$(V,E,v_{init})$が与えられたとき，$v\in V$の{\bf 支配辺境(dominance frontier)}$DF(v)$を
 以下のように定義する．
@@ -908,10 +903,10 @@ $\idomv{u}$と書くことにする．
 
 支配辺境$DF(v)$は，直前の頂点までは$v$に支配されているが，$v$の支配が及ばない頂点の集合である．$v$において変数\verb|x|の
 定義があれば，$DF(v)$の頂点において\verb|x|の$\varphi$関数を挿入する必要がある．
-$\varphi$関数は新たな定義を生むため，新たな$\varphi$関数の挿入が生じないようになるまで，各$DF(v)$に$\varphi$関数を挿入する
-必要があるが，支配木の葉から根の方向に向かって効率的に計算することができる．
+$\varphi$関数は新たな定義を生むため，新たな$\varphi$関数の挿入が生じないようになるまで，各$DF(v)$に$\varphi$関数を挿入する必要が生じる．ここで，支配木構造に着目すれば，各頂点に
+対して１回だけ$\varphi$関数の挿入をチェックすればよいことが示される．
 
-\begin{Lem}
+\begin{Lem}\label{lem:DFcomp}
 \begin{itemize}
 \item $DF_{local}(v)=\{u\;|\;v\rightarrow u,\idomv{u}\not= v\}$
 \item $DF_{up}(v)=\{u\in DF(v)\;|\;u\not\ll\idomv{v}\}$
@@ -921,12 +916,49 @@ $\varphi$関数は新たな定義を生むため，新たな$\varphi$関数の�
 ここで，$\mathsf{Child}(v)=\{w\;|\;\idomv{w}=v\}$
 \end{Lem}
 
+この補題の証明は本章の最後に付録として示す．補題\ref{lem:DFcomp}に沿って
+$DF_{up}(v)$を計算しようとすると，
+$\idomv{w}=v$であるような$w$の$DF(w)$を計算しておく必要がある．
+$\mathsf{idom}$が支配木を構成することに注目すれば，
+支配木を深さ優先で探索して，各頂点$v$に対する$DF(v)$を
+計算できることがわかる．(アルゴリズム\ref{alg:dominanceFrontier})
 
+
+
+\begin{algorithm}[t]
+    \centering
+    \begin{minipage}{.7\textwidth}
+\begin{algorithmic}
+    \caption{支配辺境の計算}\label{alg:dominanceFrontier}
+    \Procedure{computeDF}{$n$} 
+    \State $S \gets \{\}$
+    \ForAll{$y \in \mathsf{succ}[n]$}   \Comment $DF_{local}$の計算
+        \If{$\idomv{y}\not=n$}
+          \State $S \gets S\cup\{y\}$
+        \EndIf
+    \EndFor
+    \ForAll{$c \in \mathsf{Child}(n)$}  \Comment $DF_{up}$の計算
+        \State computeDF(c) \Comment 支配木の子頂点から計算する
+        \ForAll{$w \in DF[c]$}
+            \If{$w\notin\domv{n}$ or $n=w$}
+                \State $S\gets S\cup\{w\}$
+            \EndIf
+        \EndFor
+    \EndFor
+    \State $DF[n]\gets S$
+    \EndProcedure
+\end{algorithmic}
+\end{minipage}
+\end{algorithm}
+
+ここで，$\mathsf{succ}[n]=\{v\;|\;n\rightarrow v\}$である．
 
 \subsection{SSA形式への変換}
 
 \subsection{SSA上での最適化}
 
 \subsection{逆変換}
+
+\subsection*{[付録] 補題\ref{lem:DFcomp}の証明}
 
 \end{document}
