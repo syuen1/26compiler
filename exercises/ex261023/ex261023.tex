@@ -21,15 +21,14 @@
 }\end{center}
 \begin{itemize}
   \item TACTの課題の添付ファイルとしてPDFファイルで提出すること．
-  \item 手書きレポートをPDFとして提出方法は講義webサイトを
+  \item 手書きレポートをPDFとして提出する方法は講義webサイトを
   参照\footnote{\url{https://sites.google.com/sqlab.jp/26compiler/how-to-make-report}}すること．
   \item 提出期限: 10月30日(金) 23:55(JST)
 \end{itemize}
 
 \begin{list}{{\bf [\,\arabic{coffee}\,]}}{\usecounter{coffee}}
   \item 次のプログラムを目的コードへ変換する際の，プログラムの 1 行目終わり，3 行目
-  終わり，8 行目終わりの時点での記号表をそれぞれ示せ．ここでの記号表は，名前，
-  種別，値/番地のフィールドのみをもてばよい．ただし，関数\texttt{exp}の実行コードの開
+  終わり，8 行目終わりの時点での記号表をそれぞれ示せ．ただし，関数\texttt{exp}の実行コードの開
   始位置は$a_{\texttt{exp}}$とする．
 
   \begin{Verbatim}[numbers=left]
@@ -50,7 +49,7 @@ main() {
 \item 各変数に割り当てられている値を以下のものとする．
 \begin{center}
 	\begin{tabularx}{.75\linewidth}{|X|X||X|X||X|X||X|X|}\hline
-		$x$ & $1$ & $y$ & $2$ & $z$ & $3$ & $w$ & $4$\\\hline
+		\texttt{x} & $1$ & \texttt{y} & $2$ & \texttt{z} & $3$ & \texttt{w} & $4$\\\hline
 	\end{tabularx}
 \end{center}
 \begin{list}{(\arabic{coffee}-\arabic{bean})}{\usecounter{bean}}
@@ -59,15 +58,15 @@ main() {
 
 \begin{center}
 	\begin{tabular}{llcllcp{15zw}}
-		\texttt{push} & x & \hspace*{5zw} & \texttt{push} & x & \quad & \multirow{7}{*}{
+		\texttt{push} & \texttt{x} & \hspace*{5zw} & \texttt{push} & \texttt{x} & \quad & \multirow{7}{*}{
       \parbox{15zw}{\texttt{add},\texttt{mult}はそれぞれスタックの上から２つの値をpopして
     加算および乗算してその値をスタックトップにpushする．}}\\
-		\texttt{push} & y & & \texttt{push} & y\\
+		\texttt{push} & \texttt{y} & & \texttt{push} & \texttt{y}\\
 		\texttt{add} & & & \texttt{mult} & \\
-		\texttt{push} & z & & \texttt{push} & z\\
-		\texttt{push} & w & & \texttt{add} & \\
-		\texttt{mult} & & & \texttt{push} & w\\
-		\texttt{add} & & & \texttt{mult}　& \\[3pt]
+		\texttt{push} & \texttt{z} & & \texttt{push} & \texttt{z}\\
+		\texttt{push} & \texttt{w} & & \texttt{add} & \\
+		\texttt{mult} & & & \texttt{push} & \texttt{w}\\
+		\texttt{add} & & & \texttt{mult} & \\[3pt]
 		\multicolumn{2}{c}{(a)} & & \multicolumn{2}{c}{(b)}\\
 	\end{tabular}
 \end{center}
@@ -105,7 +104,7 @@ main() {
 
 \newpage
 
- \item フィボナッチ関数のプログラムを以下のように与える。
+ \item フィボナッチ関数のプログラムを以下のように与える．
 
        \begin{Verbatim}[frame=single]
 int a;
@@ -121,8 +120,8 @@ main() {
 }
        \end{Verbatim}
 
-       \verb|fib|と\verb|return|の実行と駆動レコードの様子を図式化せよ。
-       講義スライドと同様のレベルで図式化すること。
+       \verb|fib|と\verb|return|の実行と駆動レコードの様子を図式化せよ．
+       講義スライドと同様のレベルで図式化すること．
 \end{list}
 
 \end{document}

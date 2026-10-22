@@ -1,6 +1,6 @@
-\documentclass[dvipdfmx,cjk]{beamer}
-%\usepackage{bxdpx-beamer}% dvipdfmxなので必要
-%\usepackage{pxjahyper}% 日本語で'しおり'したい
+\documentclass[dvipdfmx]{beamer}
+\usepackage{bxdpx-beamer}% dvipdfmxなので必要
+\usepackage{pxjahyper}% 日本語で'しおり'したい
 %\documentclass[ckj]{beamer}
 %\usepackage{etex}
 %\usetheme{Warsaw}
@@ -36,7 +36,7 @@
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\familydefault}{\sfdefault}
 
-\include{mymacros}
+\input{mymacros}
 
 %\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
 %\newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
@@ -47,7 +47,7 @@
 \newcommand{\ttrp}{{\tt )}}
 \newcommand{\makenewlabel}{{\tt newLabel}()}
 \newcommand{\genlabel}[1]{{\tt generate}(`{\tt label}\ {#1}')}
-\newcommand{\genifnot}[2]{{\tt generate}(`{\tt if\_not}\ {#1}\ {\tt goto}\ {#2})'}
+\newcommand{\genifnot}[2]{{\tt generate}(`{\tt if\_not}\ {#1}\ {\tt goto}\ {#2}')}
 \newcommand{\gengoto}[1]{{\tt generate}(`{\tt goto}\ {#1}')}
 
 \graphicspath{{figs261023/}}
@@ -108,7 +108,7 @@
 \begin{frame}
   \frametitle{抽象構文木}
   解析木からコード生成に必要な部分を残して変形したもの\\[10pt]
-  \greentext{内部接点=演算子、葉=オペランド}
+  \greentext{内部節点=演算子、葉=オペランド}
 
   \vspace*{1zw}
 
@@ -139,7 +139,7 @@
     \scalebox{0.75}{
       \begin{tikzpicture}
         \node[draw,circle] (N0) at (1.5,4.5) {$=$};
-        \node[draw,circle] (N1) at (0,3) {$ID_1$};
+        \node[draw,circle] (N1) at (0,3) {$ID_0$};
         \node[draw,circle] (N2) at (3,3) {$+$};
         \node[draw,circle] (N3) at (1,1.5) {$\ast$};
         \node[draw,circle] (N4) at (5,1.5) {$\ast$};
@@ -198,7 +198,7 @@
       \mbox{push $ID_3$}                             \\
       \begin{array}{|c|}
         \                      \\\hline
-        {\tiny val(ID_3*ID_2)} \\\hline
+        \mbox{\tiny $val(ID_3*ID_2)$} \\\hline
         ID_1                   \\\hline
         ID_0                   \\\hline
       \end{array}
@@ -206,7 +206,7 @@
       \multicolumn{3}{c}{
         \begin{array}{|c|}
           \                             \\\hline
-          {\tiny val((ID_3*ID_2)+ID_1)} \\\hline
+          \mbox{\tiny $val((ID_3*ID_2)+ID_1)$} \\\hline
           ID_0                          \\\hline
         \end{array}}
                                      & \rightarrow &
@@ -249,7 +249,7 @@
              \uncover<5->{t_6=ID_3}        \\
              \uncover<6->{t_4=t_5+t_6}     \\
              \uncover<7->{t_2=t_3\ast t_4} \\
-             \uncover<8->{t_7=(t_1=t_6)}
+             \uncover<8->{t_0=(t_1=t_2)}
            \end{array}$
       \end{tabularx}
     }
@@ -855,10 +855,10 @@
 
   % (実習)動的変数の位置：何番目に宣言されているか\\
 
-  記号表にはスタックレームレジスタからの相対番地=何番目に宣言でどういった
+  記号表にはスタックフレームレジスタからの相対番地=何番目に宣言された変数でどういった
   型をもつか。
 
-  型情報=確保する領域量(実習の場は整数のみ)
+  型情報=確保する領域量(実習の場合は整数のみ)
 
   関数の引数うけわたしは局所変数の宣言+代入
 
@@ -897,7 +897,7 @@
       E\rightarrow E_1+T     & var(E)= var(E_1)+var(T)      \\
       E\rightarrow T         & var(E)=var(T)                \\
       T\rightarrow T_1\ast F & var(T)=var(T_1)\times var(F) \\
-      T\rightarrow F         & var(T)=var(T)                \\
+      T\rightarrow F         & var(T)=var(F)                \\
       F\rightarrow (\ E\ )   & var(F)=var(E)                \\
       F\rightarrow i         & temp=val(i);var(F)=temp
     \end{array}
@@ -952,7 +952,7 @@
   \begin{center}
     \begin{tikzpicture}
       \node (N0) at (0,0) {$\mathsf{NUM_0}$};
-      \node (N1) at (0,1) {$\texttt{E}_3$};
+      \node (N1) at (0,1) {$E_3$};
       \node (N2) at (1,1) {$\texttt{+}$};
       \node (N3) at (2,1) {$\mathsf{NUM}_1$};
       \node (N4) at (1,2) {$E_2$};
@@ -1061,8 +1061,8 @@
       文$\rightarrow$ & {\tt if} (  & \{文.label:=\makenewlabel;\}                                \\
                      & 式           & (式のコード)                                                    \\
                      & )           & \{\genifnot{式.var}{文.label}\}                              \\
-                     & 文$^{(1)}$   & (文$^{(1)}$のコード)\{\genlabel{文.label};                       \\
-                     &             & 文$^{(1)}$.label:=\makenewlabel;\gengoto{文$^{(1)}$.label}\} \\
+                     & 文$^{(1)}$   & (文$^{(1)}$のコード)\{文$^{(1)}$.label:=\makenewlabel;         \\
+                     &             & \gengoto{文$^{(1)}$.label}\}                                \\
                      & {\tt else}  & \{\genlabel{文.label}\}                                     \\
                      & 文{$^{(2)}$} & \{\genlabel{文$^{(1)}$.label}\}
     \end{tabular}
@@ -1102,8 +1102,8 @@
       E_1\rightarrow a\ast b       & \{\%0=a\ast b\}  \\
       E_2\rightarrow -d            & \{\%1=-d\}       \\
       E_3\rightarrow c\ast E_2     & \{\%2=c\ast\%1\} \\
-      E_4\rightarrow E_1+E_2       & \{\%3=\%0+\$2\}  \\
-      S\rightarrow x\texttt{:=}E_3 & \{x=\%3\}
+      E_4\rightarrow E_1+E_3       & \{\%3=\%0+\%2\}  \\
+      S\rightarrow x\texttt{:=}E_4 & \{x=\%3\}
     \end{array}
   \]
 
@@ -1139,7 +1139,7 @@
     \only<2->{\node[anchor=west] at (6,3.5) {$\%0=a\ast b$};}
     \only<3->{\node[anchor=west] at (6,3) {$\%1=-d$};}
     \only<4->{\node[anchor=west] at (6,2.5) {$\%2=c\ast\% 1$};}
-    \only<5->{\node[anchor=west] at (6,2) {$\%3=\$ 0+\% 2$};}
+    \only<5->{\node[anchor=west] at (6,2) {$\%3=\% 0+\% 2$};}
     \only<6->{\node[anchor=west] at (6,1.5) {$x=\%3$};}
   \end{tikzpicture}
 \end{frame}
@@ -1175,7 +1175,7 @@
     \begin{Verbatim}
       while(x<20) {
           r=r+x;
-          x=x+1
+          x=x+1;
         }
     \end{Verbatim}
   \end{center}
@@ -1195,8 +1195,8 @@
     {\small
     \[\begin{array}{rcll}
         I  & \rightarrow                       & \texttt{if}\ \texttt{(}\ E\ \texttt{)}
-           & \{S.label1\mbox{:=\makenewlabel};                                                                         \\
-           &                                   &                                        & \genifnot{E.var}{S.label1}\} \\
+           & \{I.label\mbox{:=\makenewlabel};                                                                         \\
+           &                                   &                                        & \genifnot{E.var}{I.label}\} \\
         S' & \rightarrow\                      & I S^{(1)}                              & \{S'.label:=\makenewlabel;   \\
            &                                   &                                        & \gengoto{S'.label};          \\
            &                                   &                                        & \genlabel{I.label}\}         \\
@@ -1232,398 +1232,400 @@
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{属性文法}
-
-  属性文法(attribute grammar):抽象構文木に属性を加えた文法
-
-  \greentext{構文主導型変換への応用=コード生成に関する情報を属
-    性として扱う}
-
-  属性文法 $A_g=(G,{\cal A},E)$
-  \begin{list}{}{}
-    \item $G=(N,\Sigma,P,S)$はCF文法
-    \item ${\cal A}$:属性の集合\\
-          ${\cal A}=\cup_{X\in
-              N\cup\Sigma}{\cal A}(X)$.  $a\in{\cal A}(X)$のとき、
-          $X.a$と書く。
-    \item $E$:意味規則の集合\\
-          $p\in P$に対して以下のような規則定める。
-          \[
-            p\{X_i.a_i=f_i(X_{i_1}.a_{i_1},\ldots,X_{i_n}.a_{i_n})\}
-          \]
-  \end{list}
-
-  \[\begin{array}{ll}
-      E\rightarrow E^{(1)}\texttt{+}E^{(2)} & \{E.val=E^{(1)}.val+E^{(2)}.val\} \\
-      E\rightarrow \texttt{NUM}             & \{E.val=\texttt{NUM}.val\}
-    \end{array}
-  \]
-  %  \begin{center}
-  %   \includegraphics[scale=1]{figs191113/attribGram01.eps}
-  %  \end{center}
-
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{属性の種類}
-
-  \begin{list}{}{}
-    \item 合成(synthesized)属性\\
-          \greentext{右辺の属性から合成された左辺の属性}:
-    \item 相続(inherited)属性 (「継承属性」とも言う)\\
-          \greentext{合成以外の属性}
-  \end{list}
-
-
-  \[G=(\{T,L\},\{\texttt{MAX},\texttt{MIN},\texttt{NUM},`\texttt{(}',`\texttt{)}',`\texttt{,}'\},P,T)\]
-
-  \scalebox{0.8}{
-    $\mathcal{A}$:
-    \begin{tabular}{|c|c|c|}\hline
-          & 合成属性    & 相続属性   \\\hline
-      $T$ & $T.val$ &        \\\hline
-      $L$ & $L.val$ & $L.op$ \\\hline
-    \end{tabular}
-  }
-
-  \vspace*{5pt}
-
-  {\small
-    %P,E:\\
-
-    $P=\left\{\begin{array}{ll}
-        T\rightarrow\texttt{MIN'('}L\texttt{')'} & \{L.op=\texttt{MIN},T.val=L.val\}                                  \\
-        T\rightarrow\texttt{MAX'('}L\texttt{')'} & \{L.op=\texttt{MAX},T.val=L.val\}                                  \\
-        L\rightarrow\texttt{NUM}                 & \{L.val=\texttt{NUM}.val\}                                         \\
-        L\rightarrow L^{(1)}\texttt{',' NUM}     & \left\{\begin{array}{l}L.val=f(L.op,L^{(1)}.val,\texttt{NUM}.val), \\
-                                                            L^{(1)}.op=L.op\end{array}\right\}
-      \end{array}\right\}$
-  }
-  %  \begin{center}
-  %   \includegraphics[scale=.8]{figs191113/AttributeExample.eps}
-  %  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{属性文法に基づくコード生成例}
-  $G$に生成規則$\{S\rightarrow T\#\}$を加えた拡張文法に対するLR解析
-
-  \vspace*{3pt}
-
-  $P=\left\{\begin{array}{rlcrl}
-      0: & S\rightarrow T\#,                                        &  & 3: & L\rightarrow\texttt{NUM},                   \\
-      1: & T\rightarrow\texttt{MIN}\ `\texttt{(}'\ L\ `\texttt{)}', &  & 4: & L\rightarrow L\ `\texttt{,}'\ \texttt{NUM}, \\
-      2: & T\rightarrow\texttt{MAX}\ `\texttt{(}'\ L\ `\texttt{)}'  &  &    &
-    \end{array}\right\}$
-
-  \vspace*{3pt}
-
-  $\mathsf{Follow}_1(T)=\{\#\}$,
-  $\mathsf{Follow}_1(L)=\{\texttt{)},`\texttt{,}'\}$
-
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{属性文法に基づくコード生成例}
-  \begin{center}
-    \begin{tabularx}{\textwidth}{XX}
-      \includegraphics[scale=0.45]{maxmin-lrautomaton-crop.pdf}
-                        &
-      \includegraphics[scale=0.5]{maxmin-parsetab-crop.pdf} \\
-      {\small LR(0)遷移系} & {\small SLR(1)構文解析表}
-    \end{tabularx}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{属性文法に基づくコード生成例}
-  \scriptsize{
-    \[
-      \begin{array}{clllll}
-                  & (I_0,                                                          & \texttt{MIN(3,5,7)\#}, & \varepsilon)                                                                 \\
-        \vdash    & (I_0\texttt{MIN}I_2,                                           & \texttt{(3,5,7)\#},    & \varepsilon)                                                                 \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4,                              & \texttt{3,5,7)\#},     & \varepsilon)                                                                 \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4\texttt{3}I_7,                 & \texttt{,5,7)\#},      & \varepsilon)                                                                 \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{,5,7)\#},      & 3)           & \%1.val=3                                                     \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{5,7)\#},       & 3)                                                                           \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#},        & 3)                                                                           \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{,7)\#},        & 34)          & \%2.val=f(\only<1>{\%1.op}\only<2>{\redtext{min}},\%1.val,5); \\
-        \only<1>{ &                                                                &                        &              & \%2.op=\%1.op\\}
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{7)\#},         & 34)                                                                          \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#},          & 34)                                                                          \\
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{)\#},          & 344)         & \%3.val=f(\only<1>{\%2.op}\only<2>{\redtext{min}},\%2.val,7); \\
-        \only<1>{ &                                                                &                        &              & \%3.op=\%2.op\\}
-        \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{)}I_9,           & \texttt{\#},           & 344)                                                                         \\
-        \vdash    & (I_0 T I_1,                                                    & \texttt{\#},           & 3441)        & \only<1>{\redtext{\%3.op=min;}}\%4.val=\%3.val                \\
-        \vdash    & (acc,                                                          & \texttt{\#},           & 34410)
-      \end{array}
-    \]
-  }
-  \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
-  \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
-
-  $T.val=\%4.val$
-\end{frame}
-
-\begin{frame}
-  \frametitle{属性文法に基づくコード生成例}
-  \scriptsize{
-    \[
-      \begin{array}{clllll}
-                  & (I_0,                                                          & \texttt{MAX(3,5,7)\#}, & \varepsilon)                                                                   \\
-        \vdash    & (I_0\texttt{MAX}I_2,                                           & \texttt{(3,5,7)\#},    & \varepsilon)                                                                   \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4,                              & \texttt{3,5,7)\#},     & \varepsilon)                                                                   \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4\texttt{3}I_7,                 & \texttt{,5,7)\#},      & \varepsilon)                                                                   \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{,5,7)\#},      & 3)           & \%1.val=3                                                       \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{5,7)\#},       & 3)                                                                             \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#},        & 3)                                                                             \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{,7)\#},        & 34)          & \%2.val=f(\only<1>{\%1.op}\only<2>{\greentext{max}},\%1.val,5); \\
-        \only<1>{ &                                                                &                        &              & \%1.op=\%2.op\\}
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{7)\#},         & 34)                                                                            \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#},          & 34)                                                                            \\
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{)\#},          & 344)         & \%3.val=f(\only<1>{\%2.op}\only<2>{\greentext{max}},\%2.val,7); \\
-        \only<1>{ &                                                                &                        &              & \%2.op=\%3.op\\}
-        \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{)}I_9,           & \texttt{\#},           & 344)                                                                           \\
-        \vdash    & (I_0 T I_1,                                                    & \texttt{\#},           & 3442)        & \only<1>{\redtext{\%3.op=max;}}\%4.val=\%3.val                  \\
-        \vdash    & (acc,                                                          & \texttt{\#},           & 34410)
-      \end{array}
-    \]
-  }
-
-  \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
-  \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
-
-  $T.val=\%4.val$
-
-\end{frame}
-
-% \subsection{バックパッチ}
 
 % \begin{frame}
-%  \frametitle{バックパッチ}
+%   \frametitle{属性文法}
 
-%  条件分岐のコード生成の場合、ラベルの値はあとで決定する
+%   属性文法(attribute grammar):抽象構文木に属性を加えた文法
 
-%  \[
-% p  \mathsf{if}\ E\ \mathsf{then}\ S
-%  \]
+%   \greentext{構文主導型変換への応用=コード生成に関する情報を属
+%     性として扱う}
 
-% \begin{center}
-%  \begin{tabular}{lrl}
-% 1:&    & $E$のコード\\
-% 2:&    & if not $E.\mathsf{result}$ goto $L$\\
-% 3:&    & $S$のコード\\
-% 4:&$L$:&
-%  \end{tabular}
-% \end{center}
+%   属性文法 $A_g=(G,{\cal A},E)$
+%   \begin{list}{}{}
+%     \item $G=(N,\Sigma,P,S)$はCF文法
+%     \item ${\cal A}$:属性の集合\\
+%           ${\cal A}=\cup_{X\in
+%               N\cup\Sigma}{\cal A}(X)$.  $a\in{\cal A}(X)$のとき、
+%           $X.a$と書く。
+%     \item $E$:意味規則の集合\\
+%           $p\in P$に対して以下のような規則を定める。
+%           \[
+%             p\{X_i.a_i=f_i(X_{i_1}.a_{i_1},\ldots,X_{i_n}.a_{i_n})\}
+%           \]
+%   \end{list}
 
-%  $S$をコンパイルするまで$L$の値は決まらない。2の時点で$L$の具
-%  体的なアドレスはわからない。
-
-% % 厳密には1パスでコード生成はできない。
-
-% \begin{list}%
-%  {$\bullet$} %default label
-%  {} %formatting parameter
-%  \item とび先のアドレスの表を作成しておいて、アドレスが決定した時点で
-%  $L$の値を待つコードをかきかえる。 
-%  \item 命令を一旦生成するがどこが未決かを管理する。
-% \end{list}
-
-% \greentext{LLVM 実行系においては，LLVM抽象マシンがラベルを解決してくれる．}
+%   \[\begin{array}{ll}
+%       E\rightarrow E^{(1)}\texttt{+}E^{(2)} & \{E.val=E^{(1)}.val+E^{(2)}.val\} \\
+%       E\rightarrow \texttt{NUM}             & \{E.val=\texttt{NUM}.val\}
+%     \end{array}
+%   \]
+%   %  \begin{center}
+%   %   \includegraphics[scale=1]{figs191113/attribGram01.eps}
+%   %  \end{center}
 
 % \end{frame}
 
 
+% \begin{frame}
+%   \frametitle{属性の種類}
 
-\begin{frame}{LLVMによる条件文コード}
+%   \begin{list}{}{}
+%     \item 合成(synthesized)属性\\
+%           \greentext{右辺の属性から合成された左辺の属性}:
+%     \item 相続(inherited)属性 (「継承属性」とも言う)\\
+%           \greentext{合成以外の属性}
+%   \end{list}
 
-  \texttt{if} {$B$} \texttt{then} {$S_1$} \texttt{else} {$S_2$}
 
-  \vspace*{5mm}
+%   \[G=(\{T,L\},\{\texttt{MAX},\texttt{MIN},\texttt{NUM},`\texttt{(}',`\texttt{)}',`\texttt{,}'\},P,T)\]
 
-  \begin{tabular}{l}
-    \texttt{\%1 = } [$B$ を計算するコード]             \\
-    \texttt{br i1 \%1, label \%L1, label \%L2} \\
-    \texttt{L1:}                               \\
-    \quad [$S_1$のコード]                          \\
-    \texttt{br label \%L3}                     \\
-    \texttt{L2:}                               \\
-    \quad [$S_2$のコード]                          \\
-    \texttt{br label \%L3}                     \\
-    \texttt{L3:}
-  \end{tabular}
+%   \scalebox{0.8}{
+%     $\mathcal{A}$:
+%     \begin{tabular}{|c|c|c|}\hline
+%           & 合成属性    & 相続属性   \\\hline
+%       $T$ & $T.val$ &        \\\hline
+%       $L$ & $L.val$ & $L.op$ \\\hline
+%     \end{tabular}
+%   }
 
-  \greentext{\texttt{L1},\texttt{L2},\texttt{L3}は実際に定義される前に参照される．}
+%   \vspace*{5pt}
 
-  \greentext{$S_2$の後の\%3へのジャンプは不要．}
+%   {\small
+%     %P,E:\\
 
-\end{frame}
+%     $P=\left\{\begin{array}{ll}
+%         T\rightarrow\texttt{MIN'('}L\texttt{')'} & \{L.op=\texttt{MIN},T.val=L.val\}                                  \\
+%         T\rightarrow\texttt{MAX'('}L\texttt{')'} & \{L.op=\texttt{MAX},T.val=L.val\}                                  \\
+%         L\rightarrow\texttt{NUM}                 & \{L.val=\texttt{NUM}.val\}                                         \\
+%         L\rightarrow L^{(1)}\texttt{',' NUM}     & \left\{\begin{array}{l}L.val=f(L.op,L^{(1)}.val,\texttt{NUM}.val), \\
+%                                                             L^{(1)}.op=L.op\end{array}\right\}
+%       \end{array}\right\}$
+%   }
+%   %  \begin{center}
+%   %   \includegraphics[scale=.8]{figs191113/AttributeExample.eps}
+%   %  \end{center}
+% \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{条件文における論理式}
-  条件文における条件の評価：結果待ち / 短絡型\\
-  \greentext{条件が副作用を持つ場合に違いが出る}\\
-  \texttt{if (x>100 \&\& (z=y)<30) \{ 文1 \} else \{ 文2 \}}\\
-  \texttt{z=y}の評価結果は\texttt{y}の値\\
-  \greentext{{\tt z=y}が実行されるか？}\\
-  結果待ち=評価される、短絡型=\texttt{x>100}のとき評価される\\
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   $G$に生成規則$\{S\rightarrow T\#\}$を加えた拡張文法に対するLR解析
 
-  \begin{tabular}{ll}
-    短絡型： & 条件文の評価中にif文を評価する．    \\
-    結果待： & 条件文の式を評価してからifを評価する．
-  \end{tabular}
+%   \vspace*{3pt}
 
-  \greentext{短絡型の評価を行う場合が多い(C, python)}
+%   $P=\left\{\begin{array}{rlcrl}
+%       0: & S\rightarrow T\#,                                        &  & 3: & L\rightarrow\texttt{NUM},                   \\
+%       1: & T\rightarrow\texttt{MIN}\ `\texttt{(}'\ L\ `\texttt{)}', &  & 4: & L\rightarrow L\ `\texttt{,}'\ \texttt{NUM}, \\
+%       2: & T\rightarrow\texttt{MAX}\ `\texttt{(}'\ L\ `\texttt{)}'  &  &    &
+%     \end{array}\right\}$
 
-  \greentext{javaの場合：\texttt{\&\&},\texttt{||}が短絡型，\texttt{\&},\texttt{|}が結果待ち}
-  %\greentext{java: $\texttt{\&\&}$, $\texttt{\|\|}$は短絡型，\texttt{\&}, \texttt{|}は結果待ち}
+%   \vspace*{3pt}
 
-  %  \begin{verbatim}
-  %    t1:=x>100;if not t1 goto L1;
-  %    t2:=y;z:=t2;t4:=t2<30;if not t4 goto L1;
-  %    文1.code; goto L2;
-  % L1:文2.code;
-  % L2:
-  %  \end{verbatim}
-  %  \greentext{文1を読まないと、L1が決定しない。}\\
-  %  \greentext{文2を読まないと、L2が決定しない。}
-\end{frame}
+%   $\mathsf{Follow}_1(T)=\{\#\}$,
+%   $\mathsf{Follow}_1(L)=\{\texttt{)},`\texttt{,}'\}$
 
-\section{関数}
 
-\subsection{引数受け渡し}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{関数引数・返り値と駆動レコード}
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   \begin{center}
+%     \begin{tabularx}{\textwidth}{XX}
+%       \includegraphics[scale=0.45]{maxmin-lrautomaton-crop.pdf}
+%                         &
+%       \includegraphics[scale=0.5]{maxmin-parsetab-crop.pdf} \\
+%       {\small LR(0)遷移系} & {\small SLR(1)構文解析表}
+%     \end{tabularx}
+%   \end{center}
+% \end{frame}
 
-  \begin{tabular}{ccc}
-    \begin{minipage}{.4\textwidth}
-      \includegraphics{activeRecord-crop.pdf}
-    \end{minipage}
-     & \quad &
-    \begin{minipage}{.45\textwidth}
-      $\texttt{f}(x_1,\cdots,x_n)$でスタック上に
-      作成される駆動レコード（の一部）\\
-      局所変数: $y_1,\cdots,y_m$\\[10pt]
-      \greentext{これに従った記号表を生成}
-    \end{minipage}
-  \end{tabular}
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   \scriptsize{
+%     \[
+%       \begin{array}{clllll}
+%                   & (I_0,                                                          & \texttt{MIN(3,5,7)\#}, & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2,                                           & \texttt{(3,5,7)\#},    & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4,                              & \texttt{3,5,7)\#},     & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4\texttt{3}I_7,                 & \texttt{,5,7)\#},      & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{,5,7)\#},      & 3)           & \%1.val=3                                                     \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{5,7)\#},       & 3)                                                                           \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#},        & 3)                                                                           \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{,7)\#},        & 34)          & \%2.val=f(\only<1>{\%1.op}\only<2>{\redtext{min}},\%1.val,5); \\
+%         \only<1>{ &                                                                &                        &              & \%1.op=\%2.op\\}
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{7)\#},         & 34)                                                                          \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#},          & 34)                                                                          \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{)\#},          & 344)         & \%3.val=f(\only<1>{\%2.op}\only<2>{\redtext{min}},\%2.val,7); \\
+%         \only<1>{ &                                                                &                        &              & \%2.op=\%3.op\\}
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{)}I_9,           & \texttt{\#},           & 344)                                                                         \\
+%         \vdash    & (I_0 T I_1,                                                    & \texttt{\#},           & 3441)        & \only<1>{\redtext{\%3.op=min;}}\%4.val=\%3.val                \\
+%         \vdash    & (acc,                                                          & \texttt{\#},           & 34410)
+%       \end{array}
+%     \]
+%   }
+%   \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
+%   \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
 
-  \vspace*{10pt}
+%   $T.val=\%4.val$
+% \end{frame}
 
-  \begin{description}
-    \item [値呼び：]
-          $\texttt{x=f(}e_1,\cdots,e_n\texttt{)}$\\
-          $e_i$を評価してその値を$x_i$の領域にコピー
-    \item [参照呼び：]
-          $\texttt{x=f(}z_1,\cdots,z_n\texttt{)}$\\
-          $z_i$のアドレスを$x_i$にコピー
-  \end{description}
-\end{frame}
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   \scriptsize{
+%     \[
+%       \begin{array}{clllll}
+%                   & (I_0,                                                          & \texttt{MAX(3,5,7)\#}, & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2,                                           & \texttt{(3,5,7)\#},    & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4,                              & \texttt{3,5,7)\#},     & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4\texttt{3}I_7,                 & \texttt{,5,7)\#},      & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{,5,7)\#},      & 3)           & \%1.val=3                                                       \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{5,7)\#},       & 3)                                                                             \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#},        & 3)                                                                             \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{,7)\#},        & 34)          & \%2.val=f(\only<1>{\%1.op}\only<2>{\greentext{max}},\%1.val,5); \\
+%         \only<1>{ &                                                                &                        &              & \%1.op=\%2.op\\}
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{7)\#},         & 34)                                                                            \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#},          & 34)                                                                            \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{)\#},          & 344)         & \%3.val=f(\only<1>{\%2.op}\only<2>{\greentext{max}},\%2.val,7); \\
+%         \only<1>{ &                                                                &                        &              & \%2.op=\%3.op\\}
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{)}I_9,           & \texttt{\#},           & 344)                                                                           \\
+%         \vdash    & (I_0 T I_1,                                                    & \texttt{\#},           & 3442)        & \only<1>{\redtext{\%3.op=max;}}\%4.val=\%3.val                  \\
+%         \vdash    & (acc,                                                          & \texttt{\#},           & 34420)
+%       \end{array}
+%     \]
+%   }
 
-\begin{frame}[fragile=singleslide]
-  \frametitle{引数受渡し}
-  \greentext{引数=パラメータ(parameter)}\\
-  2種類の受渡し方法
-  \begin{list}{}{}
-    \item 値渡し：実引数の値を評価して仮引数に代入
-    \item 参照渡し：実引数の値を評価して\underline{ポインタ}を仮引数に代入
-  \end{list}
+%   \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
+%   \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
 
-  \vfill
+%   $T.val=\%4.val$
 
-  \begin{center}
-    \begin{tabular}{ccc}
-      \multicolumn{1}{c}{値呼び} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{参照呼び} \\\cline{1-1}\cline{3-3}
-      \multicolumn{1}{|m{.35\textwidth}|}{
-      \includegraphics[scale=.8]{swap-value-crop.pdf}
-      }
-                              &                      &
-      \multicolumn{1}{|m{.4\textwidth}|}{
-      \includegraphics[scale=.8]{swap-ref-crop.pdf}}
-      \\\cline{1-1}\cline{3-3}
-    \end{tabular}
-  \end{center}
+% \end{frame}
 
-  \begin{list}{}{}
-    \item 値呼びの場合：全く効果なし。\\
-          \greentext{入れ替えられた値は駆動レコード内で実行後破棄}
-    \item 参照呼びの場合：値が入れ替えられる。\\
-          \greentext{{\tt swap}中の{\tt y=x}, {\tt x=t}の代入先は、
-          実引数の領域}
-  \end{list}
-\end{frame}
+% % \subsection{バックパッチ}
 
-\begin{frame}
-  \frametitle{値呼びのコンパイル}
-  \%0: xの値，\%1: yの値が格納されているアドレス
+% % \begin{frame}
+% %  \frametitle{バックパッチ}
 
-  \vspace*{5pt}
+% %  条件分岐のコード生成の場合、ラベルの値はあとで決定する
 
-  \begin{center}
-    \begin{tabular}{cc}
-      \multicolumn{1}{m{.3\textwidth}}{
-        \includegraphics[scale=.8]{swap-value-crop.pdf}}
-       &
-      \multicolumn{1}{m{.5\textwidth}}{
-        \includegraphics[scale=.7]{swap-v-ll-crop.pdf}}
-    \end{tabular}
-  \end{center}
-\end{frame}
+% %  \[
+% % p  \mathsf{if}\ E\ \mathsf{then}\ S
+% %  \]
 
-\begin{frame}
-  \frametitle{参照呼びのコンパイル}
-  \%0: xの値，\%1: yの値が格納されているアドレス
+% % \begin{center}
+% %  \begin{tabular}{lrl}
+% % 1:&    & $E$のコード\\
+% % 2:&    & if not $E.\mathsf{result}$ goto $L$\\
+% % 3:&    & $S$のコード\\
+% % 4:&$L$:&
+% %  \end{tabular}
+% % \end{center}
 
-  \vspace*{5pt}
+% %  $S$をコンパイルするまで$L$の値は決まらない。2の時点で$L$の具
+% %  体的なアドレスはわからない。
 
-  \begin{center}
-    \begin{tabular}{cc}
-      \multicolumn{1}{m{.4\textwidth}}{
-        \includegraphics[scale=.8]{swap-ref-crop.pdf}}
-       &
-      \multicolumn{1}{m{.5\textwidth}}{
-        \includegraphics[scale=.7]{swap-ref-ll-crop.pdf}}
-    \end{tabular}
-  \end{center}
-\end{frame}
+% % % 厳密には1パスでコード生成はできない。
 
-\subsection{関数定義}
+% % \begin{list}%
+% %  {$\bullet$} %default label
+% %  {} %formatting parameter
+% %  \item とび先のアドレスの表を作成しておいて、アドレスが決定した時点で
+% %  $L$の値を待つコードをかきかえる。 
+% %  \item 命令を一旦生成するがどこが未決かを管理する。
+% % \end{list}
 
-\begin{frame}[fragile]{関数定義/値呼び}
+% % \greentext{LLVM 実行系においては，LLVM抽象マシンがラベルを解決してくれる．}
 
-  \scalebox{0.75}{
-    \begin{tikzpicture}
-      \draw[draw] (-0.5,0.5) rectangle (5,-1.5);
-      \node[anchor=west] (L01) at (0,0) {\texttt{int add(int x,int y) \{}};
-      \node[anchor=west] at (1,-0.5) {\texttt{return x+y;}};
-      \node[anchor=west] at (0,-1) {\texttt{\}}};
+% % \end{frame}
 
-      \draw[draw] (5.5,0.5) rectangle (13,-5);
-      \node[anchor=west] at (6,0) {\texttt{define i32 @add(i32,i32) \{}};
-      \node[anchor=west] at (6,-0.5) {\texttt{entry:}};
-      \node[anchor=west] at (6.5,-1) {\texttt{\% x = alloca i32}};
-      \node[anchor=west] at (6.5,-1.5) {\texttt{\% y = alloca i32}};
-      \node[anchor=west] at (6.5,-2) {\texttt{store i32 \% 0, i32* \% x}};
-      \node[anchor=west] at (6.5,-2.5) {\texttt{store i32 \% 1, i32* \% y}};
-      \node[anchor=west] at (6.5,-3) {\texttt{\% 2 = load i32, i32* \% x}};
-      \node[anchor=west] at (6.5,-3.5) {\texttt{\% 3 = load i32, i32* \% y}};
-      \node[anchor=west] at (6.5,-4) {\texttt{\% 4 = add i32 \% 2, \% 3}};
-      \node[anchor=west] at (6.5,-4.5) {\texttt{ret i32 \% 4}};
-    \end{tikzpicture}}
-  \parbox{.8\textwidth}{
-  {\small
-      関数定義：\\\texttt{define }$\langle$型$\rangle$\texttt{\@}$\langle$関数名$\rangle$(引数型,$\cdots$,引数型)$\rangle$}\\[10pt]
-  {\small $i$番目の引数 $\% (i-1)$で参照 }
-  }\\[5pt]
-  {\small
-  関数呼出（値呼び）：
-  \verb|%ret = call i32 @add(%2,%3), align 4|
-  }
-\end{frame}
+
+
+% \begin{frame}{LLVMによる条件文コード}
+
+%   \texttt{if} {$B$} \texttt{then} {$S_1$} \texttt{else} {$S_2$}
+
+%   \vspace*{5mm}
+
+%   \begin{tabular}{l}
+%     \texttt{\%1 = } [$B$ を計算するコード]             \\
+%     \texttt{br i1 \%1, label \%L1, label \%L2} \\
+%     \texttt{L1:}                               \\
+%     \quad [$S_1$のコード]                          \\
+%     \texttt{br label \%L3}                     \\
+%     \texttt{L2:}                               \\
+%     \quad [$S_2$のコード]                          \\
+%     \texttt{br label \%L3}                     \\
+%     \texttt{L3:}
+%   \end{tabular}
+
+%   \greentext{\texttt{L1},\texttt{L2},\texttt{L3}は実際に定義される前に参照される．}
+
+%   \greentext{$S_2$の後の\texttt{\%L3}へのジャンプは不要．}
+
+% \end{frame}
+
+% \begin{frame}[fragile]
+%   \frametitle{条件文における論理式}
+%   条件文における条件の評価：結果待ち / 短絡型\\
+%   \greentext{条件が副作用を持つ場合に違いが出る}\\
+%   \texttt{if (x>100 \&\& (z=y)<30) \{ 文1 \} else \{ 文2 \}}\\
+%   \texttt{z=y}の評価結果は\texttt{y}の値\\
+%   \greentext{{\tt z=y}が実行されるか？}\\
+%   結果待ち=評価される、短絡型=\texttt{x>100}のとき評価される\\
+
+%   \begin{tabular}{ll}
+%     短絡型： & 条件文の評価中にif文を評価する．    \\
+%     結果待： & 条件文の式を評価してからifを評価する．
+%   \end{tabular}
+
+%   \greentext{短絡型の評価を行う場合が多い(C, python)}
+
+%   \greentext{javaの場合：\texttt{\&\&},\texttt{||}が短絡型，\texttt{\&},\texttt{|}が結果待ち}
+%   %\greentext{java: $\texttt{\&\&}$, $\texttt{\|\|}$は短絡型，\texttt{\&}, \texttt{|}は結果待ち}
+
+%   %  \begin{verbatim}
+%   %    t1:=x>100;if not t1 goto L1;
+%   %    t2:=y;z:=t2;t4:=t2<30;if not t4 goto L1;
+%   %    文1.code; goto L2;
+%   % L1:文2.code;
+%   % L2:
+%   %  \end{verbatim}
+%   %  \greentext{文1を読まないと、L1が決定しない。}\\
+%   %  \greentext{文2を読まないと、L2が決定しない。}
+% \end{frame}
+
+% \section{関数}
+
+% \subsection{引数受け渡し}
+
+% \begin{frame}
+%   \frametitle{関数引数・返り値と駆動レコード}
+
+%   \begin{tabular}{ccc}
+%     \begin{minipage}{.4\textwidth}
+%       \includegraphics{activeRecord-crop.pdf}
+%     \end{minipage}
+%      & \quad &
+%     \begin{minipage}{.45\textwidth}
+%       $\texttt{f}(x_1,\cdots,x_n)$でスタック上に
+%       作成される駆動レコード（の一部）\\
+%       局所変数: $y_1,\cdots,y_m$\\[10pt]
+%       \greentext{これに従った記号表を生成}
+%     \end{minipage}
+%   \end{tabular}
+
+%   \vspace*{10pt}
+
+%   \begin{description}
+%     \item [値呼び：]
+%           $\texttt{x=f(}e_1,\cdots,e_n\texttt{)}$\\
+%           $e_i$を評価してその値を$x_i$の領域にコピー
+%     \item [参照呼び：]
+%           $\texttt{x=f(}z_1,\cdots,z_n\texttt{)}$\\
+%           $z_i$のアドレスを$x_i$にコピー
+%   \end{description}
+% \end{frame}
+
+% \begin{frame}[fragile=singleslide]
+%   \frametitle{引数受渡し}
+%   \greentext{引数=パラメータ(parameter)}\\
+%   2種類の受渡し方法
+%   \begin{list}{}{}
+%     \item 値渡し：実引数の値を評価して仮引数に代入
+%     \item 参照渡し：実引数の値を評価して\underline{ポインタ}を仮引数に代入
+%   \end{list}
+
+%   \vfill
+
+%   \begin{center}
+%     \begin{tabular}{ccc}
+%       \multicolumn{1}{c}{値呼び} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{参照呼び} \\\cline{1-1}\cline{3-3}
+%       \multicolumn{1}{|m{.35\textwidth}|}{
+%       \includegraphics[scale=.8]{swap-value-crop.pdf}
+%       }
+%                               &                      &
+%       \multicolumn{1}{|m{.4\textwidth}|}{
+%       \includegraphics[scale=.8]{swap-ref-crop.pdf}}
+%       \\\cline{1-1}\cline{3-3}
+%     \end{tabular}
+%   \end{center}
+
+%   \begin{list}{}{}
+%     \item 値呼びの場合：全く効果なし。\\
+%           \greentext{入れ替えられた値は駆動レコード内で実行後破棄}
+%     \item 参照呼びの場合：値が入れ替えられる。\\
+%           \greentext{{\tt swap}中の{\tt y=x}, {\tt x=t}の代入先は、
+%           実引数の領域}
+%   \end{list}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{値呼びのコンパイル}
+%   \%0: xの値，\%1: yの値が格納されているアドレス
+
+%   \vspace*{5pt}
+
+%   \begin{center}
+%     \begin{tabular}{cc}
+%       \multicolumn{1}{m{.3\textwidth}}{
+%         \includegraphics[scale=.8]{swap-value-crop.pdf}}
+%        &
+%       \multicolumn{1}{m{.5\textwidth}}{
+%         \includegraphics[scale=.7]{swap-v-ll-crop.pdf}}
+%     \end{tabular}
+%   \end{center}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{参照呼びのコンパイル}
+%   \%0: xの値，\%1: yの値が格納されているアドレス
+
+%   \vspace*{5pt}
+
+%   \begin{center}
+%     \begin{tabular}{cc}
+%       \multicolumn{1}{m{.4\textwidth}}{
+%         \includegraphics[scale=.8]{swap-ref-crop.pdf}}
+%        &
+%       \multicolumn{1}{m{.5\textwidth}}{
+%         \includegraphics[scale=.7]{swap-ref-ll-crop.pdf}}
+%     \end{tabular}
+%   \end{center}
+% \end{frame}
+
+% \subsection{関数定義}
+
+% \begin{frame}[fragile]{関数定義/値呼び}
+
+%   \scalebox{0.75}{
+%     \begin{tikzpicture}
+%       \draw[draw] (-0.5,0.5) rectangle (5,-1.5);
+%       \node[anchor=west] (L01) at (0,0) {\texttt{int add(int x,int y) \{}};
+%       \node[anchor=west] at (1,-0.5) {\texttt{return x+y;}};
+%       \node[anchor=west] at (0,-1) {\texttt{\}}};
+
+%       \draw[draw] (5.5,0.5) rectangle (13,-5.5);
+%       \node[anchor=west] at (6,0) {\texttt{define i32 @add(i32,i32) \{}};
+%       \node[anchor=west] at (6,-0.5) {\texttt{entry:}};
+%       \node[anchor=west] at (6.5,-1) {\texttt{\% x = alloca i32}};
+%       \node[anchor=west] at (6.5,-1.5) {\texttt{\% y = alloca i32}};
+%       \node[anchor=west] at (6.5,-2) {\texttt{store i32 \% 0, i32* \% x}};
+%       \node[anchor=west] at (6.5,-2.5) {\texttt{store i32 \% 1, i32* \% y}};
+%       \node[anchor=west] at (6.5,-3) {\texttt{\% 2 = load i32, i32* \% x}};
+%       \node[anchor=west] at (6.5,-3.5) {\texttt{\% 3 = load i32, i32* \% y}};
+%       \node[anchor=west] at (6.5,-4) {\texttt{\% 4 = add i32 \% 2, \% 3}};
+%       \node[anchor=west] at (6.5,-4.5) {\texttt{ret i32 \% 4}};
+%       \node[anchor=west] at (6,-5) {\texttt{\}}};
+%     \end{tikzpicture}}
+%   \parbox{.8\textwidth}{
+%   {\small
+%       関数定義：\\\texttt{define }$\langle$型$\rangle$\texttt{ \@}$\langle$関数名$\rangle$(引数型,$\cdots$,引数型)}\\[10pt]
+%   {\small $i$番目の引数 $\% (i-1)$で参照 }
+%   }\\[5pt]
+%   {\small
+%   関数呼出（値呼び）：
+%   \verb|%ret = call i32 @add(%2,%3), align 4|
+%   }
+% \end{frame}
 
 \end{document}
