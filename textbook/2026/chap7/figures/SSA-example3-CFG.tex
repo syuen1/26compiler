@@ -27,9 +27,9 @@
     \verb|j = k|\\
     \verb|k = k + 2|
 \end{tabular}};
-\node[draw,label={10:{$v_7$}}] (V7) at (0,-6.75) {\begin{tabularx}{2cm}{X}
-    \ 
-\end{tabularx}};
+\node[draw,label={10:{$v_7$}}] (V7) at (0,-6.75) {\begin{tabular}{l}
+    \verb|i = i + 1|
+\end{tabular}};
 
 \path[-{Stealth[scale=1.5]}] (V1) edge (V2) (V2) edge (V3) (V2) edge (V4);
 \path[-{Stealth[scale=1.5]}] (V3) edge (V5) (V3) edge (V6) (V5) edge (V7) (V6) edge (V7);

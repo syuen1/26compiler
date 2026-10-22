@@ -953,6 +953,71 @@ $\mathsf{idom}$が支配木を構成することに注目すれば，
 
 ここで，$\mathsf{succ}[n]=\{v\;|\;n\rightarrow v\}$である．
 
+\begin{Exmp}
+図\ref{fig:DTexample}のフローグラフに対して，各頂点の支配辺境を次のように求められる．
+まず支配木の葉頂点として$\{v_5,v_6,v_7\}$の$DF_{local}$を計算する．
+支配木の葉頂点においては，$\mathsf{Child}(v)=\varnothing$であり，
+$DF_{local}(v_4)=DF(v_4)=\varnothing$,$DF_{local}(v_5)=DF(v_5)=\{v_7\}$,
+$DF_{local}(v_6)=DF(v_7)=\{v_7\}$, $DF_{local}(v_7)=DF(v_2)=\{v_2\}$.
+
+$DF(v_3)=DF_{local}(v_3)\cup DF_{up}(v_5)\cup DF_{up}(v_6)\cup DF_{up}(v_7)$.
+
+$DF_{up}(v_5)=DF_{up}(v_6)=\{u\in DF(v_5)|u\not\ll v_3)\}=\varnothing$,
+$DF_{up}(v_7)=\{u\in DF(v_7)|u\not\ll v_3\}=\{v_2\}$
+$DF_{local}(v_3)=\varnothing$ であり，$DF(v_3)=DF_{up}(v_5)\cup DF_{up}(v_6)\cup DF_{up}(v_7)=\{v_2\}$.
+
+$DF_{local}(v_2)=\varnothing$, $DF(v_2)=DF_{up}(v3)\cup DF_{up}(v4)=\{v_2\}$
+$DF_{up}(v_2)=\{u\in DF(V_2)|u\not\ll v_1\}=\varnothing$
+
+$DF_{local}(v_1)=\varnothing$より$DF(v_1)=DF_{up}(v_2)=\varnothing$となる．
+\begin{center}
+\begin{tabular}{|c|c|c|c|}\hline
+    $v$ & $DF_{local}$ & $DF_{up}$ & $DF$\\\hline
+    $v_1$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\\hline
+    $v_2$ & $\varnothing$ & $\varnothing$ & $\{v_2\}$ \\\hline
+    $v_3$ & $\varnothing$ & $\varnothing$ & $\{v_2\}$ \\\hline
+    $v_4$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\\hline
+    $v_5$ & $\{v_7\}$ & $\varnothing$ & $\{v_7\}$ \\\hline
+    $v_6$ & $\{v_7\}$ & $\varnothing$ & $\{v_7\}$ \\\hline
+    $v_7$ & $\{v_2\}$ & $\{v_2\}$ & $\{v_2\}$ \\\hline
+\end{tabular}
+\end{center}
+\end{Exmp}
+
+変数\verb|x|の$\varphi$関数は頂点$v$に挿入される条件は定義合流条件による．
+変数の定義を含む頂点の集合を$S$とすると，定義\ref{def:definitionConfluence}は
+次のようになる．
+
+\begin{tcolorbox}[title={定義合流条件(S)}]
+$u_0,w_0\in S$に対して，長さ１以上で途中で交わらずに$v$で合流する路$p$:$u_0\rightarrow\cdots\rightarrow u_k=v$,
+および$q$:$w_0\rightarrow\cdots\rightarrow w_\ell=v$が存在する．($\{u_0,\cdots,u_k\}\cap\{w_0,\cdots,w_\ell\}=\varnothing$)
+\end{tcolorbox}
+
+$S$に対してこの条件を満たす合流頂点$v$の集合を$J(S)$とする．
+
+変数\verb|x|の定義をもつ頂点集合を$S^{\texttt{x}}_0$とする．$J(S^{\texttt{x}}_0)$は，$\texttt{x}$に対する$\varphi$関数を
+最初に挿入する頂点である．$J(S^{\texttt{x}}_0)=S^{\texttt{x}}_1$では$\varphi$関数の挿入は$\texttt{x}$の定義を生むので，
+$J(S^{\texttt{x}}_0\cup S^{\texttt{x}}_1)$が\verb|x|の定義を含む頂点の集合となる．
+
+$S^x_{i+1}=J(S^x_0\cup S^x_i)$とすると$S^x_0,S^x_1,S^x_2,\cdots $により変数$x$の$\varphi$関数を挿入する頂点を数え上げることができる．
+$S^x_{i}\subseteq S^x_{i+1}$であり，フローグラフの頂点は有限個であることから，$i$の増加によって変化しなくなるときの集合を$J^+(S^x_0)$とする．
+$J^+(S^x_0)$は$DF$によって求めることができる．
+
+\begin{Thm}
+    頂点の集合$S_0$に対して
+$DF(S_0)=\bigcup_{v\in S_0}DF(v)$とする．$F_i$の系列を以下のように定義する．
+\begin{eqnarray}
+F_0 & = & \varnothing\\
+F_{i+1} & = & DF(S_0\cup F_i)
+\end{eqnarray}
+$DF(S_0\cup F_i)=DF(S_0)\cup DF(F_i)$であることから$F_i$の系列は単調に増加する．この系列が変化しなくなるまで
+$i$を増加させて得られる頂点集合を$DF^+(S_0)$とする．
+
+このとき$DF^+(S_0)=J^+(S_0)$である．
+\end{Thm}
+
+この定理は本章の最後に示す．
+
 \subsection{SSA形式への変換}
 
 \subsection{SSA上での最適化}
@@ -960,5 +1025,7 @@ $\mathsf{idom}$が支配木を構成することに注目すれば，
 \subsection{逆変換}
 
 \subsection*{[付録] 補題\ref{lem:DFcomp}の証明}
+
+\subsection*{[付録] 定理\ref{thm:DFlimit}の証明}
 
 \end{document}
