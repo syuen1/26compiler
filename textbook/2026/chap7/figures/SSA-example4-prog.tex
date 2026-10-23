@@ -1,0 +1,16 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+    i=1
+    j=1
+    k=1
+    if p goto L1
+L3: if q goto L2
+    i=i+1
+    goto L3
+L1: j=i+k
+L2: k=i+j
+\end{Verbatim}
+\end{document}

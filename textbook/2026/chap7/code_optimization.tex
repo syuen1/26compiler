@@ -1003,7 +1003,7 @@ $S^x_{i+1}=J(S^x_0\cup S^x_i)$とすると$S^x_0,S^x_1,S^x_2,\cdots $により�
 $S^x_{i}\subseteq S^x_{i+1}$であり，フローグラフの頂点は有限個であることから，$i$の増加によって変化しなくなるときの集合を$J^+(S^x_0)$とする．
 $J^+(S^x_0)$は$DF$によって求めることができる．
 
-\begin{Thm}
+\begin{Thm}\label{thm:DFlimit}
     頂点の集合$S_0$に対して
 $DF(S_0)=\bigcup_{v\in S_0}DF(v)$とする．$F_i$の系列を以下のように定義する．
 \begin{eqnarray*}
@@ -1017,6 +1017,43 @@ $i$を増加させて得られる頂点集合を$DF^+(S_0)$とする．
 \end{Thm}
 
 この定理は本章の最後に示す．
+
+\begin{Exmp}\ \\
+\begin{tabularx}{\linewidth}{m{.2\linewidth}m{.5\linewidth}m{.2\linewidth}}
+\includegraphics{figures/SSA-example4-prog-crop.pdf}
+&
+\includegraphics[width=\linewidth]{figures/SSA-example4-CFG-crop.pdf}
+&
+\begin{center}
+\begin{tabular}{|l|l|}\hline
+$v$ & $DF(v)$\\\hline\hline
+$v_0$ & $\varnothing$\\\hline
+$v_1$ & $\{v_1,v_4\}$\\\hline
+$v_2$ & $\{v_1\}$\\\hline
+$v_3$ & $\{v_4\}$\\\hline
+$v_4$ & $\varnothing$\\\hline
+\end{tabular}\end{center}
+\end{tabularx}
+
+
+
+\[
+\begin{array}{|l||l|l|l|}\hline
+S_0 & S^{\texttt{i}}_0=\{v_0,v_2\} & S^{\texttt{j}}_0=\{v_0,v_3\} & S^{\texttt{k}}_0=\{v_0,v_4\}\\
+ & DF(S^\texttt{i}_0)=\{v_1\} & DF(S^\texttt{j}_0)=\{v4\} & DF(S^\texttt{k}_0)=\varnothing\\\hline
+S_1 & DF(S^\texttt{i}_0\cup\{v_1\})=\{v_1,v_4\} & DF(S^\texttt{j}_0\cup\{v_4\})=\{v4\} & DF(S^\texttt{k}_0)=\varnothing\\
+  & DF(S_0\cup\{v_1,v_4\})=\{v_1,v_4\} & & \\\hline
+  & DF^+(S^\texttt{i}_0)=\{v_1,v_4\} & DF^+(S^\texttt{j}_0)=\{v_4\} & DF^+(S^\texttt{k}_0)=\varnothing\\\hline
+\end{array}
+\]
+
+したがって，$v_1,v_4$の先頭に$\texttt{i}$の$\varphi$関数，$v_4$の先頭に$\texttt{j}$の$\varphi$関数を挿入すればよい．
+
+\begin{center}
+\includegraphics[width=.5\linewidth]{figures/SSA-example4-phi-crop.pdf}
+\end{center}
+
+\end{Exmp}
 
 \subsection{SSA形式への変換}
 
