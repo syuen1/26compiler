@@ -34,7 +34,7 @@
 先頭にジャンプしているブロック内の値が引き継がれる．
 
 基本ブロックを頂点として，制御のフローを有向グラフで表した構造を{\bf フローグラフ（あるいは，
-コントロールフローグラフ，CFG）}と呼び．$(V,E,v_{init})$で表す．ここで，$V$は頂点の集合で，
+    コントロールフローグラフ，CFG）}と呼び．$(V,E,v_{init})$で表す．ここで，$V$は頂点の集合で，
 各頂点$v$には基本ブロック$B(v)$が割り当てられている．
 $(v_1,v_2)\in E$であるとき，$B(v_1)$の実行後，直ちに$B(v_2)$が実行されることが可能である
 ことを表し，$v_1\rightarrow v_2$と書くことにする．$v_{init}\in V$は，フローグラフの実行が
@@ -416,9 +416,9 @@ $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれ�
         \begin{minipage}{.3\linewidth}
             \begin{Verbatim}
                 for(i=1;i<n;i++) {
-                a[i+1]=a[i]+i;
-                b[i]=a[i]+i;
-                }
+                        a[i+1]=a[i]+i;
+                        b[i]=a[i]+i;
+                    }
             \end{Verbatim}
         \end{minipage}
     \end{tabular}
@@ -431,9 +431,9 @@ $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれ�
         \begin{minipage}{.3\linewidth}
             \begin{Verbatim}
                 for(i=1;i<n;i++) {
-                a[i+1]=a[i]+i;
-                b[i]=a[i]+i;
-                }
+                        a[i+1]=a[i]+i;
+                        b[i]=a[i]+i;
+                    }
             \end{Verbatim}
         \end{minipage}
          & $\Rightarrow$ &
@@ -455,19 +455,19 @@ $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれ�
         \begin{minipage}{.3\linewidth}
             \begin{Verbatim}
                 for(i=1;i<n;i++) {
-                a[i+1]=a[i]+i;
-                b[i]=a[i]+b[i-1];
-                }
+                        a[i+1]=a[i]+i;
+                        b[i]=a[i]+b[i-1];
+                    }
             \end{Verbatim}
         \end{minipage}
          & $\Rightarrow$ &
         \begin{minipage}{.3\linewidth}
             \begin{Verbatim}
                 for(i=1;i<n;i++) {
-                a[i]=a[i-1]+i;
-                b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
-                b[i+1]=a[i+1]+b[i];
-                }
+                        a[i]=a[i-1]+i;
+                        b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
+                        b[i+1]=a[i+1]+b[i];
+                    }
             \end{Verbatim}
         \end{minipage}
     \end{tabular}
@@ -480,10 +480,10 @@ $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれ�
         \begin{minipage}{.3\linewidth}
             \begin{Verbatim}
                 for(i=1;i<1000;i++) {
-                a[i]=a[i-1]+1; // Ai
-                b[i]=a[i]+b[i-1]; // Bi
-                c[i]=b[i]+2; // Ci
-                }
+                        a[i]=a[i-1]+1; // Ai
+                        b[i]=a[i]+b[i-1]; // Bi
+                        c[i]=b[i]+2; // Ci
+                    }
             \end{Verbatim}
         \end{minipage}
          & $\Rightarrow$ &
@@ -775,9 +775,9 @@ C言語をSSAに変換する例を示す．
 \begin{figure}[H]
     \begin{center}
         \begin{tabularx}{\textwidth}{m{.6\textwidth}m{.3\textwidth}}
-        \includegraphics{figures/SSA-example2-crop.pdf}
-        &
-        \includegraphics{figures/SSA-example2-CFG-crop.pdf}
+            \includegraphics{figures/SSA-example2-crop.pdf}
+             &
+            \includegraphics{figures/SSA-example2-CFG-crop.pdf}
         \end{tabularx}
     \end{center}
     \caption{ループを含むプログラムのSSAへの変換とフローグラフ}\label{fig:SSAwithLoop}
@@ -794,15 +794,15 @@ SSA形式のプログラムに変換するためには，プログラムから�
 ここで，コントロールグラフは，有向グラフ$(V,E,v_{init})$として与えられているとする．
 
 \begin{Def}[定義合流条件]\label{def:definitionConfluence}
-変数$x$に対する$\varphi$関数が頂点$v$に挿入されるための必要十分条件は，以下に示す条件(1)$\sim$(4)を満たす
-コントロールグラフ上の路$p:v_0\rightarrow v_1\rightarrow\cdots\rightarrow v_k$,
-$q:u_0\rightarrow u_1\rightarrow\cdots\rightarrow u_\ell$が存在することである．
-\begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-    \item 路の長さが1以上である．($k>0$,$\ell>0$);
-    \item $v_1$と$u_1$の両方に$x$の定義が存在する．;
-    \item 路の終点$v$が一致している．($v_k=v_\ell=v$);
-    \item 路の途中で交わることがない．($\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,v_{\ell-1}\}=\varnothing$)
-\end{list}
+    変数$x$に対する$\varphi$関数が頂点$v$に挿入されるための必要十分条件は，以下に示す条件(1)$\sim$(4)を満たす
+    コントロールグラフ上の路$p:v_0\rightarrow v_1\rightarrow\cdots\rightarrow v_k$,
+    $q:u_0\rightarrow u_1\rightarrow\cdots\rightarrow u_\ell$が存在することである．
+    \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
+        \item 路の長さが1以上である．($k>0$,$\ell>0$);
+        \item $v_1$と$u_1$の両方に$x$の定義が存在する．;
+        \item 路の終点$v$が一致している．($v_k=v_\ell=v$);
+        \item 路の途中で交わることがない．($\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,v_{\ell-1}\}=\varnothing$)
+    \end{list}
 \end{Def}
 
 頂点に$\varphi$関数が挿入されて，$x=\varphi(x,\cdots,x)$が頂点$v$に挿入されると，新たなコントロールフローグラフが得られるため，
@@ -814,41 +814,41 @@ $v_0=B_1$, $u_0=B_2$, $v=B_2$とすると$B_1\rightarrow B_2$と$B_2\rightarrow 
 コントロールフローグラフの路を網羅的に検査すればよい．
 
 \begin{tcolorbox}[title={$\varphi$関数の挿入}]
-変数\verb|x|に対して定義\ref{def:definitionConfluence}の条件を満たす$v_0$, $u_0$, $v$がフローグラフに存在し，頂点$v$の基本ブロックに
-$\varphi$関数が含まれていないならば，$v$に\verb|x=|$\varphi$\verb|(x,...,x)|を挿入する．\\
-定義合流条件を満たす$v_0$, $u_0$, $v$ がなくなるまで，上記を繰り返す．
+    変数\verb|x|に対して定義\ref{def:definitionConfluence}の条件を満たす$v_0$, $u_0$, $v$がフローグラフに存在し，頂点$v$の基本ブロックに
+    $\varphi$関数が含まれていないならば，$v$に\verb|x=|$\varphi$\verb|(x,...,x)|を挿入する．\\
+    定義合流条件を満たす$v_0$, $u_0$, $v$ がなくなるまで，上記を繰り返す．
 \end{tcolorbox}
 
 \begin{figure}
-\centering
-\begin{tabularx}{\linewidth}{m{.25\linewidth}cm{.25\linewidth}cm{.25\linewidth}}
-    \includegraphics[width=\linewidth]{figures/phi-insertion-example-crop.pdf}
-    & $\Rightarrow$ &
-    \includegraphics[width=\linewidth]{figures/phi-insertion-example-1-crop.pdf}
-    & $\Rightarrow$ &
-    \includegraphics[width=\linewidth]{figures/phi-insersion-example-2-crop.pdf}\\[3.5cm]
-    {\bf 合流定義条件:} && {\bf 合流定義条件:} && {\bf 合流定義条件:}\\
-    \verb|t|:$v_0=B_1$,$u_0=v=B2$ & & \verb|u|:$v_0=B_1$,$u_0=v=B2$ & & \\
-    \verb|u|:$v_0=B_1$,$u_0=v=B2$ & & & &
-\end{tabularx}
-\caption{$\varphi$関数の挿入}\label{fig:phiFuncInsert}
+    \centering
+    \begin{tabularx}{\linewidth}{m{.25\linewidth}cm{.25\linewidth}cm{.25\linewidth}}
+        \includegraphics[width=\linewidth]{figures/phi-insertion-example-crop.pdf}
+                                      & $\Rightarrow$ &
+        \includegraphics[width=\linewidth]{figures/phi-insertion-example-1-crop.pdf}
+                                      & $\Rightarrow$ &
+        \includegraphics[width=\linewidth]{figures/phi-insersion-example-2-crop.pdf}                     \\[3.5cm]
+        {\bf 合流定義条件:}                 &               & {\bf 合流定義条件:}                 &  & {\bf 合流定義条件:} \\
+        \verb|t|:$v_0=B_1$,$u_0=v=B2$ &               & \verb|u|:$v_0=B_1$,$u_0=v=B2$ &  &               \\
+        \verb|u|:$v_0=B_1$,$u_0=v=B2$ &               &                               &  &
+    \end{tabularx}
+    \caption{$\varphi$関数の挿入}\label{fig:phiFuncInsert}
 \end{figure}
 
 フローグラフにおいて，条件の適用をチェックして$\varphi$関数を挿入する方法をそのまま実装しようとすると，グラフの頂点の組み合わせ$(v_0,u_0,v)$を尽くして，頂点間の到達可能性と合流可能性を毎回チェックする必要があり，効率的とは言えない．コンパイラへの実装においては，有向グラフの支配関係を用いたより効率のよい挿入アルゴリズムが用いられる．
 
 \begin{Def}
-フローグラフを$(V,E,v_{init})$とする．
-頂点$v,u$に対して，$v_{init}$から$u$へのすべての路に
-おいて$v$が出現するとき，$v$は$u$の{\bf 支配頂点(dominator)}であると呼び，$u\domll v$と書く．
-$u\not= v$かつ$u\domll v$であるとき，$u\ll v$と書く．
-$u$の支配頂点の集合$\domv{u}=\{v\;|\;u\domll v\}$で定義する．
+    フローグラフを$(V,E,v_{init})$とする．
+    頂点$v,u$に対して，$v_{init}$から$u$へのすべての路に
+    おいて$v$が出現するとき，$v$は$u$の{\bf 支配頂点(dominator)}であると呼び，$u\domll v$と書く．
+    $u\not= v$かつ$u\domll v$であるとき，$u\ll v$と書く．
+    $u$の支配頂点の集合$\domv{u}=\{v\;|\;u\domll v\}$で定義する．
 \end{Def}
 
 どの頂点$v$についても$v_{init}\in\domv{v}$かつ$v\in\domv{v}$である．$\domll$は半順序である．
 \begin{itemize}
-    \item (反射律) $v\domll v$ 
-    \item (反対称律) $v\domll u$かつ$u\domll v$ならば$u=v$ 
-    \item (推移律) $v\domll u$かつ$u\domll w$ならば$v\domll w$ 
+    \item (反射律) $v\domll v$
+    \item (反対称律) $v\domll u$かつ$u\domll v$ならば$u=v$
+    \item (推移律) $v\domll u$かつ$u\domll w$ならば$v\domll w$
 \end{itemize}
 
 $u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で最小の頂点が一つ存在する．
@@ -869,21 +869,21 @@ $\idomv{u}$と書くことにする．このとき，$\idomv{v}\rightarrow\cdots
     $v_1\rightarrow v_2\rightarrow v_3\rightarrow v_5\rightarrow v_7$,
     $v_1\rightarrow v_2\rightarrow v_3\rightarrow v_6\rightarrow v_6$ の２つの路があるので，
     $\idomv{v_7}=v_3$となる．
-\begin{figure}[t]
-    \begin{center}
-    \begin{tabularx}{.85\linewidth}{m{.2\linewidth}m{.45\linewidth}m{.2\linewidth}}
-        \includegraphics{figures/SSA-example3-prog-crop.pdf}
-        &
-        \includegraphics{figures/SSA-example3-CFG-crop.pdf}
-        &
-        \includegraphics{figures/SSA-example3-DTree-crop.pdf}\\
-        \multicolumn{1}{c}{(a) プログラム} & 
-        \multicolumn{1}{c}{(b) フローグラフ} & 
-        \multicolumn{1}{c}{(c) 支配木}
-    \end{tabularx}
-    \end{center}
-    \caption{支配木の例}\label{fig:DTexample}
-\end{figure}
+    \begin{figure}[t]
+        \begin{center}
+            \begin{tabularx}{.85\linewidth}{m{.2\linewidth}m{.45\linewidth}m{.2\linewidth}}
+                \includegraphics{figures/SSA-example3-prog-crop.pdf}
+                                               &
+                \includegraphics{figures/SSA-example3-CFG-crop.pdf}
+                                               &
+                \includegraphics{figures/SSA-example3-DTree-crop.pdf} \\
+                \multicolumn{1}{c}{(a) プログラム}  &
+                \multicolumn{1}{c}{(b) フローグラフ} &
+                \multicolumn{1}{c}{(c) 支配木}
+            \end{tabularx}
+        \end{center}
+        \caption{支配木の例}\label{fig:DTexample}
+    \end{figure}
 \end{Exmp}
 
 % SSA形式においては以下の性質が成り立っている．
@@ -895,10 +895,10 @@ $\idomv{u}$と書くことにする．このとき，$\idomv{v}\rightarrow\cdots
 % \end{enumerate}
 
 頂点$v,u$に対して，$u\not=v$かつ$u\domll v$であるとき，$v$は$u$を{\bf 真に支配する}といい，$u\ll v$と書くことにする．
-\begin{Def}
-フローグラフ$(V,E,v_{init})$が与えられたとき，$v\in V$の{\bf 支配辺境(dominance frontier)}$DF(v)$を
-以下のように定義する．
-\[DF(v)=\{u\in V\;|\;\mbox{適当な$w$が存在して} w\domll v\mbox{ かつ }u\not\ll v\mbox{ かつ }w\rightarrow u\}\]
+\begin{Def}\label{def:DominanceFrontier}
+    フローグラフ$(V,E,v_{init})$が与えられたとき，$v\in V$の{\bf 支配辺境(dominance frontier)}$DF(v)$を
+    以下のように定義する．
+    \[DF(v)=\{u\in V\;|\;\mbox{適当な$w$が存在して} w\domll v\mbox{ かつ }u\not\ll v\mbox{ かつ }w\rightarrow u\}\]
 \end{Def}
 
 支配辺境$DF(v)$は，直前の頂点までは$v$に支配されているが，$v$の支配が及ばない頂点の集合である．$v$において変数\verb|x|の
@@ -907,13 +907,13 @@ $\varphi$関数は新たな定義を生むため，新たな$\varphi$関数の�
 対して１回だけ$\varphi$関数の挿入をチェックすればよいことが示される．
 
 \begin{Lem}\label{lem:DFcomp}
-\begin{itemize}
-\item $DF_{local}(v)=\{u\;|\;v\rightarrow u,\idomv{u}\not= v\}$
-\item $DF_{up}(v)=\{u\in DF(v)\;|\;u\not\ll\idomv{v}\}$
-\end{itemize}
-とするとき，
-\[ DF(v)=DF_{local}(v)\cup\bigcup_{w\in\mathsf{Child}(v)}DF_{up}(w) \]
-ここで，$\mathsf{Child}(v)=\{w\;|\;\idomv{w}=v\}$
+    \begin{itemize}
+        \item $DF_{local}(v)=\{u\;|\;v\rightarrow u,\idomv{u}\not= v\}$
+        \item $DF_{up}(v)=\{u\in DF(v)\;|\;u\not\ll\idomv{v}\}$
+    \end{itemize}
+    とするとき，
+    \[ DF(v)=DF_{local}(v)\cup\bigcup_{w\in\mathsf{Child}(v)}DF_{up}(w) \]
+    ここで，$\mathsf{Child}(v)=\{w\;|\;\idomv{w}=v\}$
 \end{Lem}
 
 この補題の証明は本章の最後に付録として示す．補題\ref{lem:DFcomp}に沿って
@@ -928,60 +928,60 @@ $\mathsf{idom}$が支配木を構成することに注目すれば，
 \begin{algorithm}[t]
     \centering
     \begin{minipage}{.7\textwidth}
-\begin{algorithmic}
-    \caption{支配辺境の計算}\label{alg:dominanceFrontier}
-    \Procedure{computeDF}{$n$} 
-    \State $S \gets \{\}$
-    \ForAll{$y \in \mathsf{succ}[n]$}   \Comment $DF_{local}$の計算
-        \If{$\idomv{y}\not=n$}
-          \State $S \gets S\cup\{y\}$
-        \EndIf
-    \EndFor
-    \ForAll{$c \in \mathsf{Child}(n)$}  \Comment $DF_{up}$の計算
-        \State computeDF(c) \Comment 支配木の子頂点から計算する
-        \ForAll{$w \in DF[c]$}
-            \If{$w\notin\domv{n}$ or $n=w$}
-                \State $S\gets S\cup\{w\}$
+        \begin{algorithmic}
+            \caption{支配辺境の計算}\label{alg:dominanceFrontier}
+            \Procedure{computeDF}{$n$}
+            \State $S \gets \{\}$
+            \ForAll{$y \in \mathsf{succ}[n]$}   \Comment $DF_{local}$の計算
+            \If{$\idomv{y}\not=n$}
+            \State $S \gets S\cup\{y\}$
             \EndIf
-        \EndFor
-    \EndFor
-    \State $DF[n]\gets S$
-    \EndProcedure
-\end{algorithmic}
-\end{minipage}
+            \EndFor
+            \ForAll{$c \in \mathsf{Child}(n)$}  \Comment $DF_{up}$の計算
+            \State computeDF(c) \Comment 支配木の子頂点から計算する
+            \ForAll{$w \in DF[c]$}
+            \If{$w\notin\domv{n}$ or $n=w$}
+            \State $S\gets S\cup\{w\}$
+            \EndIf
+            \EndFor
+            \EndFor
+            \State $DF[n]\gets S$
+            \EndProcedure
+        \end{algorithmic}
+    \end{minipage}
 \end{algorithm}
 
 ここで，$\mathsf{succ}[n]=\{v\;|\;n\rightarrow v\}$である．
 
 \begin{Exmp}
-図\ref{fig:DTexample}のフローグラフに対して，各頂点の支配辺境を次のように求められる．
-まず支配木の葉頂点として$\{v_5,v_6,v_7\}$の$DF_{local}$を計算する．
-支配木の葉頂点においては，$\mathsf{Child}(v)=\varnothing$であり，
-$DF_{local}(v_4)=DF(v_4)=\varnothing$,$DF_{local}(v_5)=DF(v_5)=\{v_7\}$,
-$DF_{local}(v_6)=DF(v_7)=\{v_7\}$, $DF_{local}(v_7)=DF(v_2)=\{v_2\}$.
+    図\ref{fig:DTexample}のフローグラフに対して，各頂点の支配辺境を次のように求められる．
+    まず支配木の葉頂点として$\{v_5,v_6,v_7\}$の$DF_{local}$を計算する．
+    支配木の葉頂点においては，$\mathsf{Child}(v)=\varnothing$であり，
+    $DF_{local}(v_4)=DF(v_4)=\varnothing$,$DF_{local}(v_5)=DF(v_5)=\{v_7\}$,
+    $DF_{local}(v_6)=DF(v_7)=\{v_7\}$, $DF_{local}(v_7)=DF(v_2)=\{v_2\}$.
 
-$DF(v_3)=DF_{local}(v_3)\cup DF_{up}(v_5)\cup DF_{up}(v_6)\cup DF_{up}(v_7)$.
+    $DF(v_3)=DF_{local}(v_3)\cup DF_{up}(v_5)\cup DF_{up}(v_6)\cup DF_{up}(v_7)$.
 
-$DF_{up}(v_5)=DF_{up}(v_6)=\{u\in DF(v_5)|u\not\ll v_3)\}=\varnothing$,
-$DF_{up}(v_7)=\{u\in DF(v_7)|u\not\ll v_3\}=\{v_2\}$
-$DF_{local}(v_3)=\varnothing$ であり，$DF(v_3)=DF_{up}(v_5)\cup DF_{up}(v_6)\cup DF_{up}(v_7)=\{v_2\}$.
+    $DF_{up}(v_5)=DF_{up}(v_6)=\{u\in DF(v_5)|u\not\ll v_3)\}=\varnothing$,
+    $DF_{up}(v_7)=\{u\in DF(v_7)|u\not\ll v_3\}=\{v_2\}$
+    $DF_{local}(v_3)=\varnothing$ であり，$DF(v_3)=DF_{up}(v_5)\cup DF_{up}(v_6)\cup DF_{up}(v_7)=\{v_2\}$.
 
-$DF_{local}(v_2)=\varnothing$, $DF(v_2)=DF_{up}(v3)\cup DF_{up}(v4)=\{v_2\}$
-$DF_{up}(v_2)=\{u\in DF(V_2)|u\not\ll v_1\}=\varnothing$
+    $DF_{local}(v_2)=\varnothing$, $DF(v_2)=DF_{up}(v3)\cup DF_{up}(v4)=\{v_2\}$
+    $DF_{up}(v_2)=\{u\in DF(V_2)|u\not\ll v_1\}=\varnothing$
 
-$DF_{local}(v_1)=\varnothing$より$DF(v_1)=DF_{up}(v_2)=\varnothing$となる．
-\begin{center}
-\begin{tabular}{|c|c|c|c|}\hline
-    $v$ & $DF_{local}$ & $DF_{up}$ & $DF$\\\hline
-    $v_1$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\\hline
-    $v_2$ & $\varnothing$ & $\varnothing$ & $\{v_2\}$ \\\hline
-    $v_3$ & $\varnothing$ & $\varnothing$ & $\{v_2\}$ \\\hline
-    $v_4$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\\hline
-    $v_5$ & $\{v_7\}$ & $\varnothing$ & $\{v_7\}$ \\\hline
-    $v_6$ & $\{v_7\}$ & $\varnothing$ & $\{v_7\}$ \\\hline
-    $v_7$ & $\{v_2\}$ & $\{v_2\}$ & $\{v_2\}$ \\\hline
-\end{tabular}
-\end{center}
+    $DF_{local}(v_1)=\varnothing$より$DF(v_1)=DF_{up}(v_2)=\varnothing$となる．
+    \begin{center}
+        \begin{tabular}{|c|c|c|c|}\hline
+            $v$   & $DF_{local}$  & $DF_{up}$     & $DF$          \\\hline
+            $v_1$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\\hline
+            $v_2$ & $\varnothing$ & $\varnothing$ & $\{v_2\}$     \\\hline
+            $v_3$ & $\varnothing$ & $\varnothing$ & $\{v_2\}$     \\\hline
+            $v_4$ & $\varnothing$ & $\varnothing$ & $\varnothing$ \\\hline
+            $v_5$ & $\{v_7\}$     & $\varnothing$ & $\{v_7\}$     \\\hline
+            $v_6$ & $\{v_7\}$     & $\varnothing$ & $\{v_7\}$     \\\hline
+            $v_7$ & $\{v_2\}$     & $\{v_2\}$     & $\{v_2\}$     \\\hline
+        \end{tabular}
+    \end{center}
 \end{Exmp}
 
 変数\verb|x|の$\varphi$関数は頂点$v$に挿入される条件は定義合流条件による．
@@ -989,8 +989,8 @@ $DF_{local}(v_1)=\varnothing$より$DF(v_1)=DF_{up}(v_2)=\varnothing$となる�
 次のようになる．
 
 \begin{tcolorbox}[title={定義合流条件(S)}]
-$u_0,w_0\in S$に対して，長さ１以上で途中で交わらずに$v$で合流する路$p$:$u_0\rightarrow\cdots\rightarrow u_k=v$,
-および$q$:$w_0\rightarrow\cdots\rightarrow w_\ell=v$が存在する．($\{u_0,\cdots,u_k\}\cap\{w_0,\cdots,w_\ell\}=\varnothing$)
+    $u_0,w_0\in S$に対して，長さ１以上で途中で交わらずに$v$で合流する路$p$:$u_0\rightarrow\cdots\rightarrow u_k=v$,
+    および$q$:$w_0\rightarrow\cdots\rightarrow w_\ell=v$が存在する．($\{u_0,\cdots,u_k\}\cap\{w_0,\cdots,w_\ell\}=\varnothing$)
 \end{tcolorbox}
 
 $S$に対してこの条件を満たす合流頂点$v$の集合を$J(S)$とする．
@@ -1005,63 +1005,269 @@ $J^+(S^x_0)$は$DF$によって求めることができる．
 
 \begin{Thm}\label{thm:DFlimit}
     頂点の集合$S_0$に対して
-$DF(S_0)=\bigcup_{v\in S_0}DF(v)$とする．$F_i$の系列を以下のように定義する．
-\begin{eqnarray*}
-F_0 & = & \varnothing\\
-F_{i+1} & = & DF(S_0\cup F_i)
-\end{eqnarray*}
-$DF(S_0\cup F_i)=DF(S_0)\cup DF(F_i)$であることから$F_i$の系列は単調に増加する．この系列が変化しなくなるまで
-$i$を増加させて得られる頂点集合を$DF^+(S_0)$とする．
+    $DF(S_0)=\bigcup_{v\in S_0}DF(v)$とする．$F_i$の系列を以下のように定義する．
+    \begin{eqnarray*}
+        F_0 & = & \varnothing\\
+        F_{i+1} & = & DF(S_0\cup F_i)
+    \end{eqnarray*}
+    $DF(S_0\cup F_i)=DF(S_0)\cup DF(F_i)$であることから$F_i$の系列は単調に増加する．この系列が変化しなくなるまで
+    $i$を増加させて得られる頂点集合を$DF^+(S_0)$とする．
 
-このとき$DF^+(S_0)=J^+(S_0)$である．
+    このとき$DF^+(S_0)=J^+(S_0)$である．
 \end{Thm}
 
 この定理は本章の最後に示す．
 
-\begin{Exmp}\ \\
-\begin{tabularx}{\linewidth}{m{.2\linewidth}m{.5\linewidth}m{.2\linewidth}}
-\includegraphics{figures/SSA-example4-prog-crop.pdf}
-&
-\includegraphics[width=\linewidth]{figures/SSA-example4-CFG-crop.pdf}
-&
-\begin{center}
-\begin{tabular}{|l|l|}\hline
-$v$ & $DF(v)$\\\hline\hline
-$v_0$ & $\varnothing$\\\hline
-$v_1$ & $\{v_1,v_4\}$\\\hline
-$v_2$ & $\{v_1\}$\\\hline
-$v_3$ & $\{v_4\}$\\\hline
-$v_4$ & $\varnothing$\\\hline
-\end{tabular}\end{center}
-\end{tabularx}
+\begin{Exmp}\label{example:phiFunc}
+    以下に$\varphi$関数の挿入の例を示す．
 
+    \vspace*{10pt}
 
+    \begin{tabularx}{\linewidth}{m{.2\linewidth}m{.5\linewidth}m{.2\linewidth}}
+        \includegraphics{figures/SSA-example4-prog-crop.pdf}
+                  &
+        \includegraphics[width=\linewidth]{figures/SSA-example4-CFG-crop.pdf}
+                  &
+        \begin{center}
+            \begin{tabular}{|l|l|}\hline
+                $v$   & $DF(v)$       \\\hline\hline
+                $v_0$ & $\varnothing$ \\\hline
+                $v_1$ & $\{v_1,v_4\}$ \\\hline
+                $v_2$ & $\{v_1\}$     \\\hline
+                $v_3$ & $\{v_4\}$     \\\hline
+                $v_4$ & $\varnothing$ \\\hline
+            \end{tabular}\end{center} \\
+        (a) プログラム & (b) フローグラフ & (c) 支配辺境
+    \end{tabularx}
 
-\[
-\begin{array}{|l||l|l|l|}\hline
-S_0 & S^{\texttt{i}}_0=\{v_0,v_2\} & S^{\texttt{j}}_0=\{v_0,v_3\} & S^{\texttt{k}}_0=\{v_0,v_4\}\\
- & DF(S^\texttt{i}_0)=\{v_1\} & DF(S^\texttt{j}_0)=\{v4\} & DF(S^\texttt{k}_0)=\varnothing\\\hline
-S_1 & DF(S^\texttt{i}_0\cup\{v_1\})=\{v_1,v_4\} & DF(S^\texttt{j}_0\cup\{v_4\})=\{v4\} & DF(S^\texttt{k}_0)=\varnothing\\
-  & DF(S_0\cup\{v_1,v_4\})=\{v_1,v_4\} & & \\\hline
-  & DF^+(S^\texttt{i}_0)=\{v_1,v_4\} & DF^+(S^\texttt{j}_0)=\{v_4\} & DF^+(S^\texttt{k}_0)=\varnothing\\\hline
-\end{array}
-\]
+    \vspace*{10pt}
 
-したがって，$v_1,v_4$の先頭に$\texttt{i}$の$\varphi$関数，$v_4$の先頭に$\texttt{j}$の$\varphi$関数を挿入すればよい．
+    各変数の合流条件は以下のように計算される．
 
-\begin{center}
-\includegraphics[width=.5\linewidth]{figures/SSA-example4-phi-crop.pdf}
-\end{center}
+    \[
+        \begin{array}{|l||l|l|l|}\hline
+            S_0 & S^{\texttt{i}}_0=\{v_0,v_2\}              & S^{\texttt{j}}_0=\{v_0,v_3\}         & S^{\texttt{k}}_0=\{v_0,v_4\}     \\
+                & DF(S^\texttt{i}_0)=\{v_1\}                & DF(S^\texttt{j}_0)=\{v4\}            & DF(S^\texttt{k}_0)=\varnothing   \\\hline
+            S_1 & DF(S^\texttt{i}_0\cup\{v_1\})=\{v_1,v_4\} & DF(S^\texttt{j}_0\cup\{v_4\})=\{v4\} & DF(S^\texttt{k}_0)=\varnothing   \\
+                & DF(S_0\cup\{v_1,v_4\})=\{v_1,v_4\}        &                                      &                                  \\\hline
+                & DF^+(S^\texttt{i}_0)=\{v_1,v_4\}          & DF^+(S^\texttt{j}_0)=\{v_4\}         & DF^+(S^\texttt{k}_0)=\varnothing \\\hline
+        \end{array}
+    \]
+
+    したがって，$v_1,v_4$の先頭に$\texttt{i}$の$\varphi$関数，$v_4$の先頭に$\texttt{j}$の$\varphi$関数を挿入する．
+
+    \begin{center}
+        \begin{tabular}{cc}
+            \includegraphics{figures/SSA-example4-phi-crop.pdf}
+                           &
+            \includegraphics{figures/SSA-example4-DTree-crop.pdf} \\
+            $\varphi$関数の挿入 & 支配木
+        \end{tabular}
+    \end{center}
 
 \end{Exmp}
 
 \subsection{SSA形式への変換}
 
+$\varphi$関数を挿入した後，各変数に添字を付加して各３番地命令をSSA形式に変換する．フローグラフを支配木によってトラバースすることによってフローに従って字を付加する．
+
+各変数$x$について，まず左辺で定義する変数に添字をつけ，新たに定義される
+まで右辺で参照する変数にその添字をつける．アルゴリズムをアルゴリズム\ref{alg:RenameForSSA}に示す．
+
+例\ref{example:phiFunc}に対してアルゴリズムを適用する．
+\begin{trivlist}
+    \item[{\bf 初期化:}] 各変数$\tti$, $\ttj$, $\ttk$に対して，カウンタを$0$にセットして，スタック$\mathsf{Stack}[x]$に$0$をプッシュする．
+    \item[{\bf Step1:}] $\mathsf{Count}[\tti]=\mathsf{Count}[\ttj]=\mathsf{Count}[\ttk]=1$とし，$\textsc{Rename}(v_0)$において，9行目から13行目で，$\tti$, $\ttj$, $\ttk$の左辺に添字$1$をつける．\\
+    $v_0$の後続頂点のうち，$v_1$に対して，16行目から20行目を適用する．$v_0$を$v_1$の１番目の先行頂点とする．$(j=1)$ \\
+    $\tti=1$であるので，
+    $v_1$の$\tti\tteq\varphi(\tti,\tti)$を$\tti\tteq\varphi(\tti_1,\tti)$におきかえる．
+    $v_3$には$\varphi$関数が含まれない．\\
+    $v_0$の支配木の子頂点$v_1$を選んで$\textsc{Rename}(v_1)$を呼び出す．
+    \item[{\bf Step2:}]
+    $v_1$において，$\varphi$関数以外で参照される変数はなく，$\tti$が定義されるので，10行目から13行目のブロックにおいて，$\mathsf{Count}[\tti]$をインクリメントして，
+    $\tti_2\tteq\varphi(\tti_1,\tti)$とする．\\
+    15行目から22行目までの実行で，$v_4$において，
+    $\varphi$関数内の$\tti$と$\ttj$の参照を置換して，
+    $\tti\tteq\varphi(\tti,\tti_1)$,
+    $\ttj\tteq\varphi(\ttj_1,\ttj)$とする．
+    (フローグラフでは$v_4$は$v_1$の1番目の後続頂点である．)\\
+    24行目で，$v_1$の支配木における子頂点は$v_2$なので，$\textsc{Rename}(v_2)$を呼び出す．
+    \item[{\bf Step3:}] $v_3$において，4行目から7行目の適用によって，
+    $\tti\tteq\tti_2\ttpl 1$となる．つぎに，$v_3$では，$\tti$が定義されているので，$\mathsf{Count}[\tti]$を増やして，
+    $\tti_3\tteq\tti_2\ttpl 1$とする．
+    この時点で，$\mathsf{Count}[\tti]=3$,$\mathsf{Stack}[\tti]=[3,2,1,0]$\\
+    $v_2$は支配木の子頂点を持たないので，26行目から30行目のループが実行される．$v_2$で定義された変数は$\tti$なので，ポップし，
+    $\mathsf{Stack}[\tti]=[2,1,0]$とする．
+    \item[{\bf Step2':}] Step2の$\textsc{Rename}(v_2)$が終了したので，
+    その後の26行目から30行目を実行する．
+    $v_2$で$\tti$が$\varphi$関数で定義されたので$\mathsf{Stack}[\tti]$をポップして，$\mathsf{Stack}[\tti]=[1,0]$とする．
+    \item[{\bf }] Step1の23行目で，支配木の次の子頂点$v_3$を選んで$\textsc{Rename}(v_3)$を呼び出す．
+    \item[{\bf Step4:}] 4行目から7行目のループで$\mathsf{Stack}[\tti]=\mathsf{Stack}[\ttj]=[1,0]$であることから，$\ttj\tteq\tti_1\ttpl\ttj_1$に置換する．
+    9行目から14行目のループで，$\ttj$が左辺で定義されているので，
+    $\mathsf{Count}[\ttj]$をインクリメントし，$\mathsf{Stack}[\ttj]=[2,1,0]$としたあと，$\ttj_2\tteq\tti_1\ttpl\ttk_1$とする．
+    15行目から22行目のループにおいて，$v_4$は$v_3$の後続頂点であり，$v_3$は$v_4$にとって2番目の先行頂点であるので，$v_4$の$\varphi$関数の２番目の引数を置き換えて，$\tti\tteq\varphi(\tti_2,\tti_1)$,
+    $\ttj\tteq\varphi(\ttj_1,\ttj_2)$とする．\\
+    $v_3$には支配木の子頂点はなく，$\ttj$を定義したので，$\mathsf{Stack}[\ttj]$をポップして，$[1,0]$とする．
+    この時点で，$\mathsf{Count}[\tti]=3$, $\mathsf{Count}[\ttj]=2$である．
+    \item[{\bf Step1'':}] 23行目で３番めの子頂点として$v_4$を選択して，$\textsc{Rename}(v_4)$を呼び出す．
+    \item[{\bf Step5:}] 2行目から15行目までのループで順に置換する．\\
+    $\tti_4\tteq\varphi(\tti_2,\tti_1)$
+    ここで，$\mathsf{Stack}[\tti]=[4,1,0]$, $\mathsf{Count}[\tti]=4$\\
+    $\ttj_3\tteq\varphi(\ttj_1,\ttj_2)$
+    ここで，$\mathsf{Stack}[\ttj]=[3,1,0]$, $\mathsf{Count}[\ttj]=3$\\
+    最後に$\ttk$が新たに定義されるので，$\ttk_2\tteq\tti_4\ttpl\ttj_3$と置換される．
+\end{trivlist}
+
+図\ref{fig:SSAexample}に適用結果を示す．
+\begin{figure}
+    \centering
+    \includegraphics{figures/SSA-example4-SSA-crop.pdf}
+    \caption{例\ref{example:phiFunc}に対するアルゴリズム2の適用結果}\label{fig:SSAexample}
+\end{figure}
+
+\begin{algorithm}[t]
+    \caption{SSAへの変換}\label{alg:RenameForSSA}
+    \begin{tabularx}{\textwidth}{m{.3\textwidth}m{.5\textwidth}}
+        \begin{minipage}{.4\textwidth}
+            /* 初期化 */
+            \begin{algorithmic}
+                \ForAll{$a\ \in Var$}
+                \State $\mathsf{Count}[a]\leftarrow 0$
+                \State $\mathsf{Stack}[a]\leftarrow \varnothing$
+                \State $\mathsf{Stack}[a]$に$0$をプッシュ
+                \EndFor
+            \end{algorithmic}
+        \end{minipage}
+         &
+        \begin{minipage}{.6\textwidth}
+            \begin{algorithmic}[1]
+                \Procedure{Rename}{$n$}
+                \ForAll{$S$\ in ブロック$n$}
+                \If{$S$が$\varphi$関数でないとき}
+                \ForAll{$x$ in $S$で参照される変数}
+                \State $i\leftarrow top(\mathsf{Stack}[x])$
+                \State $S$の$x$の参照を$x_i$で置き換える
+                \EndFor
+                \EndIf
+                \ForAll{$S$の左辺で定義される変数$a$}
+                \State $\mathsf{Count}[a]\leftarrow\mathsf{Count}[a]+1$
+                \State $i\leftarrow\mathsf{Count}[a]$
+                \State $\mathsf{Stack}[a]$に$i$をpush
+                \State $S$の左辺の$a$を$a_i$で置き換える
+                \EndFor
+                \EndFor
+                \ForAll{$Y$ in ブロック$n$の後続頂点}
+                \State $n$は$Y$の$j$番目の先行頂点
+                \ForAll $Y$に含まれる$\varphi$関数
+                \State $\varphi$関数の$j$番目の引数が$a$のとき\\
+                \hspace*{7em}$i\leftarrow top(\mathsf{Stack}[a])$
+                \State $\varphi$関数の$j$番目の引数の$a$を$a_i$に置換
+                \EndFor
+                \EndFor
+                \ForAll{$X$ in 支配木における$n$の子頂点}
+                \State call \textsc{Rename}($X$)
+                \EndFor
+                \ForAll{ブロック$n$の$S$}
+                \ForAll $a$ in $S$における定義
+                \State $\mathsf{Stack}[a]$をポップ
+                \EndFor
+                \EndFor
+                \EndProcedure
+            \end{algorithmic}
+        \end{minipage}
+    \end{tabularx}
+\end{algorithm}
+
 \subsection{SSA上での最適化}
 
-\subsection{逆変換}
+SSA形式に変換することによって，手続き内において基本ブロックにとらわれない最適化が可能になる．
 
-\subsection*{[付録] 補題\ref{lem:DFcomp}の証明}
+\paragraph{不要コード除去}
+
+SSA形式における不要コード除去は，変数名によってどの定義によって変数が三sh要されているかがわかる．左辺で定義されている変数が右辺で参照されていない（あるいは何等かの副作用を及ぼさない）場合は，その定義を除去しても意味は変わらない．
+
+\paragraph{定数伝播}
+
+SSA形式であれば，同じ変数名であるとき同じ値を持つ．$x_i\leftarrow c$という定数$c$の代入があれば，$x_i$は$c$に置き換えることができる．もし，
+$x_k=\varphi(x_1,\cdots,x_n)$において，$x_1,\cdots,x_n$がすべて
+同じ定数に置き換えられた場合は，$x_k$もその定数に置き換えて伝播させることができる．
+
+同じ手続きの中(intra-procedure)であれば，コピー伝播，ループ変数の畳み込み，共通部分式除去などの方法を基本ブロックを意識せずに適用することができる．手続きにまたがる(inter-procedure)最適化はさらに解析が必要となる．
+
+\paragraph{支配関係の保存}
+
+SSAによる最適化においては，変換前と変換後がそれぞれ支配関係を保存することを要求する\footnote{前後で同じ支配関係である必要はない．}\cite{TigerBook}．図\ref{fig:DominacePreservation}のようなフロー
+グラフを(a)から(b)に変換することを考える．$v_1$と$v_3$,$v_3$と$v_4$の間に$\ttz$が更新されることがないとすると，$v_1$と$v_4$の分岐条件は変わらないので，(b)のようにしても意味は変わらない．$v_5$の$\ttx$は(a)では，$v_3$で定義された値，(b)では，$v_1$で定義された値である．(b)では，$v_1$は$v_5$を支配しない．
+
+このような最適化は$v_1$と$v_4$における$\ttz<0$の評価が変わらないことが保証されれば正しい．これを保証するためには，実行フローが同じであることを証明しなければならず，このような解析は一般には決定可能でない．
+
+SSA形式では，変数の代入による定義が唯一であるという条件の他に，「変数定義が変数使用を支配する」という条件も成り立っている必要がある．SSA形式による最適化手法では，この条件によってフローグラフの構造から可能な最適化を行い，すべての最適化を可能とするものではない．
+
+\begin{figure}[t]
+    \begin{center}
+        \begin{tabular}{ccc}
+            \includegraphics[scale=0.75]{figures/SSA-dominance-break-crop.pdf}
+                    &  &
+            \includegraphics[scale=0.75]{figures/SSA-dominance-break-after-crop.pdf} \\
+            (a)最適化前 &  & (b)最適化後
+        \end{tabular}
+    \end{center}
+    \caption{支配関係を壊す変換}\label{fig:DominancePreservation}
+\end{figure}
+
+\subsection{$\varphi$関数を持たないSSA形式への変換}
+
+$\varphi$関数は実行可能な関数ではないので，コンパイルをすすめるためには，$\varphi$関数を消去した等価なプログラムに変換する必要がある．
+$\varphi$関数は頂点$v$の基本ブロックの先頭に挿入される．$x_3=\varphi(x_1,x_2)$が先頭に挿入されている場合，$x_1$，$x_2$に対応するフローグラフ上の路において$v$の直前の頂点に$x_3=x_1$, $x_3=x_2$を
+挿入すれば，$\varphi$関数を消去しても意味は変わらない．(図\ref{fig:phiElimination}) 各路の$v$への先行頂点$u$が$v$を唯一の
+後続頂点として持つときは，新たに頂点は挿入せず，$u$の最後に
+$x_3=x_1$ないしは$x_3=x_2$を追加する(図\ref{fig:phiElimination})．$u$の最後がgotoである
+場合は，goto文の前に挿入する．唯一の先行頂点を持つ場合には，
+さらにその前に挿入する\footnote{$\varphi$関数の挿入時には唯一の
+    先行頂点を持つようなブロックは存在しない．最適化後には現れる可能性がある．}．
+
+以上の方法で$\varphi$関数を消去するには，$\varphi$関数を含む頂点$v$の先行頂点が$v$を唯一の後続頂点として持つか，$v$が唯一の先行頂点を持つ必要がある．
+
+$\varphi$関数を含むブロックの頂点がこの条件を満たさない場合は，$v$を唯一の後続頂点とする空の頂点を挿入することで，この条件を満たすフローグラフを構成できる．このフローグラフに上記の方法を適用して$\varphi$関数を消去可能である．
+
+\begin{figure}
+    \centering
+    \begin{tabular}{cc}
+        \includegraphics[width=.3\linewidth]{figures/SSA-phiElimination-a-crop.pdf}
+         &
+        \includegraphics[width=.3\linewidth]{figures/SSA-phiElimination-b-crop.pdf}
+    \end{tabular}
+    \caption{SSA形式からの$\varphi$関数の消去}
+\end{figure}
+
+例えば図\ref{fig:SSAexample}のフローグラフでは，$v_1$は$\varphi$関数を含み，$v_1$の先行頂点のうち$v_0$は複数の後続頂点$v_1$, $v_3$を持ち，$v_1$の先行頂点も複数存在する．従って，$v_0$と$v_1$の間に新たな頂点$w_0$を挿入することで条件を満たす．$v_4$についても$v_2$が複数の後続頂点を
+持つので，$v_1$から$v_4$の間に新たな頂点$w_1$を挿入することでこの条件を満たす．(図\ref{fig:nodeInsert})
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/SSA-nodeInsert-crop.pdf}
+    \caption{挿入条件を満たすために空頂点を追加}\label{fig:nodeInsert}
+\end{figure}
+
+\subsection*{[付録] 補題\ref{lem:DFcomp}およびアルゴリズム\ref{alg:dominanceFrontier}の証明}
+
+\begin{repLem}{lem:DFcomp}
+    \[
+        DF(v)=DF_{local}(v)\cup\bigcup_{w\in\mathsf{Child}(v)}DF_{up}(w)
+    \]
+\end{repLem}
+\begin{proof}
+    \begin{trivlist}
+        \item[($\supseteq$)] 定義\ref{def:DominanceFrontier}の定義式において，$w$として$v$をとると，$v\domll v$であるので，$DF_{local}(v)\subseteq DF(v)$である．$v$の子頂点$w$に対しては，$idom(w)=v$である．$v$の支配木の子頂点$w$に対して$DF_{up}(w)=\{u\;|\;\exists w':w'\domll u,u\not\ll w,w'\rightarrow u,u\not\ll\idomv{w}\}$.
+        $DF(v)=\{u\;|\;\exists w':w'\domll v,u\not\ll v,w'\rightarrow u\}$. ここで，$w'\domll w$, $w\domll \idomv{w}$のとき，$w'\domll\idomv{w}$なので，$v=\idomv{w}$ならば$DF_{up}(w)\subseteq DF(v)$.
+        よって右辺の要素はすべて$DF(v)$に含まれるから，$\supseteq$が示される．
+        \item[($\subseteq$)]
+        $x\in DF(v)$となる任意の頂点$x$に対して，$y\rightarrow x$であり$y\domll v$となる$y$が存在する．$y=v$ならば，
+        $x\in DF_{local}(v)$である．$y\not=v$のときは，
+        $y\ll v$であるので，$v$の支配木における子頂点$v'$が
+        存在して，$y\domll v'$かつ$x\not\ll v'$. 定義から$x\in DF_{up}(v')$である．
+    \end{trivlist}
+\end{proof}
 
 \subsection*{[付録] 定理\ref{thm:DFlimit}の証明}
 

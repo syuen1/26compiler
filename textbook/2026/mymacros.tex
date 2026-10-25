@@ -1,10 +1,23 @@
-\usepackage{amsthm}
 \newtheorem{Def}{定義}[chapter]
 \newtheorem{Thm}{定理}[chapter]
 \newtheorem{Prop}{命題}[chapter]
 \newtheorem{Lem}{補題}[chapter]
 \newtheorem{Exmp}{例}[chapter]
 \newtheorem{Alg}{アルゴリズム}[chapter]
+
+\newtheorem*{repeatedtheorem}{定理 \repeatednumber}
+\newtheorem*{repeatedlemma}{補題 \repeatednumber}
+
+\renewcommand{\proofname}{証明}
+
+\newenvironment{repThm}[1]
+{\def\repeatednumber{\ref{#1}}\begin{repeatedtheorem}}
+{\end{repeatedtheorem}}
+
+\newenvironment{repLem}[1]
+{\def\repeatednumber{\ref{#1}}\begin{repeatedlemma}}
+{\end{repeatedlemma}}
+
 \newcommand{\tuple}[1]{\langle{#1}\rangle}
 \newcommand{\Term}[1]{`\mbox{$\mathtt{#1}$}'}
 \newcommand{\NTerm}[1]{\tuple{\mbox{$\mathsf{#1}$}}}
@@ -19,7 +32,7 @@
 \newcommand{\ttmu}{{\tt *}}
 \newcommand{\ttdv}{{\tt /}}
 \newcommand{\ttlp}{{\tt (}}
-            \newcommand{\ttrp}{{\tt )}}
+\newcommand{\ttrp}{{\tt )}}
 \newcommand{\tteq}{{\tt =}}
 \newcommand{\ttlt}{{\tt <}}
 \newcommand{\ttcm}{{\tt ,}}
@@ -41,6 +54,13 @@
 \newcommand{\ttand}{{\tt \&\&}}
 \newcommand{\ttor}{{\tt ||}}
 \newcommand{\ttneg}{{\tt !}}
+
+\newcommand{\tti}{\texttt{i}}
+\newcommand{\ttj}{\texttt{j}}
+\newcommand{\ttk}{\texttt{k}}
+\newcommand{\ttx}{\texttt{x}}
+\newcommand{\tty}{\texttt{y}}
+\newcommand{\ttz}{\texttt{z}}
 
 \newcommand{\rppush}[1]{\mathsf{push}\ \texttt{#1}}
 \newcommand{\rpassign}{{\tt :=}}
