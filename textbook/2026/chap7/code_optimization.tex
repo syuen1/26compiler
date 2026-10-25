@@ -1016,7 +1016,7 @@ $J^+(S^x_0)$は$DF$によって求めることができる．
     このとき$DF^+(S_0)=J^+(S_0)$である．
 \end{Thm}
 
-この定理は本章の最後に示す．
+この定理の証明については，文献\cite{DBLP:journals/toplas/CytronFRWZ91}を参照．
 
 \begin{Exmp}\label{example:phiFunc}
     以下に$\varphi$関数の挿入の例を示す．
@@ -1269,6 +1269,72 @@ $\varphi$関数を含むブロックの頂点がこの条件を満たさない�
     \end{trivlist}
 \end{proof}
 
+\begin{Lem}
+    \[DF_{local}(v)=\{u\;|\;v\rightarrow u,\idomv{u}\not=v\}\]
+\end{Lem}
+
+\begin{proof}
+    (作成中)
+\end{proof}
+
+\begin{Lem}
+    頂点$v$と支配木における$v$の子頂点$w$に対して
+    \[
+        DF_{up}(w)=\{u\in DF(w)\;|\;\idomv{u}\not= v\}
+    \]
+\end{Lem}
+
+\begin{proof}
+    (作成中)
+\end{proof}
+
+\begin{Thm}
+    アルゴリズム\ref{alg:dominanceFrontier}は$DF(v)$を正しく計算する．
+\end{Thm}
+\begin{proof}
+    (作成中)
+\end{proof}
+
 \subsection*{[付録] 定理\ref{thm:DFlimit}の証明}
+
+\begin{Lem}
+    フローグラフにおいて，長さ１以上の路$p$: $v\rightarrow\cdots\rightarrow u$に対して，
+    $p$上に，頂点$w\in\{v\}\cup DF^+(v)$が存在する．
+    $p$上に$v$の支配頂点でない頂点があれば，$DF^+(v)$
+    に属する．
+\end{Lem}
+\begin{proof}
+    (作成中)
+\end{proof}
+
+\begin{Lem}
+    フローグラフにおいて異なる頂点$u_1$, $u_2$を始点として$v$で合流する路$p$:$u_1\rightarrow\cdots\rightarrow v$, $q$:$u_2\rightarrow\cdots\rightarrow v$が存在するとき，$v\in DF^+(u_1)\cup DF^+(u_2)$である．
+\end{Lem}
+\begin{proof}
+    (作成中)
+\end{proof}
+
+\begin{Lem}
+    フローグラフの頂点集合$S$に対して，$J(S)\subseteq\cup_{v\in S}DF^+(v)$
+\end{Lem}
+\begin{proof}
+    (作成中)
+\end{proof}
+
+\begin{Lem}
+    $S$をフローグラフの始点を含む頂点集合とすると，
+    $DF(S)\subseteq J(S)$
+\end{Lem}
+\begin{proof}
+    (作成中)
+\end{proof}
+
+\begin{repThm}{thm:DFlimit}
+    変数$x$に対する代入を含む基本ブロックに対する頂点集合を$S$とする．このとき，$DF^+(S)$は変数$x$の$\varphi$関数を挿入する頂点集合$J^+(S)$である．
+\end{repThm}
+
+\begin{proof}
+    (作成中)
+\end{proof}
 
 \end{document}
