@@ -5,7 +5,7 @@
 % \setcounter{page}{63}
 % \newcounter{coffee}
 % \newcounter{bean}
-%\graphicspath{{figs241108/}}
+\graphicspath{{figures/}}
 \begin{document}
 \chapter{コード最適化}
 
@@ -24,7 +24,7 @@
 
 \begin{figure}[H]
     \centering
-    \includegraphics{figures/threeAddressCode-CFG-crop.pdf}
+    \includegraphics{threeAddressCode-CFG-crop.pdf}
     \caption{3番地コードとそのCFG}\label{flg:flowgraph}
 \end{figure}
 
@@ -753,7 +753,7 @@ C言語をSSAに変換する例を示す．
 
 \begin{figure}[H]
     \begin{center}
-        \includegraphics{figures/SSA-example1-crop.pdf}
+        \includegraphics{SSA-example1-crop.pdf}
     \end{center}
 \end{figure}
 
@@ -775,9 +775,9 @@ C言語をSSAに変換する例を示す．
 \begin{figure}[H]
     \begin{center}
         \begin{tabularx}{\textwidth}{m{.6\textwidth}m{.3\textwidth}}
-            \includegraphics{figures/SSA-example2-crop.pdf}
+            \includegraphics{SSA-example2-crop.pdf}
              &
-            \includegraphics{figures/SSA-example2-CFG-crop.pdf}
+            \includegraphics{SSA-example2-CFG-crop.pdf}
         \end{tabularx}
     \end{center}
     \caption{ループを含むプログラムのSSAへの変換とフローグラフ}\label{fig:SSAwithLoop}
@@ -822,11 +822,11 @@ $v_0=B_1$, $u_0=B_2$, $v=B_2$とすると$B_1\rightarrow B_2$と$B_2\rightarrow 
 \begin{figure}
     \centering
     \begin{tabularx}{\linewidth}{m{.25\linewidth}cm{.25\linewidth}cm{.25\linewidth}}
-        \includegraphics[width=\linewidth]{figures/phi-insertion-example-crop.pdf}
+        \includegraphics[width=\linewidth]{phi-insertion-example-crop.pdf}
                                       & $\Rightarrow$ &
-        \includegraphics[width=\linewidth]{figures/phi-insertion-example-1-crop.pdf}
+        \includegraphics[width=\linewidth]{phi-insertion-example-1-crop.pdf}
                                       & $\Rightarrow$ &
-        \includegraphics[width=\linewidth]{figures/phi-insersion-example-2-crop.pdf}                     \\[3.5cm]
+        \includegraphics[width=\linewidth]{phi-insersion-example-2-crop.pdf}                             \\[3.5cm]
         {\bf 合流定義条件:}                 &               & {\bf 合流定義条件:}                 &  & {\bf 合流定義条件:} \\
         \verb|t|:$v_0=B_1$,$u_0=v=B2$ &               & \verb|u|:$v_0=B_1$,$u_0=v=B2$ &  &               \\
         \verb|u|:$v_0=B_1$,$u_0=v=B2$ &               &                               &  &
@@ -872,11 +872,11 @@ $\idomv{u}$と書くことにする．このとき，$\idomv{v}\rightarrow\cdots
     \begin{figure}[t]
         \begin{center}
             \begin{tabularx}{.85\linewidth}{m{.2\linewidth}m{.45\linewidth}m{.2\linewidth}}
-                \includegraphics{figures/SSA-example3-prog-crop.pdf}
+                \includegraphics{SSA-example3-prog-crop.pdf}
                                                &
-                \includegraphics{figures/SSA-example3-CFG-crop.pdf}
+                \includegraphics{SSA-example3-CFG-crop.pdf}
                                                &
-                \includegraphics{figures/SSA-example3-DTree-crop.pdf} \\
+                \includegraphics{SSA-example3-DTree-crop.pdf} \\
                 \multicolumn{1}{c}{(a) プログラム}  &
                 \multicolumn{1}{c}{(b) フローグラフ} &
                 \multicolumn{1}{c}{(c) 支配木}
@@ -1024,9 +1024,9 @@ $J^+(S^x_0)$は$DF$によって求めることができる．
     \vspace*{10pt}
 
     \begin{tabularx}{\linewidth}{m{.2\linewidth}m{.5\linewidth}m{.2\linewidth}}
-        \includegraphics{figures/SSA-example4-prog-crop.pdf}
+        \includegraphics{SSA-example4-prog-crop.pdf}
                   &
-        \includegraphics[width=\linewidth]{figures/SSA-example4-CFG-crop.pdf}
+        \includegraphics[width=\linewidth]{SSA-example4-CFG-crop.pdf}
                   &
         \begin{center}
             \begin{tabular}{|l|l|}\hline
@@ -1058,9 +1058,9 @@ $J^+(S^x_0)$は$DF$によって求めることができる．
 
     \begin{center}
         \begin{tabular}{cc}
-            \includegraphics{figures/SSA-example4-phi-crop.pdf}
+            \includegraphics{SSA-example4-phi-crop.pdf}
                            &
-            \includegraphics{figures/SSA-example4-DTree-crop.pdf} \\
+            \includegraphics{SSA-example4-DTree-crop.pdf} \\
             $\varphi$関数の挿入 & 支配木
         \end{tabular}
     \end{center}
@@ -1121,7 +1121,7 @@ $\varphi$関数を挿入した後，各変数に添字を付加して各３番�
 図\ref{fig:SSAexample}に適用結果を示す．
 \begin{figure}
     \centering
-    \includegraphics{figures/SSA-example4-SSA-crop.pdf}
+    \includegraphics{SSA-example4-SSA-crop.pdf}
     \caption{例\ref{example:phiFunc}に対するアルゴリズム2の適用結果}\label{fig:SSAexample}
 \end{figure}
 
@@ -1206,9 +1206,9 @@ SSA形式では，変数の代入による定義が唯一であるという条�
 \begin{figure}[t]
     \begin{center}
         \begin{tabular}{ccc}
-            \includegraphics[scale=0.75]{figures/SSA-dominance-break-crop.pdf}
+            \includegraphics[scale=0.75]{SSA-dominance-break-crop.pdf}
                     &  &
-            \includegraphics[scale=0.75]{figures/SSA-dominance-break-after-crop.pdf} \\
+            \includegraphics[scale=0.75]{SSA-dominance-break-after-crop.pdf} \\
             (a)最適化前 &  & (b)最適化後
         \end{tabular}
     \end{center}
@@ -1233,9 +1233,9 @@ $\varphi$関数を含むブロックの頂点がこの条件を満たさない�
 \begin{figure}
     \centering
     \begin{tabular}{cc}
-        \includegraphics[width=.3\linewidth]{figures/SSA-phiElimination-a-crop.pdf}
+        \includegraphics[width=.3\linewidth]{SSA-phiElimination-a-crop.pdf}
          &
-        \includegraphics[width=.3\linewidth]{figures/SSA-phiElimination-b-crop.pdf}
+        \includegraphics[width=.3\linewidth]{SSA-phiElimination-b-crop.pdf}
     \end{tabular}
     \caption{SSA形式からの$\varphi$関数の消去}
 \end{figure}
@@ -1245,7 +1245,7 @@ $\varphi$関数を含むブロックの頂点がこの条件を満たさない�
 
 \begin{figure}
     \centering
-    \includegraphics{figures/SSA-nodeInsert-crop.pdf}
+    \includegraphics{SSA-nodeInsert-crop.pdf}
     \caption{挿入条件を満たすために空頂点を追加}\label{fig:nodeInsert}
 \end{figure}
 
