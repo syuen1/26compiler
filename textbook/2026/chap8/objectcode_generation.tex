@@ -1,6 +1,6 @@
 \documentclass[dvipdfmx,a4j]{jbook}
-\include{../mypackage}
-\include{../mymacros}
+\input{../mypackage}
+\input{../mymacros}
 \setcounter{chapter}{7}
 % \setcounter{page}{63}
 % \newcounter{coffee}
@@ -25,14 +25,14 @@
 与えられている時に割当アルゴリズムがNP完全な問題である\cite{DBLP:journals/cl/ChaitinACCHM81}ため，
 目的コード生成での
 レジスタ割当は最適性を保証することは困難である．従って，目的コード生成では，部分的な
-プログラムに対して必要なレジスタ数を見積もり，近似的に効率のよい割当手法を与える，
-３番地コードやSSA形式から変数のデータフローからライフサイクルを解析して，
+プログラムに対して必要なレジスタ数を見積もり，近似的に効率のよい割当手法を与える．
+具体的には，３番地コードやSSA形式における変数のデータフローからライフサイクル（生存期間）を解析して，
 変数からレジスタへの割当を決定する．
 
 目的コードの命令の選択については目的マシンのアーキテクチャに応じてできるだけサイクル数の
-少ない命令（軽い命令）を選択するなどコストを見積もるなどの手法がある．しかし，
+少ない命令（軽い命令）を選択するために命令のコストを見積もるなどの手法がある．しかし，
 実際の計算機ではハードウェアによる並列的な実行などの効果や実行ユニットの数などに依存する
-ため，実際的な計算機に対するコード生成の系統的なモデル化は教科書的内容の範囲を越えるため，
+ことから，実際的な計算機に対するコード生成の系統的なモデル化は教科書的内容の範囲を越えるため，
 本書では扱わない．
 
 \section{算術式のコード生成}
@@ -43,7 +43,7 @@
 \item 演算子は四則演算($\ttpl$, $\ttsb$, $\ttmu$, $\ttdv$)に限定する．
 \item 命令はメモリ転送命令($\texttt{Load}\ r,e$)と演算命令($\theta\ r,e$)とする．\\
 メモリ転送命令$\texttt{Load}\ r,e$は，$e$で示されるメモリの内容をレジスタ$r$に転送する．
-演算命令$\theta\ r,e$は，$e$で示されるメモリの内容をフェッチして$r$と$\theta\in\{\ttpl,\ttsb,\ttmu,\ttdv\}$
+演算命令$\theta\ r,e$は，$e$で示されるメモリ（またはレジスタ）の内容をフェッチして$r$と$\theta\in\{\ttpl,\ttsb,\ttmu,\ttdv\}$
 で定められた演算を行い，結果を$r$に格納する．
 \end{itemize}
 
@@ -66,12 +66,12 @@
     \begin{tabbing}
     \quad\qquad\=\qquad\=\\\kill
     \loadinst{r2}{B}\\
-    \oprinst{+}{r1}{C}\\
+    \oprinst{+}{r2}{C}\\
     \loadinst{r1}{A}\\
     \oprinst{-}{r1}{r2}\\
     \end{tabbing}
 \end{minipage}
 
-\section{グラフ彩色によるレジスタ割り当て}
-\subsection{SSAに対するレジスタ割り当て}
+\section{グラフ彩色によるレジスタ割当}
+\subsection{SSAに対するレジスタ割当}
 \end{document}
