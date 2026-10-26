@@ -3,9 +3,7 @@
 \input{../mymacros}
 \setcounter{chapter}{7}
 % \setcounter{page}{63}
-% \newcounter{coffee}
-% \newcounter{bean}
-%\graphicspath{{figs241108/}}
+\graphicspath{{figures/}}
 \begin{document}
 \chapter{目的コード生成}
 
@@ -49,19 +47,20 @@
 
 例えば，算術式$A\ttpl B\ttsb C$のコードは以下のようになる．
 
-
-\begin{minipage}{.3\linewidth}
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.4\textwidth}}
 \begin{tabbing}
 \quad\qquad\=\qquad\=\\\kill
 \loadinst{r1}{A}\\
 \oprinst{+}{r1}{B}\\
 \oprinst{-}{r1}{C}\\
-\end{tabbing}
-\end{minipage}
+\end{tabbing} &
+\includegraphics[scale=0.75]{AST-RN1-crop.pdf}
+\end{tabularx}
 
 以上の制約のもとでは，レジスタは１個で計算が可能である．
 これに対して，$A\ttsb\ttlp B\ttpl C\ttrp$の場合は以下のような命令系列になる．
 
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.4\textwidth}}
 \begin{minipage}{.3\linewidth}
     \begin{tabbing}
     \quad\qquad\=\qquad\=\\\kill
@@ -70,8 +69,105 @@
     \loadinst{r1}{A}\\
     \oprinst{-}{r1}{r2}\\
     \end{tabbing}
+\end{minipage} &
+\includegraphics[scale=0.75]{AST-RN2-crop.pdf}
+\end{tabularx}
+
+この算術式の計算に必要なレジスタ数は２である．$A\ttmu\ttlp B\ttpl C\ttrp$については，
+
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.4\textwidth}}
+\begin{minipage}{.3\linewidth}
+    \begin{tabbing}
+    \quad\qquad\=\qquad\=\\\kill
+    \loadinst{r2}{B}\\
+    \oprinst{+}{r2}{C}\\
+    \oprinst{*}{r2}{A}\\
+    \end{tabbing}
 \end{minipage}
+& \includegraphics[scale=0.75]{AST-RN3-crop.pdf}
+\end{tabularx}
+
+とすればよいので必要なレジスタは１つである．これは，$\ttsb$が可換でなく，$\ttmu$が可換であるため２番めの項をまず評価して１番目の項を適用することができるためである．算術式を表す抽象構文木$T$に対して，その計算に必要なレジスタ数を$RN(T)$と書く．
+$RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
+
+\begin{algorithm}
+\caption{$RN(T)$の計算}\label{alg:regNum}
+\begin{algorithmic}
+\Procedure{$RN$}{$T$}
+  \If{$\mathsf{isleaf}(T)$}x
+    \Return 0 \Comment{$T$が葉}
+  \Else
+    \State $T_1=\mathsf{Left}(T)$ \Comment{$T_1$は左部分木}
+    \State $T_2=\mathsf{Right}(T)$　\Comment{$T_2$は右部分木}
+    \If{$RN(T_1)=0$ かつ $RN(T_2)=0$}
+      \Return 1 \Comment{左右とも葉なのでレジスタ１つ}
+    \Else
+      \If{$RN(T_1)=0$ かつ $RN(T_2)>0$}
+        \If{$root(T)$が可換演算子}\ 
+          \Return $RN(T_2)$ \Comment{後ろから適用する}
+        \Else\ 
+          \Return $\mathsf{max}(2,RN(T_2))$ \Comment{最大２つ必要}
+        \EndIf
+      \Else
+        \If{$RN(T_1)>0$}
+          \If{$RN(T_1)=RN(T_2)$}\ 
+            \Return $RN(T_1)+1$
+          \Else\ 
+            \Return $\mathsf{max}(RN(T_1),RN(T_2))$
+          \EndIf
+        \EndIf
+      \EndIf
+    \EndIf
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+このレジスタ数の見積もり解析に応じて，使用するレジスタが実際に利用できるレジスタ数の範囲内であれば，レジスタを利用する目的コードを生成できる．しかし，レジスタ数が足りない場合は，レジスタ溢れ(spill)が発生する．このような場合は，フロー解析などの手法を使って最も後で使われる変数をレジスタに割り当てるなどの方法によって効率的に実行する目的コードを生成する．
 
 \section{グラフ彩色によるレジスタ割当}
+
+３番地コードの基本ブロックに対して計算に用いられる変数をできる限り多くレジスタに割り当てる方法について紹介する．基本的なアイデアとして変数の生存期間，すなわち，変数が定義された時点からその定義最後に使われるまでの期間，が重ならない２つの変数は同じレジスタに割り当てることができるという性質を利用する．
+
+\subsection{レジスタ干渉グラフ}
+
+レジスタ干渉グラフは，生存期間の重なりを無向グラフによって表現したものである．無向グラフの頂点に変数を割り当ててその生存期間が重なる場合には，その頂点間に辺をつける．互いに生存期間が重ならない変数については対応する頂点は辺を持たない．従って，$(u,v)\notin E$のとき，$u$に割り当てられた変数と$v$に割り当てられた変数は同じレジスタに割り当てることができる．
+
+\begin{Exmp}
+
+\end{Exmp}
+
+無向グラフに対する$k$-彩色問題とは，辺の両端にある頂点に違う色を割り当てるときに
+$k$種類の色によって塗り分けが可能かどうかを判定する問題である．
+
+\begin{Def}
+    無向グラフ$(V,E)$に対する$k$-彩色問題とは，すべての辺$(u,v)\in E$にたいして，$f(u)\not=f(v)$となる関数$f$:$V\rightarrow\{1,\ldots,k\}$が存在するとき，YES, 存在しないときNOと答える問題である．
+\end{Def}
+
+レジスタ干渉グラフを構成すると$k$彩色問題でYESとなる関数$f$は，レジスタ割り当てそのものである．グラフの彩色問題はNP完全な問題であり，一般に最適なレジスタ割り当てを求めることはコンパイラの構成として実際的ではない．
+
+実際的なレジスタ割り当てを行うために以下の定理を利用することができる．
+
+\begin{Thm}\label{thm:kindexGraph}
+無向グラフ$(V,E)$の任意の頂点の次数が$k-1$以下ならば$k$-彩色可能である．ここで，$k\geq 1$とする．
+\end{Thm}
+
+この定理を利用してレジスタ割り当てアルゴリズム\ref{alg:regAssign}が構成できる．
+
+このアルゴリズムにおいて，定理\ref{thm:kindexGraph}の条件が成り立たない時，要素数最大の独立集合を求める必要がある．要素数最大の独立集合を求める問題はNP完全問題であり，このアルゴリズムをそのまま実現することは実用的とは言えない．
+
 \subsection{SSAに対するレジスタ割当}
+
+$\varphi$関数を消去して得られるSSA形式からは，比較的容易にレジスタ割り当てを導くことが知られている．SSA形式では，最適化後において支配関係が保存されている．従って，各変数の生存期間は定義において新たな添字をもつ変数が定義されてから，次の添字を持つ変数が定義されるまでの間となる．各変数に対して生存期間に対応する頂点を抽出し，その頂点から構成される支配木の部分木を構成する．その部分木の交差グラフを構成するとレジスタ干渉グラフが構成できる．
+
+\begin{Lem}
+SSA形式から支配木の部分木から構成された交差グラフによる干渉グラフは弦グラフである．
+\end{Lem}
+
+弦グラフの頂点に対しては，完全消去順序が存在する．完全消去順序の逆順で彩色をすると最小の数の色でグラフを彩色することができる．SSA形式による干渉グラフの頂点数を$n$, 辺数を$m$とするとグラフ構築後の最適彩色は$O(m+n)$で構成できる．
+
+ここでは，SSAから構成される干渉グラフの大きさに対して線形時間で最小の色数で彩色できる．
+ただし，最初から色数を指定して彩色する問題ではないため，レジスタ溢れについての問題を
+解いたわけではないことに注意する．SSA形式からのレジスタ割り当ては，生存解析が容易になることによって効率的で最適な割り当て手法を与える．レジスタ数が少ない場合のレジスタ溢れといった問題は，依然，計算量の大きい問題として残ることに注意しよう．
+
 \end{document}

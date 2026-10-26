@@ -1,0 +1,14 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\begin{document}
+\begin{tikzpicture}
+\node[draw,circle] (N1) at (-1.5,1.5) {$A$};
+\node[draw,circle] (N2) at (0,1.5) {$\texttt{+}$};
+\node[draw,circle] (N3) at (-0.75,0) {$B$};
+\node[draw,circle] (N4) at (0.75,0) {$C$};
+\node[draw,circle] (N5) at (-0.75,3) {$\texttt{-}$};
+\path[-] (N1) edge (N5) (N2) edge (N5) (N3) edge (N2) (N4) edge (N2);
+\end{tikzpicture}
+\end{document}
