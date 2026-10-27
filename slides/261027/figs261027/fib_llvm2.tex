@@ -1,0 +1,17 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+define i32 @main() #0 {
+  %1 = alloca i32, align 4
+  store i32 30, i32* %1, align 4
+  %2 = load i32, i32* %1, align 4
+  %3 = call i32 @fib(i32 %2)
+  %4 = call i32 (i8*, ...) @printf(i8* noundef getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i32 noundef %3)
+  ret i32 0
+}
+
+declare i32 @printf(i8* noundef, ...) #1
+\end{Verbatim}
+\end{document}

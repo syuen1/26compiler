@@ -1,6 +1,7 @@
 \documentclass[dvipdfmx]{beamer}
 \usepackage{bxdpx-beamer}% dvipdfmxなので必要
 \usepackage{pxjahyper}% 日本語で'しおり'したい
+%\documentclass[ckj]{beamer}
 %\usepackage{etex}
 %\usetheme{Warsaw}
 \usetheme{Malmoe}
@@ -19,27 +20,37 @@
 \usepackage{fancyvrb}
 %\usepackage{listings}
 \usepackage{tabularx}
-\usepackage{tikz}
-\usetikzlibrary{calc,shapes}
 %\usepackage{pstricks,pst-node,pst-tree}
 %\usepackage{multimedia}
 %\usepackage{pstricks,pst-node,pst-tree}
 %\usepackage{pst-all}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{ascmac}
+\usepackage{ulem}
+\usepackage{listings}
+\lstloadlanguages{C,LLVM}
+%\usepackage{color,soul}
 %\include{prooftree}
 %\lstloadlanguages{pascal}
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\familydefault}{\sfdefault}
 
-%\include{cmacros}
-
-\graphicspath{{figs261027/}}
-
-\include{mymacros}
+\input{mymacros}
 
 %\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
 %\newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
 
 \newcommand{\lecturedate}{2026/10/27}
+
+\newcommand{\ttlp}{{\tt (}}
+\newcommand{\ttrp}{{\tt )}}
+\newcommand{\makenewlabel}{{\tt newLabel}()}
+\newcommand{\genlabel}[1]{{\tt generate}(`{\tt label}\ {#1}')}
+\newcommand{\genifnot}[2]{{\tt generate}(`{\tt if\_not}\ {#1}\ {\tt goto}\ {#2}')}
+\newcommand{\gengoto}[1]{{\tt generate}(`{\tt goto}\ {#1}')}
+
+\graphicspath{{figs261027/}}
 
 \cornersize{0.25}
 
@@ -52,946 +63,1067 @@
 \title{コンパイラ(8)}
 \date{\lecturedate}
 \begin{document}
-
 \frame{\titlepage}
 
-\section{コード最適化}
+\section{中間コード生成}
+
+\subsection{実行時環境}
 
 \begin{frame}
+  \frametitle{実行時環境}
+  \greentext{メモリ領域の割り当て方}
+
+  \begin{tabular}{ccc}
+    \begin{minipage}{.5\textwidth}
+      \begin{list}{$\bullet$}{}
+        \item 大域変数=ヒープ領域(\greentext{プロセス内のメモリ領域})にわりあ
+              てる。\\
+              {\tt malloc},{\tt free}\\
+              演習のコンパイラでは、スタック領域の底にわりあてる(popしない)。
+        \item 局所変数=スタックにわりあてる
+        \item 関数・手続の引数のわりあて(特殊な局所変数)
+      \end{list}
+    \end{minipage} & \quad &
+    \begin{minipage}{.5\textwidth}
+      \begin{tikzpicture}
+        \draw (0,0) rectangle (4,6);
+        \node at (2,5.5) {Code};
+        \draw (0,5) -- (4,5);
+        \node at (2,4.5) {Static Data};
+        \draw (0,4) -- (4,4);
+        \node at (2,3.5) {Stack};
+        \draw (0,3) -- (4,3);
+        \draw (0,1) -- (4,1);
+        \node at (2,0.5) {Heap};
+        \draw [->,line width=2pt] (2,1) -- (2,1.5);
+        \draw [->,line width=2pt] (2,3) -- (2,2.5);
+      \end{tikzpicture}
+    \end{minipage}
+  \end{tabular}
+\end{frame}
+
+\begin{frame}
+  \frametitle{静的割当てと動的割当て}
+  \begin{tabular}{cc}
+    \begin{minipage}{.5\textwidth}
+      \begin{list}{}{}
+        \item 静的割当て:
+              \greentext{\small 実行の最初から最後までメモリ領域が変化しない}
+        \item 動的割り当て：
+              \greentext{\small メモリ領域が実行時に決定}\\
+              \greentext{\small 実行終了時に領域が不要になる}
+      \end{list}
+    \end{minipage}
+     &
+    \begin{minipage}{.5\textwidth}
+      \includegraphics[scale=.75]{prog1.pdf}
+    \end{minipage}
+  \end{tabular}
+
   \begin{center}
-    {\Huge コード最適化}
+    \begin{list}{}{}
+      \item 静的割当て: {\tt a},{\tt func},{\tt main}
+      \item 動的割当て: {\tt x},{\tt y},{\tt b}
+    \end{list}
   \end{center}
 \end{frame}
 
-\subsection{概要}
+\subsection{駆動レコード}
 
 \begin{frame}
-  \frametitle{コード最適化}
+  \frametitle{駆動レコード}
+  手続き/関数の一回の実行に必要な局所情報\\
+  \greentext{PC(Program Counter)、返り値、参照可能なシンボルの集合}
 
-  実行の意味を変えることなく実行を高速化すること。
+  \begin{center}
+    \begin{tikzpicture}
+      \draw[style=dotted] (3.5,2) -- (7.5,2);
+      \draw[style=dotted] (3.5,1.5) -- (7.5,1.5);
+
+      \draw (0,0) rectangle (1.5,1.5);
+      \draw (0,0.5) -- (1.5,0.5);
+      \draw (0,1) -- (1.5,1);
+      \draw (1,1.5) -- (1,0);
+      \node at (0.75,-.3) {実行前};
+      \node at (0.5,0.25) {a};
+      \node at (0.5,0.75) {func};
+      \node at (0.5,1.25) {main};
+
+      \draw (2,0) rectangle (3.5,2);
+      \draw (2,0.5) -- (3.5,0.5);
+      \draw (2,1) -- (3.5,1);
+      \draw (2,1.5) -- (3.5,1.5);
+      \draw (3,2) -- (3,0);
+      \node at (2.75,-.3) {main実行中};
+
+      \node at (2.5,0.25) {a};
+      \node at (2.5,0.75) {func};
+      \node at (2.5,1.25) {main};
+      \node at (2.5,1.75) {b};
+
+      \draw (4,0) rectangle (5.5,3);
+      \draw (4,0.5) -- (5.5,0.5);
+      \draw (4,1) -- (5.5,1);
+      \draw (4,1.5) -- (5.5,1.5);
+      \draw (4,2) -- (5.5,2);
+      \draw (4,2.5) -- (5.5,2.5);
+      \draw (5,0) -- (5,3);
+      \node at (4.75,-.3) {func実行中};
+
+      \node at (4.5,0.25) {a};
+      \node at (4.5,0.75) {func};
+      \node at (4.5,1.25) {main};
+      \node at (4.5,1.75) {b};
+      \node at (4.5,2.25) {x};
+      \node at (4.5,2.75) {y};
+
+      \node at (7,0.75) {大域変数};
+      \node at (7.5,1.75) {mainのレコード};
+      \node at (7.5,2.5) {funcのレコード};
+    \end{tikzpicture}
+  \end{center}
+
+  % \begin{center}
+  %  \includegraphics{activationRec1.eps}
+  % \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{駆動レコードの構成}
+
+  \begin{tikzpicture}
+    \draw (0,0) rectangle (4,4.8);
+    \draw (0,0.6) -- (4,0.6);
+    \draw (0,1.2) -- (4,1.2);
+    \draw (0,1.8) -- (4,1.8);
+    \draw (0,2.4) -- (4,2.4);
+    \draw (0,3) -- (4,3);
+    \draw (0,3.6) -- (4,3.6);
+    \draw (0,4.2) -- (4,4.2);
+    \node at (2,4.5) {一時変数領域};
+    \node at (2,3.9) {局所データ領域};
+    \node at (2,3.3) {静的リンク};
+    \node at (2,2.7) {動的リンク};
+    \node at (2,2.1) {戻り番地};
+    \node at (2,1.5) {実引数計算領域};
+    \node at (2,0.9) {戻り値};
+    \node at (2,0.3) {退避領域};
+    \draw[->] (4.5,2.7) -- (4,2.7);
+    \node at (5,2.7) {FP};
+
+    \node[anchor=west] at (5.5,4.5) {\greentext{関数内での計算の一時領域}};
+    \node[anchor=west] at (5.5,3.9) {\greentext{局所宣言された変数の領域}};
+    \node[anchor=west] at (5.5,3.3) {\greentext{次に外へ参照すべきレコード}};
+    \node[anchor=west] at (5.5,2.7) {\greentext{Return後に復元すべきレコード}};
+    \node[anchor=west] at (5.5,2.1) {\greentext{Return後に再開するPC}};
+    \node[anchor=west] at (5.5,1.5) {\greentext{呼出の際に引数受け渡しに使う}};
+    \node[anchor=west] at (5.5,0.9) {\greentext{関数の計算結果を格納}};
+    \node[anchor=west] at (5.5,0.3) {\greentext{呼出の際の一時領域}};
+  \end{tikzpicture}
+
+  % \begin{pspicture}(0,0)(3,5)
+  %  \psframe(0,0)(3,4)
+  %  \rput(1.5,3.75){一時変数領域}
+  %  \psline(0,3.5)(3,3.5)
+  %  \rput(1.5,3.25){局所データ領域}
+  %  \psline(0,3)(3,3)
+  %  \rput(1.5,2.75){静的リンク}
+  %  \psline(0,2.5)(3,2.5)
+  %  \rput(1.5,2.25){動的リンク}
+  %  \psline(0,2)(3,2)
+  %  \rput(1.5,1.75){戻り番地}
+  %  \psline(0,1.5)(3,1.5)
+  %  \rput(1.5,1.25){実引数計算領域}
+  %  \psline(0,1)(3,1)
+  %  \rput(1.5,0.75){戻り値}
+  %  \psline(0,0.5)(3,0.5)
+  %  \rput(1.5,0.25){退避領域}
+  %  \pnode(3,2.25){P1}
+  %  \pnode(3.5,2.25){P2}
+  %  \ncline{<-}{P1}{P2}
+  %  \rput(4,2.25){FP}
+  % \end{pspicture}
+  % \begin{pspicture}(0,0)(4,5)
+  %  \rput[l](1.25,3.75){\greentext{関数内での計算の一時領域(×)}}
+  %  \rput[l](1.25,3.25){\greentext{局所宣言された変数の領域}}
+  %  \rput[l](1.25,2.75){\greentext{\small スコープルールで次に外へ参照すべきレコード}}
+  %  \rput[l](1.25,2.25){\greentext{Return後に復元すべきレコード}}
+  %  \rput[l](1.25,1.75){\greentext{Return後に再開するPC}}
+  %  \rput[l](1.25,1.25){\greentext{呼出の際に引数受け渡しに使う(×)}}
+  %  \rput[l](1.25,0.75){\greentext{関数の計算結果を格納}}
+  %  \rput[l](1.25,0.25){\greentext{呼出の際の一時領域(×)}}
+  % \end{pspicture}
+
+  % \vspace*{2em}
+  %
+  % (×)のところは演習では利用しない.
+  % 動的リンクも不要
+\end{frame}
+
+% Insert demo
+
+\newcommand{\commandPointer}[1]{\node[anchor=west,red] at ($#1*(0,0.5)+(-.45,0)$)  {$\rightarrow$};}
+
+\begin{frame}[fragile]
+  \frametitle{変数の参照}
+
+  \begin{tikzpicture}
+    \node[anchor=west] at (0,6.5)
+    {\verb|int a;|};
+    \node[anchor=west] at (0,6.0)
+    {\verb|int func(int x) {|};
+    \node[anchor=west] at (0,5.5)
+    {\verb|  int y;|};
+    \node[anchor=west] at (0,5.0)
+    {\verb|  if(x==1) {return(a);}|};
+    \node[anchor=west] at (0,4.5)
+    {\verb|  else {|};
+    \node[anchor=west] at (0,4.0)
+    {\verb|    y=func(x-1)*2;|};
+    \node[anchor=west] at (0,3.5)
+    {\verb|    return(a+y);|};
+    \node[anchor=west] at (0,3.0)
+    {\verb|  }|};
+    \node[anchor=west] at (0,2.5)
+    {\verb|}|};
+    \node[anchor=west] at (0,2.0)
+    {\verb|void main() {|};
+    \node[anchor=west] at (0,1.5)
+    {\verb|  a=2;|};
+    \node[anchor=west] at (0,1.0)
+    {\verb|  printf("func(3)=%d",|};
+    \node[anchor=west] at (0,0.5)
+    {\verb|    func(3));|};
+    \node[anchor=west] at (0,0)
+    {\verb|}|};
+    \draw (-0.5,-0.5) rectangle +(6.5,7.5);
+
+    %    \only<2>{\node[anchor=west,red] at (-.45,1.5) {$\rightarrow$};}
+    %    \only<3>{\node[anchor=west,red] at (-.45,1.0) {$\rightarrow$};}
+    \only<2>{\commandPointer{3}}
+    \only<3>{\commandPointer{2}}
+    \only<4>{\commandPointer{10}}
+    \only<5>{\commandPointer{8}}
+    \only<6>{\commandPointer{10}}
+    \only<7>{\commandPointer{8}}
+    \only<8,9>{\commandPointer{10}}
+    \only<10,11,12>{\commandPointer{8}}
+    \only<13>{\commandPointer{7}}
+    \only<14,15,16>{\commandPointer{8}}
+    \only<17>{\commandPointer{7}}
+    \only<18>{\commandPointer{3}}
+
+    \only<1-16>{\node at (9,1.5) {\tt ?};}
+    \only<1>{\node at (9,1) {\tt a=?};}
+    \only<2->{\node at (9,1) {\tt a=2};}
+    \only<4-17>{\node at (9,2) {\tt x=3};}
+    \only<4-15>{\node at (9,2.5) {\tt y=?};}
+    \only<4-17>{\draw (8,1.25) rectangle +(2,1.5);}
+    \only<6-12>{\node at (9,3) {\tt ?};}
+    \only<6-13>{\node at (9,3.5) {\tt x=2};}
+    \only<6-11>{\node at (9,4) {\tt y=?};}
+    \only<6-13>{\draw (8,2.75) rectangle +(2,1.5);}
+    \only<8>{\node at (9,4.5) {\tt ?};}
+    \only<8,9>{\node at (9,5) {\tt x=1};}
+    \only<8,9>{\node at (9,5.5) {\tt y=?};}
+    \only<8,9>{\draw (8,4.25) rectangle +(2,1.5);}
+    \only<9,10>{\node at (9,4.5) {\tt 2};}
+    \only<11>{\node at (9,4.5) {\tt 2*2};}
+    \only<12,13>{\node at (9,4) {\tt y=4};}
+    \only<13,14>{\node at (9,3) {\tt 6};}
+    \only<15>{\node at (9,3) {\tt 6*2};}
+    \only<16,17>{\node at (9,2.5) {\tt y=12};}
+    \only<17,18>{\node at (9,1.5) {\tt 14};}
+
+    \only<4-17>{\path[->,blue,line width=1.5pt] (8,2) edge [out=180,in=180] (8,1);}
+    \only<6-13>{\path[->,blue,line width=1.5pt] (8,3.5) edge [out=180,in=180] (8,1);}
+    \only<8,9>{\path[->,blue,line width=1.5pt] (8,5) edge [out=180,in=180] (8,1);}
+    \only<4-17>{\node at (9,0) {\color{blue}静的リンク};}
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{変数の参照/記憶位置の決定}
 
   \begin{list}{}{}
-    \item 実行の意味：入力と出力\\
-          最適化の対象によって入力と出力は変わる。\\
-          \greentext{プログラム解析が必要}
+    \item 局所変数: フレームポインタからの相対位置
+    \item 大域変数: ヒープ内のアドレス\\
+          %	(実習)：スタックボトムからの相対位置
   \end{list}
 
+  % (実習)動的変数の位置：何番目に宣言されているか\\
 
-  \begin{itemize}
-    \item 機械独立なコード最適化\\
-          \quad =3番地コードのレベルで実行を効率化
-    \item 機械依存なコード最適化\\
-          \quad =対象マシンのアーキテクチャに依存\\
-          \qquad (VLIW、マルチコアなど)
-  \end{itemize}
+  記号表にはスタックフレームレジスタからの相対番地=何番目に宣言された変数でどういった
+  型をもつか。
+
+  型情報=確保する領域量(実習の場合は整数のみ)
+
+  関数の引数うけわたしは局所変数の宣言+代入
 
 \end{frame}
 
-\subsection{局所最適化}
+\section{構文主導型変換}
+
+\subsection{意味解析}
+
+\begin{frame}{動作意味}
+  \[\langle\{S,E,T,F\},\{+,\ast,(,),n\},P,S
+    \rangle\]
+  \[\left\{\begin{array}{ll}
+      S\rightarrow E\#,    & T\rightarrow F,       \\
+      E\rightarrow E+T,    & F\rightarrow (\ E\ ), \\
+      E\rightarrow T,      & F\rightarrow n,       \\
+      T\rightarrow T\ast F &                       \\
+    \end{array}\right\}\]
+
+  \vspace*{3mm}
+
+  \greentext{各生成規則は値を計算する意味を持つ．}
+
+  \vspace*{3mm}
+
+  $E\rightarrow E+T$: 右辺の$E$の値と$T$の値を加算した値を左辺の$E$の値とする．\\[3mm]
+  $\Rightarrow$ \redtext{'+'に加算の意味を与える．}
+
+\end{frame}
+
+\begin{frame}{構文に従った動作意味}
+
+  \[
+    \begin{array}{ll}
+      S\rightarrow E\#       & var(S)= var(E)               \\
+      E\rightarrow E_1+T     & var(E)= var(E_1)+var(T)      \\
+      E\rightarrow T         & var(E)=var(T)                \\
+      T\rightarrow T_1\ast F & var(T)=var(T_1)\times var(F) \\
+      T\rightarrow F         & var(T)=var(F)                \\
+      F\rightarrow (\ E\ )   & var(F)=var(E)                \\
+      F\rightarrow i         & temp=val(i);var(F)=temp
+    \end{array}
+  \]
+
+  \vspace*{3mm}
+
+  \greentext{構文主導型変換}
+
+  \begin{description}
+    \item [インタープリタ：] 生成規則に対応する動作をする．
+    \item [コンパイラ：] 生成規則に対応した目的コード（中間コード）を生成する．
+  \end{description}
+\end{frame}
+
+\subsection{中間コード生成ルーチン}
+
 
 \begin{frame}
-  \frametitle{基本ブロック}
+  \frametitle{構文主導型変換}
+  CF文法の各生成規則に対してコード生成ルーチンをわりあてる。\\
+  \begin{itemize}
+    \item $\mathsf{newTemp}()$\\
+          変数$T$の領域を確保して、記号番地または一時変数へのポインタを返す。
+    \item $\mathsf{newLabel}()$\\
+          新たなラベル名を返す。
+    \item $\mathsf{generate}(\mbox{中間コード})$\\
+          中間コードを出力ファイルに出力する。
+  \end{itemize}
 
-  最後以外分岐のない文の並び
+  \greentext{
+    $n$回目に$\mathsf{newTemp}()$を呼びだしたとき、生成される
+    変数$\texttt{t}n$}
 
+  \greentext{
+    $m$回目に$\mathsf{newLabel}()$を呼びだしたとき、生成されるラ
+    ベル$\texttt{L}m$}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{構文主導型変換の基礎}
+  \begin{eqnarray*}
+    S & \rightarrow & \mathsf{ID}\texttt{=}\ E\ \texttt{;}\\
+    E & \rightarrow & E^{(1)}\ \texttt{+}\ \mathtt{NUM}\\
+    E & \rightarrow & \mathtt{NUM}
+  \end{eqnarray*}
   \begin{center}
-    \only<1>{\includegraphics[width=.8\textwidth]{basic-block-fig-r2-crop.pdf}}
-    \only<2>{\includegraphics[width=.8\textwidth]{basic-block-fig2-r2-crop.pdf}}
+    $\mathsf{ID}$\ $\texttt{=}$\ $\mathsf{NUM}_0$\ $\texttt{+}$\ $\mathsf{NUM}_1$
+    \ $\texttt{+}$\ $\mathsf{NUM}_2$\ $\texttt{;}$
   \end{center}
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{局所最適化}
-
-  基本ブロック内だけを見て最適化すること
-
-  覗き穴最適化(Peep-hole optimization)
-
-  \begin{itemize}
-    \item 定数伝播(constant propagation)\\
-          \greentext{定数の計算、参照を定数そのものでおきかえる}
-    \item 共通部分式の削除(common subexpression elimination)\\
-          \greentext{共通の部分式を抽出して結果を一時変数に保存
-            するようにして、二回目以降計算しない。}
-    \item コピー伝播(copy propagation)\\
-          \greentext{余分な変数の仲介を減らす。}\\
-          \greentext{データ依存性を減らして命令の並列発行が可能
-            になる場合がある。}
-    \item 不要コードの除去(deadcode elimination)\\
-          \greentext{使われない変数に関する計算を消去する。}
-    \item 代数的性質の利用\\
-          \greentext{演算子が持つ代数的性質(可換則、結合則、分
-            配則、計算のためのコストなど)}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{DAGによる局所最適化}
-
-  DAG=Directed Asyclic Graph\\
-  \greentext{閉路(ループ)をもたない有効グラフ}
-
-  \greentext{基本ブロック内のデータ依存性を一意的に表現}
-
-  DAGの構成アルゴリズム 6.6
-
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{DAGの構成}
-  \begin{tabular}{cc}
-    \begin{minipage}{.45\textwidth}
-
-      \begin{tikzpicture}
-        \node[draw,circle] (a0) at (0,0) {$a_0$};
-        \node[draw,circle] (b0) at (1.5,0) {$b_0$};
-        \node[draw,circle] (c0) at (3,1) {$c_0$};
-        \uncover<2->{\node[draw,circle] (AST) at (0.75,1) {$\ast$};}
-        \uncover<2-6>{\node at ($(AST)+(0.5,0)$) {$x$};}
-        \uncover<3->{\node[draw,circle] (PLUS) at (2,2) {$+$};
-          \node at ($(PLUS)+(0.5,0)$) {$y$};}
-        \uncover<4->{\node at ($(AST)+(0.8,0)$) {$,d$};}
-        \uncover<5->{\node[draw,circle] (MIN) at (2,3.5) {$-$};
-          \node at ($(MIN)+(0.5,0)$) {$e$};}
-        \uncover<7->{\node[draw,circle] (PL2) at (2,5) {$+$};
-          \node at ($(PL2)+(0.5,0)$) {$x$};}
-        \only<2->{
-          \path[-] (a0) edge (AST) (b0) edge (AST);
-        }
-        \only<3->{
-          \path[-] (AST) edge (PLUS) (c0) edge (PLUS);
-        }
-        \only<5->{
-          \path[-] (MIN) edge (AST) (MIN) edge (c0);
-        }
-        \only<7->{
-          \path[-] (PL2) edge (AST) (PL2) edge (MIN);
-        }
-      \end{tikzpicture}
-
-    \end{minipage}
-     &
-    \begin{minipage}{.4\textwidth}
-
-      \begin{tikzpicture}
-        \node[anchor=west] at (0,3) {\texttt{x=\redtext{a}*\redtext{b}}};
-        \only<1,3->{\node[anchor=west] at (0,2.5) {\texttt{y=x+\redtext{c}}};}
-        \only<1,4->{\node[anchor=west] at (0,2) {\texttt{d=\redtext{a}*\redtext{b}}};}
-        \only<1,5->{\node[anchor=west] at (0,1.5) {\texttt{e=d-\redtext{c}}};}
-        \only<1,7->{\node[anchor=west] at (0,1) {\texttt{x=d+e}};}
-
-        \only<6>{
-          \node at (2,2.5) {$\Rightarrow$};
-          \node[anchor=west] at (3,3) {\texttt{x=a*b}};
-          \node[anchor=west] at (3,2.5) {\texttt{y=x+c}};
-          \node[anchor=west] at (3,2) {\texttt{d=x}};
-          \node[anchor=west] at (3,1.5) {\texttt{e=d-c}};
-        }
-
-        \only<7>{
-          \node[anchor=west] at (3,3) {\texttt{d=a*b}};
-          \node[anchor=west] at (3,2.5) {\texttt{y=d+c}};
-          \node[anchor=west] at (3,2) {\texttt{e=d-c}};
-          \node[anchor=west] at (3,1.5) {\texttt{x=d+e}};
-        }
-
-      \end{tikzpicture}
-
-    \end{minipage}
-  \end{tabular}
-\end{frame}
-
-\begin{frame}
-  \frametitle{不要コードの消去}
-  \begin{tabular}{cc}
-    \parbox{.3\textwidth}{これ以降、$x$しか使用しないとすると
-      \only<2>{$\mathtt{y=d+c}$は消去}}
-    \begin{minipage}{.4\textwidth}
-
-      \begin{tikzpicture}
-        \only<1,2>{\node[draw,circle] (a0) at (0,0) {$a_0$};
-          \node[draw,circle] (b0) at (1.5,0) {$b_0$};
-          \node[draw,circle] (c0) at (3.25,1) {$c_0$};
-          \node[draw,circle] (AST) at (0.75,1) {$\ast$};
-          \node[draw,circle] (MIN) at (2,3.5) {$-$};
-          \node[draw,circle] (PL2) at (2,5) {$+$};
-          \node at ($(AST)+(0.5,0)$) {$d$};
-          \node at ($(MIN)+(0.5,0)$) {$e$};
-          \node at ($(PL2)+(0.5,0)$) {$x$};
-          \path[-] (a0) edge (AST) (b0) edge (AST)
-          (AST) edge (MIN) (c0) edge (MIN)
-          (AST) edge (PL2) (MIN) edge (PL2);
-        }
-        \only<1>{\node[draw,circle] (PL1) at (2,2) {$+$};
-          \node at ($(PL1)+(0.5,0)$) {$y$};
-          \path[-] (AST) edge (PL1)  (c0) edge (PL1);
-        }
-
-      \end{tikzpicture}
-
-    \end{minipage}
-     &
-    \begin{minipage}{.4\textwidth}
-
-      \begin{tikzpicture}
-        \node[anchor=west] at (0,3.5) {\texttt{d=a*b}};
-        \only<1>{\node[anchor=west] at (0,3.1) {\texttt{y=d+c}};}
-        \node[anchor=west] at (0,2.7) {\texttt{e=d-c}};
-        \node[anchor=west] at (0,2.3) {\texttt{x=d+e}};
-      \end{tikzpicture}
-
-    \end{minipage}
-  \end{tabular}
-
-  \vspace*{10pt}
-
-  \greentext{不要な変数を上からたどって消していく。}\\
-  \greentext{$e$,$d$は直接使わないが、$x$の計算に必要なので消去できない。}
-\end{frame}
-
-\begin{frame}
-  \frametitle{代数的性質}
   \begin{center}
-    \begin{tabular}{ccc}
-      \begin{minipage}{.3\textwidth}
-        \scalebox{0.8}{
-          \begin{tikzpicture}
-            \node[draw,circle] (a0) at (0,0) {$a_0$};
-            \node[draw,circle] (b0) at (1.5,0) {$b_0$};
-            \node[draw,circle] (c0) at (3,0) {$c_0$};
-            \node[draw,circle] (AS1) at (0.75,1) {$\ast$};
-            \node[draw,circle] (AS2) at (2.25,1) {$\ast$};
-            \node[draw,circle] (PL) at (1.5,2) {$+$};
-            \path[-] (a0) edge (AS1)  (b0)edge (AS1)  (b0) edge (AS2)
-            (c0) edge (AS2)  (AS1) edge (PL) (AS2) edge (PL);
-          \end{tikzpicture}
-        }
-      \end{minipage}
-       &
-      $\Rightarrow$
-       &
-      \begin{minipage}{.3\textwidth}
-        \scalebox{0.8}{
-          \begin{tikzpicture}
-            \node[draw,circle] (a0) at (0,0) {$a_0$};
-            \node[draw,circle] (c0) at (1.5,0) {$c_0$};
-            \node[draw,circle] (b0) at (3,0) {$b_0$};
-            \node[draw,circle] (PL) at (0.75,1) {$+$};
-            \node[draw,circle] (AS) at (1.5,2) {$\ast$};
-            \path[-] (a0)edge (PL)  (c0)edge (PL) (PL) edge  (AS) (b0) edge (AS);
-          \end{tikzpicture}
-        }
-      \end{minipage} \\
-      \begin{minipage}{.3\textwidth}
-        \begin{tabular}{l}
-          {\tt t1=a*b}   \\
-          {\tt t2=b*c}   \\
-          {\tt t3=t1+t2} \\
-        \end{tabular}
-      \end{minipage}
-       &   &
-      \begin{minipage}{.3\textwidth}
-        \begin{tabular}{l}
-          {\tt t1=a+c} \\
-          {\tt t2=t1*b}
-        \end{tabular}
-      \end{minipage}
+    \begin{tikzpicture}
+      \node (N0) at (0,0) {$\mathsf{NUM_0}$};
+      \node (N1) at (0,1) {$E_3$};
+      \node (N2) at (1,1) {$\texttt{+}$};
+      \node (N3) at (2,1) {$\mathsf{NUM}_1$};
+      \node (N4) at (1,2) {$E_2$};
+      \node (N5) at (2,2) {$\texttt{+}$};
+      \node (N6) at (3,2) {$\mathsf{NUM_2}$};
+      \node (N7) at (0,3) {$\mathsf{ID}$};
+      \node (N8) at (1,3) {$\texttt{=}$};
+      \node (N9) at (2,3) {$E_1$};
+      \node (N10) at (3,3) {$\texttt{;}$};
+      \node (N11) at (1.5,4) {$S$};
+
+      \path[-] (N0) edge (N1);
+      \path[-] (N4) edge (N1) (N4) edge (N2) (N4) edge (N3);
+      \path[-] (N9) edge (N4) (N9) edge (N5) (N9) edge (N6);
+      \path[-] (N11) edge (N7) (N11) edge (N8) (N11) edge (N9) (N11) edge (N10);
+    \end{tikzpicture}
+    % \begin{pspicture}(0,0)(3,4)
+    %  \rput(1.5,4){\rnode{P0}{$S$}}
+    %  \rput(0,3){\rnode{P1}{$\mathsf{ID}$}}
+    %  \rput(1,3){\rnode{P2}{$\mathtt{'='}$}}
+    %  \rput(2,3){\rnode{P3}{$E_1$}}
+    %  \rput(3,3){\rnode{P4}{$\mathtt{';'}$}}
+    %  \rput(1,2){\rnode{P31}{$E_2$}}
+    %  \rput(2,2){\rnode{P32}{$\mathtt{'+'}$}}
+    %  \rput(3,2){\rnode{P33}{$\mathsf{NUM}_2$}}
+    %  \rput(0,1){\rnode{P311}{$E_3$}}
+    %  \rput(1,1){\rnode{P312}{$\mathtt{'+'}$}}
+    %  \rput(2,1){\rnode{P313}{$\mathsf{NUM}_1$}}
+    %  \rput(0,0){\rnode{P3111}{$\mathsf{NUM}_0$}}
+    %  \ncline{-}{P0}{P1}
+    %  \ncline{-}{P0}{P2}
+    %  \ncline{-}{P0}{P3}
+    %  \ncline{-}{P0}{P4}
+    %  \ncline{-}{P3}{P31}
+    %  \ncline{-}{P3}{P32}
+    %  \ncline{-}{P3}{P33}
+    %  \ncline{-}{P31}{P311}
+    %  \ncline{-}{P31}{P312}
+    %  \ncline{-}{P31}{P313}
+    %  \ncline{-}{P311}{P3111}
+    % \end{pspicture}
+
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{中間コード(3番地コード)生成}
+  \begin{center}
+    \includegraphics[scale=.8]{prodcode1-crop.pdf}
+  \end{center}
+  \begin{center}
+    \includegraphics[scale=.8]{code-prog-r1-crop.pdf}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{IF文の中間コード生成}
+  \only<1>{
+    \[
+      \mbox{文}\ \rightarrow\ \mathsf{if}\ \mathtt{'('}\ \mbox{式}\
+      \mathtt{')'}\ \mbox{文}^{(1)}
+    \]
+    \begin{enumerate}
+      \item '式'のコードを生成 {\sf t1}に結果収納
+      \item {\sf if not t1 goto l1}
+      \item '文'$^{(1)}$のコードを生成
+      \item {\sf l1:}
+    \end{enumerate}
+  }
+  \only<2>{
+    \[
+      \mbox{文}\ \rightarrow\ \mathsf{if}\ \mathtt{'('}\ \mbox{式}\
+      \mathtt{')'}\ \mbox{文}^{(1)}\ \mathsf{else}\ \mbox{文}^{(2)}
+    \]
+    \begin{enumerate}
+      \item '式'のコードを生成 {\sf t1}に結果収納
+      \item {\sf if not t1 goto l1}
+      \item '文'$^{(1)}$のコードを生成
+      \item {\sf goto l2}
+      \item {\sf l1:}
+      \item '文'$^{(2)}$のコードを生成
+      \item {\sf l2:}
+    \end{enumerate}
+  }
+\end{frame}
+\begin{frame}
+  \frametitle{while文の中間コード生成}
+  \[
+    \mbox{文}\ \rightarrow\ \mathsf{while}\ \mathtt{'('}\ \mbox{式}\
+    \mathtt{')'}\ \mbox{文}^{(1)}
+  \]
+  \begin{enumerate}
+    \item {\sf l1:}
+    \item '式'のコードを生成 {\sf t1}に結果収納
+    \item {\sf if not t1 goto l2}
+    \item '文'$^{(1)}$のコードを生成
+    \item {\sf goto l1}
+    \item {\sf l2:}
+  \end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{構文主導型変換によるコード生成}
+  {\small
+    \begin{tabular}{lll}
+      文$\rightarrow$ & {\tt if} (  & \{文.label:=\makenewlabel;\}                      \\
+                     & 式           & (式のコード)                                          \\
+                     & )           & \{\genifnot{式.var}{文.label}\}                    \\
+                     & 文$^{(1)}$   & (文$^{(1)}$のコード)\{文$^{(1)}$.label:=\makenewlabel; \\
+                     &             & \gengoto{文$^{(1)}$.label}\}                      \\
+                     & {\tt else}  & \{\genlabel{文.label}\}                           \\
+                     & 文{$^{(2)}$} & \{\genlabel{文$^{(1)}$.label}\}
     \end{tabular}
 
     \vspace*{1zw}
 
-    \par\noindent
-    \greentext{分配則=DAG上でのパターンマッチング}
-  \end{center}
-\end{frame}
-
-\subsection{大域的最適化}
-
-\begin{frame}
-  \frametitle{大域的コード最適化}
-  基本ブロックを越える最適化
-
-  \begin{list}{}{}
-    \item ループ最適化
-    \item 手続き呼び出し最適化
-    \item データフロー解析
-    \item 静的単一代入(SSA)解析
-  \end{list}
-\end{frame}
-
-\begin{frame}
-  \frametitle{ループ最適化(1/3)}
-  ループ内のコード実行回数:ループ外のコードよりも一般に多い\\
-  ループ内のコードは慎重に最適化\\
-  本当に毎回実行しなければならないか？できるだけ効率よく実行
-  \begin{list}{}{}
-    \item ループ不変式の移動\\
-          \greentext{ループから影響をうけない式を外に出す}l\\
-          例6.8
-    \item ループ内の演算の強さの軽減\\
-          強い演算：時間のコストが大きい演算\\
-          足し算$<$掛け算 (加算器$<$乗算器)\\
-          例6.9
-  \end{list}
-\end{frame}
-
-\begin{frame}
-  \frametitle{例}
-  \begin{center}
-    \begin{tabular}{ccc}
-      \multicolumn{3}{l}{例6.8}                \\
-      \includegraphics[scale=.7]{ex6_8_1.pdf}
-       & $\Rightarrow$ &
-      \includegraphics[scale=.7]{ex6_8_2.pdf} \\[1zw]
-      \includegraphics[scale=.7]{ex6_8_3.pdf}
-       & $\Rightarrow$ &
-      \includegraphics[scale=.7]{ex6_8_4.pdf} \\[1zw]
-      \multicolumn{3}{l}{例6.9}                \\
-      \includegraphics[scale=.7]{ex6_9_1.pdf}
-       & $\Rightarrow$ &
-      \includegraphics[scale=.7]{ex6_9_2.pdf}
+    \begin{tabular}{lll}
+      文$\rightarrow$ & {\tt while} ( & \{文.label1:=\makenewlabel;   \\
+                     &               & \genlabel{文.label1}\}        \\
+                     & 式             & (式のコード)                      \\
+                     & )             & \{文.label2:=\makenewlabel;   \\
+                     &               & \genifnot{式.var}{文.label2}\} \\
+                     & 文$^{(1)}$     & (文のコード)                      \\
+                     &               & \{\gengoto{文.label1};        \\
+                     &               & \genlabel{文.label2}\}        \\
     \end{tabular}
-  \end{center}
+  }
 \end{frame}
 
-\begin{frame}
-  \frametitle{ループ最適化(2/3)}
-  \begin{list}{}{}
-    \item 帰納変数消去\\
-          \greentext{帰納変数(ループを制御する変数)は減らす。}\\
-          \greentext{参照数の減少}
-          \begin{center}
-            \begin{tabular}{ccc}
-              \includegraphics[scale=.75]{ex6_10_1.pdf}
-               & $\Rightarrow$ &
-              \includegraphics[scale=.75]{ex6_10_2.pdf}
-            \end{tabular}
-          \end{center}
-
-    \item ループ融合とループ分離\\
-    \item ループ展開とソフトウェアパイプライン
-  \end{list}
-\end{frame}
+\subsection{中間コード生成ルーチン}
 
 \begin{frame}
-  \frametitle{ループ展開とソフトウェアパイプライン}
+  \frametitle{PDTを用いた構文主導型変換}
+  \greentext{コード生成を行うタイミング=還元操作}
   \begin{center}
-    \begin{tabular}{ccc}
-      \includegraphics[scale=.75]{ex6_14_1.pdf}
-       & $\Rightarrow$ &
-      \includegraphics[scale=.75]{ex6_14_2.pdf}
-      \\
-    \end{tabular}
-
-    \[
-      \begin{array}{c|ccc}
-               & P_1                        & P_2 & P_3 \\\hline
-        1      & A_1                        &     &     \\
-        2      & B_1                        & A_2 &     \\
-        3      & C_1                        & B_2 & A_3 \\
-        4      & A_4                        & C_2 & B_3 \\
-        5      & B_4                        & A_5 & C_3 \\
-        \vdots & \multicolumn{3}{c}{\vdots}             \\
-      \end{array}
-    \]
-    並列に実行可能
+    \includegraphics[scale=0.6]{bup-SDD-r1-crop.pdf}
+  \end{center}
+  \begin{center}
+    \includegraphics[scale=0.5]{IR-gen-crop.pdf}
   \end{center}
 \end{frame}
 
 \begin{frame}
-  \frametitle{手続き呼出し最適化}
-
-  \begin{list}{}{}
-    \item {\bf インライン展開}:\ \\
-          手続き呼出し=駆動レコードを用いてスタック上に情報を保存
-
-          \greentext{操作としてはコストが大きい}
-
-          スタック操作：実メモリへの正確な順序での書き込みを要求
-
-          短い手続きや関数であればそのまま置き換えてしまった方が
-          効率がよい。
-
-    \item {\bf 末尾再帰}:\\
-
-          手続の最後の再帰よびだしは、gotoに置き換え可能。
-
-          \greentext{呼出しから復帰しても駆動レコード上の局所環境を使って
-            実行する命令が存在しない。局所領域も再利用可能}
-  \end{list}
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{末尾再帰の例}
-  \begin{tabular}{ccc}
-    \includegraphics[scale=.6]{ex6_16_1.pdf}
-     & $\Rightarrow$ &
-    \includegraphics[scale=.6]{ex6_16_2.pdf} \\
-     &               & $\Downarrow$          \\
-     &               &
-    \includegraphics[scale=.6]{ex6_16_3.pdf}
-  \end{tabular}
-\end{frame}
-
-\subsection{データフロー解析}
-
-\begin{frame}
-  \frametitle{データフロー解析}
-
-  \vspace*{10pt}
-
-  \greentext{(講義資料6.4:詳細については省略)}
-
-  \vspace*{10pt}
-
-  基本ブロック$B$に対するデータフロー
-
+  \frametitle{変換例}
   \[
-    out[B]=gen[B]\cup(in[B]-kill[B])
-  \]
-
-  プログラム上での位置(行番号)：
-  \begin{tabular}{ll}
-    $in[B]$   & $B$に入力されるデータ  \\
-    $out[B]$  & $B$から出力されるデータ \\
-    $gen[B]$  & $B$で定義されるデータ  \\
-    $kill[B]$ & $B$で上書きされるデータ \\
-  \end{tabular}
-
-  入力から出力への制御がきまっていればよいので、基本ブロック単位で考えれ
-  ばよい。
-
-  ループ：データフロー方程式を解いて全体的に必要なデータを計算する。
-\end{frame}
-
-\begin{frame}{データフロー方程式}
-  % \begin{tabular}{ccc}
-  %  \begin{minipage}{.2\textwidth}
-  % \begin{tikzpicture}
-  %  \node[draw] (S1) at (0,1.5) {$S_1$};
-  %  \node[draw] (S2) at (0,0) {$S_2$};
-  %  \path[->] (S1) edge (S2);
-  % \end{tikzpicture}
-  %  \end{minipage}
-  %  &
-  %  \begin{minipage}{.25\textwidth}
-  %   \begin{tikzpicture}
-  %    
-  %   \end{tikzpicture}
-  %  \end{minipage}
-  % \end{tabular}
-
-  \greentext{定義到達可能性解析：}
-
-  \scalebox{0.7}{
-    \begin{tikzpicture}
-      \node[draw] (B5) at (2,0) {EXIT};
-      \node[draw] (B4) at (2,1.25) {$\begin{array}{ll}d_7: &
-             \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
-      \node[draw] (B3) at (0,2.25) {$d_6$:\texttt{a=u2}};
-      \node[draw] (B2) at (2,3.5) {$\begin{array}{ll}
-            d_4: & \texttt{i=i+1}  \\[-3pt]
-            d_5: & \texttt{j=j-1}  \\[-3pt]
-                 & \texttt{if ...}
-          \end{array}$};
-      \node[draw] (B1) at (2,5.25) {$\begin{array}{ll}
-            d_1: & \texttt{i=m-1} \\[-3pt]
-            d_2: & \texttt{j=n}   \\[-3pt]
-            d_3: & \texttt{a=u1}
-          \end{array}$};
-      \node[draw] (B0) at (2,6.75) {ENTRY};
-
-      \node at ($(B1)+(1.75,0)$) {$B_1$};
-      \node at ($(B2)+(1.75,0)$) {$B_2$};
-      \node at ($(B3)+(1.2,0)$) {$B_3$};
-      \node at ($(B4)+(1.75,0)$) {$B_4$};
-
-      \path[->] (B0) edge (B1) (B1) edge (B2) (B2) edge (B4)
-      (B2) edge (B3) (B3) edge (B4) (B4) edge (B5);
-      \path[->] (B4) [out=210,in=150,looseness=3] edge (B2);
-
-      \node[anchor=west] at ($(B1)+(2.5,0)$) {$\begin{array}{ll}
-            gen_{B_1}  & = \{d_1,d_2,d_3\}     \\[-3pt]
-            kill_{B_1} & = \{d_4,d_5,d_6,d_7\}
-          \end{array}$};
-      \node[anchor=west] at ($(B2)+(2.5,0)$) {$\begin{array}{ll}
-            gen_{B_2}  & = \{d_4,d_5\}     \\[-3pt]
-            kill_{B_2} & = \{d_1,d_2,d_7\}
-          \end{array}$};
-      \node[anchor=west] at ($(B3)+(4.5,0)$) {$\begin{array}{ll}
-            gen_{B_3}  & = \{d_6\} \\[-3pt]
-            kill_{B_3} & = \{d_3\}
-          \end{array}$};
-      \node[anchor=west] at ($(B4)+(2.5,0)$) {$\begin{array}{ll}
-            gen_{B_4}  & = \{d_7\}     \\[-3pt]
-            kill_{B_4} & = \{d_1,d_4\}
-          \end{array}$};
-    \end{tikzpicture}
-  }
-
-  \vspace*{-30pt}
-
-  {\footnotesize
-    \begin{eqnarray*}
-      IN[B_2] & = & OUT[B_1]\cup OUT[B_4]\\
-      OUT[B_2] & = & gen_{B_2}\cup(IN[B_2]-kill_{B_2})
-    \end{eqnarray*}
-  }
-
-  (Ahoら：Compilers より引用)
-\end{frame}
-
-\begin{frame}
-  \frametitle{データフロー方程式}
-  \[
-    \begin{array}{rcl}
-      OUT[B_1] & = & gen_{B_1}                         \\
-      IN[B_2]  & = & OUT[B_1]\cup OUT[B_4]             \\
-      OUT[B_2] & = & gen_{B_2}\cup(IN[B_2]-kill_{B_2}) \\
-      IN[B_3]  & = & OUT[B_2]                          \\
-      OUT[B_3] & = & gen_{B_3}\cup(IN[B_3]-kill_{B_3}) \\
-      IN[B_4]  & = & OUT[B_3]\cup OUT[B_2]             \\
-      OUT[B_4] & = & gen_{B_4}\cup(IN[B_4]-kill_{B_4})
+    \begin{array}{ll}
+      E_1\rightarrow a\ast b       & \{\%0=a\ast b\}  \\
+      E_2\rightarrow -d            & \{\%1=-d\}       \\
+      E_3\rightarrow c\ast E_2     & \{\%2=c\ast\%1\} \\
+      E_4\rightarrow E_1+E_3       & \{\%3=\%0+\%2\}  \\
+      S\rightarrow x\texttt{:=}E_4 & \{x=\%3\}
     \end{array}
   \]
-\end{frame}
 
-\begin{frame}{データフロー方程式の計算}
+  \begin{tikzpicture}
+    \node (X0) at (0,0) {$x$};
+    \node (T1) at (0.75,0) {$:=$};
+    \node (T2) at (1.5,0) {$a$};
+    \node (T3) at (2,0) {$\ast$};
+    \node (T4) at (2.5,0) {$b$};
+    \node (T5) at (3,0) {$+$};
+    \node (T6) at (3.5,0) {$c$};
+    \node (T7) at (4,0) {$\ast$};
+    \node (T8) at (4.5,0) {$-$};
+    \node (T9) at (5,0) {$d$};
+    \uncover<2->{\node (T10) at (2,1) {$E_1$};}
+    \uncover<3->{\node (T11) at (4.75,1) {$E_2$};}
+    \uncover<4->{\node (T12) at (3.5,2) {$E_3$};}
+    \uncover<5->{\node (T13) at (3,3) {$E_4$};}
+    \uncover<6->{\node (T14) at (2,4) {$S$};}
 
-  到達可能性解析：
+    \uncover<2->{\path[-] (T2) edge (T10) (T3) edge (T10) (T4) edge (T10);}
+    \uncover<3->{\path[-] (T8) edge (T11) (T9) edge (T11);}
+    \uncover<4->{\path[-] (T6) edge (T12) (T7) edge (T12) (T11) edge (T12);}
+    \uncover<5->{\path[-] (T10) edge (T13) (T5) edge (T13) (T12) edge (T13);}
+    \uncover<6->{\path[-] (X0) edge (T14) (T1) edge (T14) (T13) edge (T14);}
 
-  {\small
-  {XXXX XXX}:$d_1,d_2,\cdots,d_7$が集合に入っているとき$1$、入ってないとき$0$
-  }
+    \only<2->{\node (N10) at (2.5,1) {\redtext{$\%0$}};}
+    \only<3->{\node (N11) at (5.25,1) {\redtext{$\%1$}};}
+    \only<4->{\node (N12) at (4,2) {\redtext{$\%2$}};}
+    \only<5->{\node (N13) at (3.5,3) {\redtext{$\%3$}};}
+    \only<6->{\node (N14) at (2.5,4) {\redtext{$\%4$}};}
 
-  \vspace*{10pt}
-
-  {\footnotesize
-    \begin{tabular}{c|c|c|c|c|c}\hline
-      Block $B$ & OUT[$B$]$^0$ & IN[$B$]$^1$ & OUT[$B$]$^1$ & IN[$B$]$^2$ & OUT[$B$]$^2$ \\\hline
-      $B_1$     & 111 0000     & 000 0000    & 111 0000     & 000 0000    & 111 0000     \\
-      $B_2$     & 000 1100     & 111 0001    & 001 1100     & 111 0111    & 001 1110     \\
-      $B_3$     & 000 0010     & 000 1100    & 000 1110     & 001 1100    & 000 1110     \\
-      $B_4$     & 000 0001     & 000 1110    & 000 0111     & 001 1110    & 001 0111     \\\hline
-    \end{tabular}
-  }
-
-  \vspace*{10pt}
-
-  \greentext{変化しなくなるまでくりかえす。}
-
-
-  $OUT[B_4]$=001 0111:\\
-  \greentext{本ブロックでは$d_3$,$d_5$,$d_6$,$d_7$がEXITが到達する可能性がある．}
-
+    \only<2->{\node[anchor=west] at (6,3.5) {$\%0=a\ast b$};}
+    \only<3->{\node[anchor=west] at (6,3) {$\%1=-d$};}
+    \only<4->{\node[anchor=west] at (6,2.5) {$\%2=c\ast\% 1$};}
+    \only<5->{\node[anchor=west] at (6,2) {$\%3=\% 0+\% 2$};}
+    \only<6->{\node[anchor=west] at (6,1.5) {$x=\%3$};}
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}
-  \frametitle{データフロー}
-  \greentext{生存解析}
-  \begin{tabular}{ll}
-    $Use[B]$: & $B$で再定義される前に資料される変数の集合 \\
-    $Def[B]$: & $B$で定義される変数の集合
+  \frametitle{条件分岐に対する構文主導型変換}
+
+  %\greentext{LR項の状態に対してコード生成}
+
+  \greentext{分岐条件の評価の後に分岐命令を生成する必要がある．}
+
+  \vfill
+
+  \begin{tabular}{cc}
+    \includegraphics[width=.7\textwidth]{whileTrans-r1-crop.pdf} &
+    \includegraphics[width=.2\textwidth]{whileFlow-crop.pdf}
   \end{tabular}
 
-  \begin{eqnarray*}
-    In[B] & = & Use[B]\cup(Out[B]-Def[B])\\
-    Out[B] & = & \cup_{S\in Succ[B]}In[S]
-  \end{eqnarray*}
-  $Succ[B]$: フローグラフにおいて$B$から直接フローがあるブロック
+  %  \begin{trivlist}
+  %   \item  $\mathsf{newLabel}(\&\mbox{文}.label_1)$:\\
+  % 	 新たなラベルを生成して,$\mbox{文}.label_1$の値を更新する.
+  %   \item $\mathsf{generate}(s1,s2,\ldots)$:\\
+  % 	$s_1,s_2,\ldots$ の命令部分を結合して命令を生成する.
+  %   \item $\mbox{式}.var$:\\
+  % 	式のコード生成の結果が格納される変数
+  %  \end{trivlist}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{while文の中間コード生成例}
+  \begin{center}
+    \begin{Verbatim}
+      while(x<20) {
+          r=r+x;
+          x=x+1;
+        }
+    \end{Verbatim}
+  \end{center}
+  \begin{tabular}{cc}
+    \includegraphics[width=.3\textwidth]{whileCodeExample-r1-crop.pdf}
+     &
+    \includegraphics[width=.3\textwidth]{whileCode-crop.pdf}
+    \\
+  \end{tabular}
 \end{frame}
 
 \begin{frame}
-  \frametitle{データフロー解析}
-  \scalebox{0.7}{
-    \begin{tikzpicture}
-      \node[draw] (B5) at (2,0) {EXIT};
-      \node[draw] (B4) at (2,1.25) {$\begin{array}{ll}d_7: &
-             \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
-      \node[draw] (B3) at (0,2.25) {$d_6$:\texttt{a=u2}};
-      \node[draw] (B2) at (2,3.5) {$\begin{array}{ll}
-            d_4: & \texttt{i=i+1}  \\[-3pt]
-            d_5: & \texttt{j=j-1}  \\[-3pt]
-                 & \texttt{if ...}
-          \end{array}$};
-      \node[draw] (B1) at (2,5.25) {$\begin{array}{ll}
-            d_1: & \texttt{i=m-1} \\[-3pt]
-            d_2: & \texttt{j=n}   \\[-3pt]
-            d_3: & \texttt{a=u1}
-          \end{array}$};
-      \node[draw] (B0) at (2,6.75) {ENTRY};
+  \frametitle{上昇型構文解析におけるコード生成}
 
-      \node at ($(B1)+(1.75,0)$) {$B_1$};
-      \node at ($(B2)+(1.75,0)$) {$B_2$};
-      \node at ($(B3)+(1.2,0)$) {$B_3$};
-      \node at ($(B4)+(1.75,0)$) {$B_4$};
-
-      \path[->] (B0) edge (B1) (B1) edge (B2) (B2) edge (B4)
-      (B2) edge (B3) (B3) edge (B4) (B4) edge (B5);
-      \path[->] (B4) [out=210,in=150,looseness=3] edge (B2);
-
-      \node[anchor=west] at ($(B1)+(2.5,0)$) {$\begin{array}{ll}
-            Def_{B_1} & = \{i,j,a\}   \\[-3pt]
-            Use_{B_1} & = \{m,n,u_1\}
-          \end{array}$};
-      \node[anchor=west] at ($(B2)+(2.5,0)$) {$\begin{array}{ll}
-            Def_{B_2} & = \{i,j\} \\[-3pt]
-            Use_{B_2} & = \{i,j\}
-          \end{array}$};
-      \node[anchor=west] at ($(B3)+(4.5,0)$) {$\begin{array}{ll}
-            Def_{B_3} & = \{a\}  \\[-3pt]
-            Use_{B_3} & = \{u2\}
-          \end{array}$};
-      \node[anchor=west] at ($(B4)+(2.5,0)$) {$\begin{array}{ll}
-            Def_{B_4} & = \{i\}  \\[-3pt]
-            Use_{B_4} & = \{u3\}
-          \end{array}$};
-    \end{tikzpicture}
-  }
+  \begin{trivlist}
+    \item IF文
+    {\small
+    \[\begin{array}{rcll}
+        I  & \rightarrow                      & \texttt{if}\ \texttt{(}\ E\ \texttt{)}
+           & \{I.label\mbox{:=\makenewlabel};                                                                        \\
+           &                                  &                                        & \genifnot{E.var}{I.label}\} \\
+        S' & \rightarrow\                     & I S^{(1)}                              & \{S'.label:=\makenewlabel;  \\
+           &                                  &                                        & \gengoto{S'.label};         \\
+           &                                  &                                        & \genlabel{I.label}\}        \\
+        S  & \rightarrow                      & S'\ \texttt{else}\ S^{(2)}             & \{\genlabel{S'.label}\}     \\
+      \end{array}\]}
+    \item WHILE文
+    {\small
+    \[\begin{array}{rcll}
+        I  & \rightarrow & \texttt{while}\ \texttt{(} & \{I.label\mbox{:=}\makenewlabel; \\
+           &             &                            & \genlabel{I.label}\}             \\
+        S' & \rightarrow & E\ \texttt{)}              & \{S'.label:=\makenewlabel;       \\
+           &             &                            & \genifnot{E.var}{S'.label}\}     \\
+        S  & \rightarrow & IS'S^{(1)}                 & \{\gengoto{I.label};             \\
+           &             &                            & \genlabel{S'.label}\}
+      \end{array}\]}
+  \end{trivlist}
 \end{frame}
 
 \begin{frame}
-  \frametitle{データフロー解析（生存解析）}
-  $(a,i,j,m,n,u1,u2,u3)$とすると
+  \frametitle{下降型構文主導型変換}
+  構文図式に従ってコードを生成する。
 
-  {\scriptsize
-  $\begin{array}{l|llllll}
-          & OUT        & IN         & OUT        & IN         & OUT        & IN         \\\hline
-      B_1 & (00000000) & (00011100) & (01100000) & (00011100) & (01100010) & (00011100) \\
-      B_2 & (00000000) & (01100000) & (01100010) & (01100010) & (01100001) & (01100010) \\
-      B_3 & (00000000) & (00000010) & (00000001) & (00000010) & (00100001) & (10100001) \\
-      B_4 & (00000000) & (00000001) & (01100000) & (00100001) & (01100010) & (00100001)
-    \end{array}$}
+  \greentext{丸}の部分でコードを生成する
 
-  \vspace*{10pt}
-
-  \greentext{\small フローグラフの基本ブロックにおいてどの変数が影響をうけるかを解析}
-
-  \vspace*{10pt}
-
-  $\begin{array}{l|ll}
-          & IN         & OUT        \\\hline
-      B_1 & \{m,n,u1\} & \{i,j,u2\} \\
-      B_2 & \{i,j,u2\} & \{i,j,u3\} \\
-      B_3 & \{a,j,u3\} & \{j,u3\}   \\
-      B_4 & \{j,u3\}   & \{i,j,u2\}
-    \end{array}$
+  \begin{center}
+    \includegraphics[scale=.8]{synDiag-S-crop.pdf}
+  \end{center}
 \end{frame}
+
+\begin{frame}
+  \begin{center}
+    \includegraphics[scale=.5]{recDescent-gen-crop.pdf}
+  \end{center}
+\end{frame}
+
+
+% \begin{frame}
+%   \frametitle{属性文法}
+
+%   属性文法(attribute grammar):抽象構文木に属性を加えた文法
+
+%   \greentext{構文主導型変換への応用=コード生成に関する情報を属
+%     性として扱う}
+
+%   属性文法 $A_g=(G,{\cal A},E)$
+%   \begin{list}{}{}
+%     \item $G=(N,\Sigma,P,S)$はCF文法
+%     \item ${\cal A}$:属性の集合\\
+%           ${\cal A}=\cup_{X\in
+%               N\cup\Sigma}{\cal A}(X)$.  $a\in{\cal A}(X)$のとき、
+%           $X.a$と書く。
+%     \item $E$:意味規則の集合\\
+%           $p\in P$に対して以下のような規則を定める。
+%           \[
+%             p\{X_i.a_i=f_i(X_{i_1}.a_{i_1},\ldots,X_{i_n}.a_{i_n})\}
+%           \]
+%   \end{list}
+
+%   \[\begin{array}{ll}
+%       E\rightarrow E^{(1)}\texttt{+}E^{(2)} & \{E.val=E^{(1)}.val+E^{(2)}.val\} \\
+%       E\rightarrow \texttt{NUM}             & \{E.val=\texttt{NUM}.val\}
+%     \end{array}
+%   \]
+%   %  \begin{center}
+%   %   \includegraphics[scale=1]{figs191113/attribGram01.eps}
+%   %  \end{center}
+
+% \end{frame}
+
+
+% \begin{frame}
+%   \frametitle{属性の種類}
+
+%   \begin{list}{}{}
+%     \item 合成(synthesized)属性\\
+%           \greentext{右辺の属性から合成された左辺の属性}:
+%     \item 相続(inherited)属性 (「継承属性」とも言う)\\
+%           \greentext{合成以外の属性}
+%   \end{list}
+
+
+%   \[G=(\{T,L\},\{\texttt{MAX},\texttt{MIN},\texttt{NUM},`\texttt{(}',`\texttt{)}',`\texttt{,}'\},P,T)\]
+
+%   \scalebox{0.8}{
+%     $\mathcal{A}$:
+%     \begin{tabular}{|c|c|c|}\hline
+%           & 合成属性    & 相続属性   \\\hline
+%       $T$ & $T.val$ &        \\\hline
+%       $L$ & $L.val$ & $L.op$ \\\hline
+%     \end{tabular}
+%   }
+
+%   \vspace*{5pt}
+
+%   {\small
+%     %P,E:\\
+
+%     $P=\left\{\begin{array}{ll}
+%         T\rightarrow\texttt{MIN'('}L\texttt{')'} & \{L.op=\texttt{MIN},T.val=L.val\}                                  \\
+%         T\rightarrow\texttt{MAX'('}L\texttt{')'} & \{L.op=\texttt{MAX},T.val=L.val\}                                  \\
+%         L\rightarrow\texttt{NUM}                 & \{L.val=\texttt{NUM}.val\}                                         \\
+%         L\rightarrow L^{(1)}\texttt{',' NUM}     & \left\{\begin{array}{l}L.val=f(L.op,L^{(1)}.val,\texttt{NUM}.val), \\
+%                                                             L^{(1)}.op=L.op\end{array}\right\}
+%       \end{array}\right\}$
+%   }
+%   %  \begin{center}
+%   %   \includegraphics[scale=.8]{figs191113/AttributeExample.eps}
+%   %  \end{center}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   $G$に生成規則$\{S\rightarrow T\#\}$を加えた拡張文法に対するLR解析
+
+%   \vspace*{3pt}
+
+%   $P=\left\{\begin{array}{rlcrl}
+%       0: & S\rightarrow T\#,                                        &  & 3: & L\rightarrow\texttt{NUM},                   \\
+%       1: & T\rightarrow\texttt{MIN}\ `\texttt{(}'\ L\ `\texttt{)}', &  & 4: & L\rightarrow L\ `\texttt{,}'\ \texttt{NUM}, \\
+%       2: & T\rightarrow\texttt{MAX}\ `\texttt{(}'\ L\ `\texttt{)}'  &  &    &
+%     \end{array}\right\}$
+
+%   \vspace*{3pt}
+
+%   $\mathsf{Follow}_1(T)=\{\#\}$,
+%   $\mathsf{Follow}_1(L)=\{\texttt{)},`\texttt{,}'\}$
+
+
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   \begin{center}
+%     \begin{tabularx}{\textwidth}{XX}
+%       \includegraphics[scale=0.45]{maxmin-lrautomaton-crop.pdf}
+%                         &
+%       \includegraphics[scale=0.5]{maxmin-parsetab-crop.pdf} \\
+%       {\small LR(0)遷移系} & {\small SLR(1)構文解析表}
+%     \end{tabularx}
+%   \end{center}
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   \scriptsize{
+%     \[
+%       \begin{array}{clllll}
+%                   & (I_0,                                                          & \texttt{MIN(3,5,7)\#}, & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2,                                           & \texttt{(3,5,7)\#},    & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4,                              & \texttt{3,5,7)\#},     & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4\texttt{3}I_7,                 & \texttt{,5,7)\#},      & \varepsilon)                                                                 \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{,5,7)\#},      & 3)           & \%1.val=3                                                     \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{5,7)\#},       & 3)                                                                           \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#},        & 3)                                                                           \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{,7)\#},        & 34)          & \%2.val=f(\only<1>{\%1.op}\only<2>{\redtext{min}},\%1.val,5); \\
+%         \only<1>{ &                                                                &                        &              & \%1.op=\%2.op\\}
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{7)\#},         & 34)                                                                          \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#},          & 34)                                                                          \\
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6,                        & \texttt{)\#},          & 344)         & \%3.val=f(\only<1>{\%2.op}\only<2>{\redtext{min}},\%2.val,7); \\
+%         \only<1>{ &                                                                &                        &              & \%2.op=\%3.op\\}
+%         \vdash    & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{)}I_9,           & \texttt{\#},           & 344)                                                                         \\
+%         \vdash    & (I_0 T I_1,                                                    & \texttt{\#},           & 3441)        & \only<1>{\redtext{\%3.op=min;}}\%4.val=\%3.val                \\
+%         \vdash    & (acc,                                                          & \texttt{\#},           & 34410)
+%       \end{array}
+%     \]
+%   }
+%   \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
+%   \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
+
+%   $T.val=\%4.val$
+% \end{frame}
+
+% \begin{frame}
+%   \frametitle{属性文法に基づくコード生成例}
+%   \scriptsize{
+%     \[
+%       \begin{array}{clllll}
+%                   & (I_0,                                                          & \texttt{MAX(3,5,7)\#}, & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2,                                           & \texttt{(3,5,7)\#},    & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4,                              & \texttt{3,5,7)\#},     & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4\texttt{3}I_7,                 & \texttt{,5,7)\#},      & \varepsilon)                                                                   \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{,5,7)\#},      & 3)           & \%1.val=3                                                       \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{5,7)\#},       & 3)                                                                             \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#},        & 3)                                                                             \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{,7)\#},        & 34)          & \%2.val=f(\only<1>{\%1.op}\only<2>{\greentext{max}},\%1.val,5); \\
+%         \only<1>{ &                                                                &                        &              & \%1.op=\%2.op\\}
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10},        & \texttt{7)\#},         & 34)                                                                            \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#},          & 34)                                                                            \\
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6,                        & \texttt{)\#},          & 344)         & \%3.val=f(\only<1>{\%2.op}\only<2>{\greentext{max}},\%2.val,7); \\
+%         \only<1>{ &                                                                &                        &              & \%2.op=\%3.op\\}
+%         \vdash    & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{)}I_9,           & \texttt{\#},           & 344)                                                                           \\
+%         \vdash    & (I_0 T I_1,                                                    & \texttt{\#},           & 3442)        & \only<1>{\redtext{\%3.op=max;}}\%4.val=\%3.val                  \\
+%         \vdash    & (acc,                                                          & \texttt{\#},           & 34420)
+%       \end{array}
+%     \]
+%   }
+
+%   \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
+%   \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
+
+%   $T.val=\%4.val$
+
+% \end{frame}
+
+% % \subsection{バックパッチ}
+
+% % \begin{frame}
+% %  \frametitle{バックパッチ}
+
+% %  条件分岐のコード生成の場合、ラベルの値はあとで決定する
+
+% %  \[
+% % p  \mathsf{if}\ E\ \mathsf{then}\ S
+% %  \]
+
+% % \begin{center}
+% %  \begin{tabular}{lrl}
+% % 1:&    & $E$のコード\\
+% % 2:&    & if not $E.\mathsf{result}$ goto $L$\\
+% % 3:&    & $S$のコード\\
+% % 4:&$L$:&
+% %  \end{tabular}
+% % \end{center}
+
+% %  $S$をコンパイルするまで$L$の値は決まらない。2の時点で$L$の具
+% %  体的なアドレスはわからない。
+
+% % % 厳密には1パスでコード生成はできない。
+
+% % \begin{list}%
+% %  {$\bullet$} %default label
+% %  {} %formatting parameter
+% %  \item とび先のアドレスの表を作成しておいて、アドレスが決定した時点で
+% %  $L$の値を待つコードをかきかえる。 
+% %  \item 命令を一旦生成するがどこが未決かを管理する。
+% % \end{list}
+
+% % \greentext{LLVM 実行系においては，LLVM抽象マシンがラベルを解決してくれる．}
+
+% % \end{frame}
+
+
+
+% \begin{frame}{LLVMによる条件文コード}
+
+%   \texttt{if} {$B$} \texttt{then} {$S_1$} \texttt{else} {$S_2$}
+
+%   \vspace*{5mm}
+
+%   \begin{tabular}{l}
+%     \texttt{\%1 = } [$B$ を計算するコード]             \\
+%     \texttt{br i1 \%1, label \%L1, label \%L2} \\
+%     \texttt{L1:}                               \\
+%     \quad [$S_1$のコード]                          \\
+%     \texttt{br label \%L3}                     \\
+%     \texttt{L2:}                               \\
+%     \quad [$S_2$のコード]                          \\
+%     \texttt{br label \%L3}                     \\
+%     \texttt{L3:}
+%   \end{tabular}
+
+%   \greentext{\texttt{L1},\texttt{L2},\texttt{L3}は実際に定義される前に参照される．}
+
+%   \greentext{$S_2$の後の\texttt{\%L3}へのジャンプは不要．}
+
+% \end{frame}
 
 % \begin{frame}[fragile]
-%  \frametitle{配列参照}
+%   \frametitle{条件文における論理式}
+%   条件文における条件の評価：結果待ち / 短絡型\\
+%   \greentext{条件が副作用を持つ場合に違いが出る}\\
+%   \texttt{if (x>100 \&\& (z=y)<30) \{ 文1 \} else \{ 文2 \}}\\
+%   \texttt{z=y}の評価結果は\texttt{y}の値\\
+%   \greentext{{\tt z=y}が実行されるか？}\\
+%   結果待ち=評価される、短絡型=\texttt{x>100}のとき評価される\\
 
-% \begin{enumerate}
-%  \item $\mathtt{x = a[i]}$の形の配列参照\\
-%        演算子\texttt{=[]}のノードを生成し、子として$a_0$および$i$、
-%        ノードに$x$をラベルづけする。
-%  \item \texttt{a[i]=x}の形の配列代入\\
-%        演算子\texttt{[]=]}のノードを生成し、
-%        子として、$a_0$, $i$, $x$をとり、$a_0$を参照している
-%        \texttt{=[]}ノードに'killed'マークをつける。
-%        $a[i]$は共通部分式として用いることはできない。
-% \end{enumerate}
+%   \begin{tabular}{ll}
+%     短絡型： & 条件文の評価中にif文を評価する．    \\
+%     結果待： & 条件文の式を評価してからifを評価する．
+%   \end{tabular}
 
-%  \vspace*{0.5cm}
+%   \greentext{短絡型の評価を行う場合が多い(C, python)}
 
-%  \begin{tabular}{ccc}
-%  \begin{tabular}{l}
-% {\tt x = a[i]}\\
-% {\tt a[j]=y}\\
-% {\tt z=a[i]}
-%  \end{tabular}
-%   & \hspace*{1cm} &
+%   \greentext{javaの場合：\texttt{\&\&},\texttt{||}が短絡型，\texttt{\&},\texttt{|}が結果待ち}
+%   %\greentext{java: $\texttt{\&\&}$, $\texttt{\|\|}$は短絡型，\texttt{\&}, \texttt{|}は結果待ち}
 
-% \begin{tikzpicture}
-%  \node (a0) at (0,0) {$a_0$};
-%  \node (i0) at (1.5,0) {$i_0$};
-%  \node (j0) at (3,0) {$j_0$};
-%  \node (y0) at (4.5,0) {$y_0$};
-
-%  \node[draw] (Ar1) at (0.75,1) {\texttt{=[]}};
-%  \node[draw] (Ar2) at (3.75,1) {\texttt{=[]}};
-
-%  \node[draw] (Ar3) at (0.75,2.5) {\texttt{=[]}};
-
-%  \node (Ann0) at (0.75,1.5) {\sf Killed};
-
-%  \node at ($(Ar1)+(0.8,0)$) {$x$};
-%  \node at ($(Ar3)+(0.8,0)$) {$z$};
-
-%  \path (a0) edge (Ar2)  (i0) edge (Ar2)  (j0) edge (Ar2) (y0) edge (Ar2);
-%  \path (a0) edge (Ar1)  (i0) edge (Ar1);
-%  \path (a0) [out=120,in=225] edge (Ar3);
-%  \path (i0) [out=60, in=315] edge (Ar3);
-% \end{tikzpicture}
-%  \end{tabular}
-
+%   %  \begin{verbatim}
+%   %    t1:=x>100;if not t1 goto L1;
+%   %    t2:=y;z:=t2;t4:=t2<30;if not t4 goto L1;
+%   %    文1.code; goto L2;
+%   % L1:文2.code;
+%   % L2:
+%   %  \end{verbatim}
+%   %  \greentext{文1を読まないと、L1が決定しない。}\\
+%   %  \greentext{文2を読まないと、L2が決定しない。}
 % \end{frame}
 
-% \subsection{大域的最適化}
+% \section{関数}
 
-%  \begin{frame}
-%  \frametitle{大域的コード最適化}
-%  基本ブロックを越える最適化
+% \subsection{引数受け渡し}
 
-%  \begin{list}{}{}
-%   \item ループ最適化
-%   \item 手続き呼び出し最適化
-%   \item データフロー解析
-%   \item 静的単一代入(SSA)解析
-%  \end{list}
+% \begin{frame}
+%   \frametitle{関数引数・返り値と駆動レコード}
+
+%   \begin{tabular}{ccc}
+%     \begin{minipage}{.4\textwidth}
+%       \includegraphics{activeRecord-crop.pdf}
+%     \end{minipage}
+%      & \quad &
+%     \begin{minipage}{.45\textwidth}
+%       $\texttt{f}(x_1,\cdots,x_n)$でスタック上に
+%       作成される駆動レコード（の一部）\\
+%       局所変数: $y_1,\cdots,y_m$\\[10pt]
+%       \greentext{これに従った記号表を生成}
+%     \end{minipage}
+%   \end{tabular}
+
+%   \vspace*{10pt}
+
+%   \begin{description}
+%     \item [値呼び：]
+%           $\texttt{x=f(}e_1,\cdots,e_n\texttt{)}$\\
+%           $e_i$を評価してその値を$x_i$の領域にコピー
+%     \item [参照呼び：]
+%           $\texttt{x=f(}z_1,\cdots,z_n\texttt{)}$\\
+%           $z_i$のアドレスを$x_i$にコピー
+%   \end{description}
+% \end{frame}
+
+% \begin{frame}[fragile=singleslide]
+%   \frametitle{引数受渡し}
+%   \greentext{引数=パラメータ(parameter)}\\
+%   2種類の受渡し方法
+%   \begin{list}{}{}
+%     \item 値渡し：実引数の値を評価して仮引数に代入
+%     \item 参照渡し：実引数の値を評価して\underline{ポインタ}を仮引数に代入
+%   \end{list}
+
+%   \vfill
+
+%   \begin{center}
+%     \begin{tabular}{ccc}
+%       \multicolumn{1}{c}{値呼び} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{参照呼び} \\\cline{1-1}\cline{3-3}
+%       \multicolumn{1}{|m{.35\textwidth}|}{
+%       \includegraphics[scale=.8]{swap-value-crop.pdf}
+%       }
+%                               &                      &
+%       \multicolumn{1}{|m{.4\textwidth}|}{
+%       \includegraphics[scale=.8]{swap-ref-crop.pdf}}
+%       \\\cline{1-1}\cline{3-3}
+%     \end{tabular}
+%   \end{center}
+
+%   \begin{list}{}{}
+%     \item 値呼びの場合：全く効果なし。\\
+%           \greentext{入れ替えられた値は駆動レコード内で実行後破棄}
+%     \item 参照呼びの場合：値が入れ替えられる。\\
+%           \greentext{{\tt swap}中の{\tt y=x}, {\tt x=t}の代入先は、
+%           実引数の領域}
+%   \end{list}
 % \end{frame}
 
 % \begin{frame}
-%  \frametitle{ループ最適化(1/3)}
-%  ループ内のコード実行回数:ループ外のコードよりも一般に多い\\
-%  ループ内のコードは慎重に最適化\\
-%  本当に毎回実行しなければならないか？できるだけ効率よく実行
-%  \begin{list}{}{}
-%   \item ループ不変式の移動\\
-% 	\greentext{ループから影響をうけない式を外に出す}l\\
-% 	例6.8
-%   \item ループ内の演算の強さの軽減\\
-% 	強い演算：時間のコストが大きい演算\\
-% 	足し算$<$掛け算 (加算器$<$乗算器)\\
-% 	例6.9
-%  \end{list}
+%   \frametitle{値呼びのコンパイル}
+%   \%0: xの値，\%1: yの値が格納されているアドレス
+
+%   \vspace*{5pt}
+
+%   \begin{center}
+%     \begin{tabular}{cc}
+%       \multicolumn{1}{m{.3\textwidth}}{
+%         \includegraphics[scale=.8]{swap-value-crop.pdf}}
+%        &
+%       \multicolumn{1}{m{.5\textwidth}}{
+%         \includegraphics[scale=.7]{swap-v-ll-crop.pdf}}
+%     \end{tabular}
+%   \end{center}
 % \end{frame}
 
 % \begin{frame}
-%  \frametitle{例}
-%  \begin{center}
-%  \begin{tabular}{ccc}
-%   \multicolumn{3}{l}{例6.8}\\
-%   \includegraphics[scale=.7]{ex6_8_1.eps}
-%   & $\Rightarrow$ & 
-%   \includegraphics[scale=.7]{ex6_8_2.eps} \\[1zw]
-%   \includegraphics[scale=.7]{ex6_8_3.eps}
-%   & $\Rightarrow$ & 
-%   \includegraphics[scale=.7]{ex6_8_4.eps} \\[1zw]
-%   \multicolumn{3}{l}{例6.9}\\
-%   \includegraphics[scale=.7]{ex6_9_1.eps}
-%   & $\Rightarrow$ & 
-%   \includegraphics[scale=.7]{ex6_9_2.eps}
-%  \end{tabular}
-%  \end{center}
+%   \frametitle{参照呼びのコンパイル}
+%   \%0: xの値，\%1: yの値が格納されているアドレス
+
+%   \vspace*{5pt}
+
+%   \begin{center}
+%     \begin{tabular}{cc}
+%       \multicolumn{1}{m{.4\textwidth}}{
+%         \includegraphics[scale=.8]{swap-ref-crop.pdf}}
+%        &
+%       \multicolumn{1}{m{.5\textwidth}}{
+%         \includegraphics[scale=.7]{swap-ref-ll-crop.pdf}}
+%     \end{tabular}
+%   \end{center}
 % \end{frame}
 
-% \begin{frame}
-%  \frametitle{ループ最適化(2/3)}
-%  \begin{list}{}{}
-%   \item 帰納変数消去\\
-% 	\greentext{帰納変数(ループを制御する変数)は減らす。}\\
-% 	\greentext{参照数の減少}
-% 	\begin{center}
-% 	 \begin{tabular}{ccc}
-% 	  \includegraphics[scale=.75]{ex6_10_1.eps}
-% 	  & $\Rightarrow$ &
-% 	  \includegraphics[scale=.75]{ex6_10_2.eps}
-% 	 \end{tabular}
-% 	\end{center}
+% \subsection{関数定義}
 
-%   \item ループ融合とループ分離\\
-%   \item ループ展開とソフトウェアパイプライン
-%  \end{list}
+% \begin{frame}[fragile]{関数定義/値呼び}
+
+%   \scalebox{0.75}{
+%     \begin{tikzpicture}
+%       \draw[draw] (-0.5,0.5) rectangle (5,-1.5);
+%       \node[anchor=west] (L01) at (0,0) {\texttt{int add(int x,int y) \{}};
+%       \node[anchor=west] at (1,-0.5) {\texttt{return x+y;}};
+%       \node[anchor=west] at (0,-1) {\texttt{\}}};
+
+%       \draw[draw] (5.5,0.5) rectangle (13,-5.5);
+%       \node[anchor=west] at (6,0) {\texttt{define i32 @add(i32,i32) \{}};
+%       \node[anchor=west] at (6,-0.5) {\texttt{entry:}};
+%       \node[anchor=west] at (6.5,-1) {\texttt{\% x = alloca i32}};
+%       \node[anchor=west] at (6.5,-1.5) {\texttt{\% y = alloca i32}};
+%       \node[anchor=west] at (6.5,-2) {\texttt{store i32 \% 0, i32* \% x}};
+%       \node[anchor=west] at (6.5,-2.5) {\texttt{store i32 \% 1, i32* \% y}};
+%       \node[anchor=west] at (6.5,-3) {\texttt{\% 2 = load i32, i32* \% x}};
+%       \node[anchor=west] at (6.5,-3.5) {\texttt{\% 3 = load i32, i32* \% y}};
+%       \node[anchor=west] at (6.5,-4) {\texttt{\% 4 = add i32 \% 2, \% 3}};
+%       \node[anchor=west] at (6.5,-4.5) {\texttt{ret i32 \% 4}};
+%       \node[anchor=west] at (6,-5) {\texttt{\}}};
+%     \end{tikzpicture}}
+%   \parbox{.8\textwidth}{
+%   {\small
+%       関数定義：\\\texttt{define }$\langle$型$\rangle$\texttt{ \@}$\langle$関数名$\rangle$(引数型,$\cdots$,引数型)}\\[10pt]
+%   {\small $i$番目の引数 $\% (i-1)$で参照 }
+%   }\\[5pt]
+%   {\small
+%   関数呼出（値呼び）：
+%   \verb|%ret = call i32 @add(%2,%3), align 4|
+%   }
 % \end{frame}
-
-% \begin{frame}
-%  \frametitle{ループ展開とソフトウェアパイプライン}
-%  \begin{center}
-%  \begin{tabular}{ccc}
-%   \includegraphics[scale=.75]{ex6_14_1.eps}
-%   & $\Rightarrow$ &
-%   \includegraphics[scale=.75]{ex6_14_2.eps}
-%  \\
-%  \end{tabular}
-
-%   \[
-%    \begin{array}{c|ccc}
-%     &P_1 &P_2 &P_3 \\\hline
-%    1 & A_1 & & \\
-%    2 & B_1 & A_2 & \\
-%    3 & C_1 & B_2 & A_3 \\
-%    4 & A_4 & C_2 & B_3 \\
-%    5 & B_4 & A_5 & C_3 \\
-%    \vdots & \multicolumn{3}{c}{\vdots}\\
-%    \end{array}
-%   \]
-%  並列に実行可能
-%  \end{center}
-% \end{frame}
-
-% \begin{frame}
-%  \frametitle{手続き呼出し最適化}
-
-%  \begin{list}{}{}
-%   \item {\bf インライン展開}:\ \\
-%  手続き呼出し=駆動レコードを用いてスタック上に情報を保存
-
-%  \greentext{操作としてはコストが大きい}
-
-%  スタック操作：実メモリへの正確な順序での書き込みを要求
-
-%  短い手続きや関数であればそのまま置き換えてしまった方が
-%  効率がよい。
-
-%   \item {\bf 末尾再帰}:\\
-
-% 	手続の最後の再帰よびだしは、gotoに置き換え可能。
-
-% 	\greentext{呼出しから復帰しても駆動レコード上の局所環境を使って
-% 	実行する命令が存在しない。局所領域も再利用可能}
-%  \end{list}
-
-% \end{frame}
-
-% \begin{frame}
-%  \frametitle{末尾再帰の例}
-%  \begin{tabular}{ccc}
-%   \includegraphics[scale=.6]{ex6_16_1.eps}
-%   & $\Rightarrow$ &
-%   \includegraphics[scale=.6]{ex6_16_2.eps}\\
-%   & & $\Downarrow$\\
-%   & &
-%   \includegraphics[scale=.6]{ex6_16_3.eps}
-%  \end{tabular}
-% \end{frame}
-
-% \subsection{データフロー解析}
-
-% \begin{frame}
-%  \frametitle{データフロー解析}
-
-%  \vspace*{10pt}
-
-%  \greentext{(教科書6.4:詳細については省略)}
-
-%  \vspace*{10pt}
-
-%  ステートメント$S$に対するデータフロー
-
-%  \[
-%   out[S]=gen[S]\cup(in[S]-kill[S])
-%  \]
-
-%  プログラム上での位置(行番号)：
-%  \begin{tabular}{ll}
-%   $in[S]$ & $S$に入力されるデータ\\
-%   $out[S]$ & $S$から出力されるデータ\\
-%   $gen[S]$ & $S$で定義されるデータ\\
-%   $kill[S]$ & $S$で上書きされるデータ\\
-%  \end{tabular}
-
-%  入力から出力への制御がきまっていればよいので、基本ブロック単位で考えれ
-%  ばよい。
-
-%  ループ：データフロー方程式を解いて全体的に必要なデータを計算する。
-% \end{frame}
-
-% \begin{frame}{データフロー方程式}
-% % \begin{tabular}{ccc}
-% %  \begin{minipage}{.2\textwidth}
-% % \begin{tikzpicture}
-% %  \node[draw] (S1) at (0,1.5) {$S_1$};
-% %  \node[draw] (S2) at (0,0) {$S_2$};
-% %  \path[->] (S1) edge (S2);
-% % \end{tikzpicture}
-% %  \end{minipage}
-% %  &
-% %  \begin{minipage}{.25\textwidth}
-% %   \begin{tikzpicture}
-% %    
-% %   \end{tikzpicture}
-% %  \end{minipage}
-% % \end{tabular}
-
-% \scalebox{0.7}{
-% \begin{tikzpicture}
-%  \node[draw] (B5) at (2,0) {EXIT};
-%  \node[draw] (B4) at (2,1) {$d_7$:\texttt{i=u3}};
-%  \node[draw] (B3) at (0,2) {$d_6$:\texttt{a=u2}};
-%  \node[draw] (B2) at (2,3.25) {$\begin{array}{ll}
-%   d_4: & \texttt{i=i+1}\\[-3pt]
-%   d_5: & \texttt{j=j-1}
-% 		       \end{array}$};
-%  \node[draw] (B1) at (2,5) {$\begin{array}{ll}
-%   d_1: & \texttt{i=m-1}\\[-3pt]
-%   d_2: & \texttt{j=n}\\[-3pt]
-%   d_3: & \texttt{a=u1}
-% 			\end{array}$};
-%  \node[draw] (B0) at (2,6.5) {ENTRY};
-
-%  \node at ($(B1)+(1.5,0)$) {$B_1$};
-%  \node at ($(B2)+(1.5,0)$) {$B_2$};
-%  \node at ($(B3)+(1.2,0)$) {$B_3$};
-%  \node at ($(B4)+(1.2,0)$) {$B_4$};
-
-%  \path[->] (B0) edge (B1) (B1) edge (B2) (B2) edge (B4)
-%            (B2) edge (B3) (B3) edge (B4) (B4) edge (B5);
-%  \path[->] (B4) [out=210,in=150,looseness=3] edge (B2);
-
-%  \node[anchor=west] at ($(B1)+(2.5,0)$) {$\begin{array}{ll}
-%   gen_{B_1} & = \{d_1,d_2,d_3\}\\[-3pt]
-%   kill_{B_1} & = \{d_4,d_5,d_6,d_7\}
-% 			   \end{array}$};
-%  \node[anchor=west] at ($(B2)+(2.5,0)$) {$\begin{array}{ll}
-%   gen_{B_2} & = \{d_4,d_5\} \\[-3pt]
-%   kill_{B_2} & = \{d_1,d_2,d_7\}
-% 			   \end{array}$};
-%  \node[anchor=west] at ($(B3)+(4.5,0)$) {$\begin{array}{ll}
-%   gen_{B_3} & = \{d_6\}\\[-3pt]
-%   kill_{B_3} & = \{d_3\}
-% 			   \end{array}$};
-%  \node[anchor=west] at ($(B4)+(2.5,0)$) {$\begin{array}{ll}
-%   gen_{B_4} & = \{d_7\} \\[-3pt]
-%   kill_{B_4} & = \{d_1,d_4\}
-% 			   \end{array}$};
-
-% \end{tikzpicture}
-% }
-
-% {\footnotesize
-% \begin{eqnarray*}
-%  IN[B_2] & = & OUT[B_1]\cup OUT[B_4]\\
-%  OUT[B_2] & = & gen_{B_2}\cup(IN[B_2]-kill_{B_2})
-% \end{eqnarray*}
-% }
-
-% (Ahoら：Compilers より引用)
-% \end{frame}
-
-% \begin{frame}{データフロー方程式の計算}
-
-% 到達可能性解析：
-
-% {\small
-% {XXXX XXX}:$d_1,d_2,\cdots,d_7$が集合に入っているとき$1$、入ってないとき$0$
-% }
-
-% \vspace*{10pt}
-
-% {\footnotesize
-% \begin{tabular}{c|c|c|c|c|c}\hline
-% Block $B$ & OUT[$B$]$^0$ & IN[$B$]$^1$ & OUT[$B$]$^1$ & IN[$B$]$^2$ & OUT[$B$]$^2$\\\hline
-% $B_1$ & 000 0000 & 000 0000 & 111 0000 & 000 0000 & 111 0000\\
-% $B_2$ & 000 0000 & 111 0000 & 001 1100 & 111 0111 & 001 1110\\
-% $B_3$ & 000 0000 & 001 1100 & 000 1110 & 001 1110 & 000 1110\\
-% $B_4$ & 000 0000 & 001 1110 & 001 0111 & 001 1110 & 001 0111\\
-% EXIT  & 000 0000 & 001 0111 & 001 0111 & 001 0111 & 001 0111\\\hline
-% \end{tabular}
-% }
-
-% \vspace*{10pt}
-
-% \greentext{変化しなくなるまでくりかえす。}
-
-
-% OUT[EXIT]=001 0111:\\
-% \greentext{本ブロックでは$d_3$,$d_5$,$d_6$,$d_7$がEXITが到達する}
-
-% \end{frame}
-
 
 \end{document}

@@ -1,0 +1,36 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\input{../mymacros}
+\usetikzlibrary{calc,shapes}
+\begin{document}
+\begin{tikzpicture}
+    \node (N0) at (0,0) {$\tteq$};
+    \node (N1) at (0.5,1) {$S$};
+    \node (N2) at (1,0) {$E$};
+    \node (N3) at (1,-1) {$T$};
+    \node (N4) at (0.5,-2) {$T$};
+    \node (N5) at (1,-2) {$\ttmu$};
+    \node (N6) at (1.5,-2) {$F$};
+    \node (N7) at (1,-3) {$\texttt{(}$};
+    \node (N8) at (1.5,-3) {$E$};
+    \node (N9) at (2,-3) {$\texttt{)}$};
+    \node (N10) at (0.5,-3) {$F$};
+    \node (N11) at (0.5,-4) {$\textsf{ID}$};
+    \node (N12) at (1,-4) {$E$};
+    \node (N13) at (1.5,-4) {$\ttpl$};
+    \node (N14) at (2,-4) {$T$};
+    \node (N15) at (1,-5) {$T$};
+    \node (N16) at (2,-5) {$F$};
+    \node (N17) at (2,-6) {$\textsf{ID}$};
+    \node (N18) at (1,-6) {$F$};
+    \node (N19) at (1,-7) {$\textsf{ID}$};
+    \path[-] (N1) edge (N0) (N1) edge (N2);
+    \path[-] (N2) edge (N3) (N3) edge (N4) (N3) edge (N5) (N3) edge (N6);
+    \path[-] (N4) edge (N10) (N10) edge (N11);
+    \path[-] (N6) edge (N7) (N6) edge (N8) (N6) edge (N9);
+    \path[-] (N8) edge (N12) (N8) edge (N13) (N8) edge (N14);
+    \path[-] (N12) edge (N15) (N15) edge (N18) (N18) edge (N19);
+    \path[-] (N14) edge (N16) (N16) edge (N17);
+\end{tikzpicture}
+\end{document}

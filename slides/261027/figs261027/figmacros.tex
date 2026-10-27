@@ -1,0 +1,16 @@
+\newcommand{\newtemp}[1]{\texttt{newTemp(}{#1}\texttt{)}}
+\newcommand{\newllabel}[1]{\texttt{newLabel(}{#1}\texttt{)}}
+\newcommand{\generatetw}[2]{\texttt{generate(}{#1},=,{#2}\texttt{)}}
+\newcommand{\generateth}[3]{\texttt{generate(}{#1},=,{#2},{#3}\texttt{)}}
+\newcommand{\generatefo}[4]{\texttt{generate(}{#1},=,{#2},{#3},{#4}\texttt{)}}
+\newcommand{\ttpl}{\texttt{+}}
+\newcommand{\ttmu}{\texttt{*}}
+\newcommand{\ttnum}{\texttt{NUM}}
+\newcommand{\eof}{\texttt{\#}}
+
+\newcommand{\makenewtemp}{{\tt newTemp()}}
+\newcommand{\makenewlabel}{{\tt newLabel()}}
+\newcommand{\gengoto}[1]{{\tt generate(`goto }{#1}{\tt ')}}
+\newcommand{\genlabel}[1]{{\tt generate(`label }{#1}{\tt ')}}
+\newcommand{\genifnot}[2]{{\tt generate(`if\_not}\ {#1}\ {\tt goto}\ {#2}\ {\tt ')}}
+\newcommand{\genassign}[2]{{\tt generate(`}{#1}{\tt :=}{#2}{\tt ')}}

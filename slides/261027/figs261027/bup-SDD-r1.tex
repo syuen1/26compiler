@@ -1,0 +1,17 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\include{figmacros}
+\begin{document}
+\[
+\begin{array}{lll}
+1:& E\rightarrow E^{(1)}\ \ttpl\ A & \{E.var\mbox{:=}\makenewlabel;\\
+  &                                & \genassign{E.var}{E^{(1)}.var+A.var}\}\\
+2:& E\rightarrow A                 & \{E.var\mbox{:=}\makenewtemp;\\
+  &                                & \genassign{E.var}{A.var}\}\\
+3:& A\rightarrow A^{(1)}\ \ttmu\ \ttnum & \{A.var\mbox{:=}\makenewtemp;\\
+  &                                     & \genassign{A.var}{A^{(1)}.var\times\ttnum.val}\}\\
+4:& A\rightarrow \ttnum & \{A.var:=\makenewtemp;\\
+  &                     & \genassign{A.var}{\ttnum.val}\}
+\end{array}
+\]
+\end{document}

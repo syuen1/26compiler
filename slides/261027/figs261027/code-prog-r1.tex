@@ -1,0 +1,20 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tabularx}
+\newcommand{\ttlp}{{\tt (}}
+\newcommand{\ttrp}{{\tt )}}
+\newcommand{\tteq}{{\tt =}}
+\newcommand{\newTempnull}{{\tt newTemp}}
+\newcommand{\generatenull}{{\tt generate}}
+\newcommand{\genassign}[2]{{\tt generate}\ttlp`{#1}\tteq{#2}'\ttrp}
+\begin{document}
+\begin{tabular}{ll}
+  $E\rightarrow\texttt{NUM}$ & \{$E.var$:=\newTempnull();\\
+  & \ \genassign{$E.var$}{\texttt{NUM}$.val$}\\
+  $E\rightarrow E^{(1)}$\,\texttt{+}\,\texttt{NUM}
+  & \{{$E.var$:=\texttt{newTemp()};}\\
+  & \ \genassign{$E.var$}{$E^{(1)}.var+\texttt{NUM}.val$}\}\\
+  $S\rightarrow\texttt{ID}$\,\texttt{=}\,E\,\texttt{;}
+  & \{\genassign{$\texttt{ID}.name$}{$E.var$}\}
+\end{tabular}
+\end{document}

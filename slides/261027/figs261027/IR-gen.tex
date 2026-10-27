@@ -1,0 +1,19 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\include{figmacros}
+\begin{document}
+\[\begin{array}{clrl|l}
+  \vdash & S_0 & \texttt{3+4*5\#} & & \\
+  \vdash & S_0nS_6 & \texttt{+4*5\#} & & s6 \\
+  \vdash & S_0TS_7 & \texttt{+4*5\#} & \texttt{t1=3} & r4\\
+  \vdash & S_0ES_1 & \texttt{+4*5\#} & \texttt{t2=3} & r2\\
+  \vdash & S_0ES_1\ttpl S_2 & \texttt{4*5\#} & & s2\\
+  \vdash & S_0ES_1\ttpl S_2nS_6 & \texttt{*5\#} & & s6\\
+  \vdash & S_0ES_1\ttpl S_2TS_3 & \texttt{*5\#} & \texttt{t3=5} & r4\\
+  \vdash & S_0ES_1\ttpl S_2TS_3\ttmu S_4 & \texttt{5\#} & & s4\\
+  \vdash & S_0ES_1\ttpl S_2TS_3\ttmu S_4nS_5 & \texttt{\#} & & s5\\
+  \vdash & S_0ES_1\ttpl S_2TS_3 & \eof & \texttt{t4=t3$\times$5} & r3\\
+  \vdash & S_0ES_1 & \eof & \texttt{t5=t2+t4} & r1\\
+  \vdash & acc & & 
+\end{array}\]
+\end{document}

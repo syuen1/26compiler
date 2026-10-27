@@ -1,0 +1,64 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{listings}
+\begin{document}
+ \lstset{%
+  language={LLVM},
+  basicstyle={\scriptsize\ttfamily},%
+  identifierstyle={\scriptsize},%
+  commentstyle={\scriptsize\itshape},%
+  keywordstyle={\scriptsize\bfseries},%
+  ndkeywordstyle={\scriptsize},%
+  stringstyle={\scriptsize\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},%
+  numbers=left,%
+  xrightmargin=0zw,%
+  xleftmargin=3zw,%
+  numberstyle={\tiny},%
+  stepnumber=1,
+  numbersep=1zw,%
+  lineskip=-0.5ex%
+}
+\begin{minipage}{0.5\textwidth}
+\begin{lstlisting}[frame=single,framerule=0pt]
+@x1 = common global i32 0, align 4
+@x = common global i32 0, align 4
+@x2 = common global i32 0, align 4
+@y = common global i32 0, align 4
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+; Function Attrs: noinline nounwind optnone ssp uwtable
+define i32 @f(i32) #0 {
+  %2 = alloca i32, align 4
+  store i32 %0, i32* %2, align 4
+  store i32 3, i32* @x1, align 4
+  %3 = load i32, i32* @x1, align 4
+  %4 = load i32, i32* %2, align 4
+  %5 = add nsw i32 %3, %4
+  ret i32 %5
+}
+
+; Function Attrs: noinline nounwind optnone ssp uwtable
+define i32 @main(i32, i8**) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i8**, align 8
+  store i32 %0, i32* %3, align 4
+  store i8** %1, i8*** %4, align 8
+  store i32 6, i32* @x, align 4
+  store i32 7, i32* @x2, align 4
+  %5 = load i32, i32* @x2, align 4
+  %6 = call i32 @f(i32 %5)
+  store i32 %6, i32* @y, align 4
+  %7 = load i32, i32* @x, align 4
+  %8 = load i32, i32* @y, align 4
+  %9 = add nsw i32 %7, %8
+  %10 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0), i32 %9)
+  ret i32 0
+}
+
+declare i32 @printf(i8*, ...) #1
+\end{lstlisting}
+\end{minipage}
+\end{document}

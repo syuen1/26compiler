@@ -2,6 +2,7 @@
 \pagestyle{empty}
 \usepackage{fancyvrb}
 \begin{document}
+\begin{Verbatim}
 define void @swap(i32, i32) #0 {
   %3 = alloca i32, align 4
   %4 = alloca i32, align 4
@@ -16,4 +17,5 @@ define void @swap(i32, i32) #0 {
   store i32 %8, i32* %4, align 4
   ret void
 }
+\end{Verbatim}
 \end{document}

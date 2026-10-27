@@ -1,0 +1,41 @@
+\documentclass{jarticle}
+\usepackage{listings}
+\lstloadlanguages{C,LLVM}
+\pagestyle{empty}
+\begin{document}
+ \lstset{%
+  language={C},
+  basicstyle={\scriptsize\ttfamily},%
+  identifierstyle={\scriptsize},%
+  commentstyle={\scriptsize\itshape},%
+  keywordstyle={\scriptsize\bfseries},%
+  ndkeywordstyle={\scriptsize},%
+  stringstyle={\scriptsize\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},%
+  numbers=left,%
+  xrightmargin=0zw,%
+  xleftmargin=3zw,%
+  numberstyle={\tiny},%
+  stepnumber=1,
+  numbersep=1zw,%
+  lineskip=-0.5ex%
+}
+ \begin{lstlisting}[frame=single,framerule=0pt]
+ #include <stdio.h>
+
+int x,y,x1,x2;
+
+int f(int y) {
+  x1 = 3;
+  return x1+y;
+}
+
+int main(int argc,char **argv) {
+  x=6;x2=7;y=f(x2);
+  printf("%d\n",x+y);
+}
+ \end{lstlisting}
+\end{document}
+
