@@ -1,0 +1,1264 @@
+\documentclass[dvipdfmx,a4j]{jbook}
+\include{../mypackage}
+\include{../mymacros}
+
+\setcounter{chapter}{5}
+% \setcounter{page}{63}
+% \newcounter{coffee}
+% \newcounter{bean}
+\graphicspath{{figures/}}
+\begin{document}
+\chapter{中間コード生成}
+\section{概要}
+
+構文解析によって，プログラミング言語に対する入力プログラムの構文的な
+正しさをチェックするとともに，入力プログラムの意味を構文解析木として
+与える．構文解析木に沿って，プログラムの動作を実現する命令の系列を
+生成する．開発者が用いるソース言語の抽象度が高いほど，プログラムは
+構造的に整理されて理解が容易な形で記述される．これに対して計算機の
+実行命令は直線的な系列であり，計算機固有のアーキテクチャの影響を受ける．
+近代のコンパイラでは，命令コードは複数の段階を経て生成されるのが
+一般的である．まず，単純な制御構造とメモリアクセスを直線的に表現
+できる中間コードを機械的に生成し，その後，実際のアーキテクチャに
+沿ったよりハードウェアに近い命令に変換する．
+
+中間コードを一旦生成することで，アーキテクチャに依存しない，
+入力プログラムが持つ制御構造，メモリアクセスを抽出して，
+入力プログラムの性質に基づいて最適化することができる．
+さらに中間コードで用いる変数を数の制限の大きいレジスタに配分して，
+プログラムに対してメモリ階層の観点から効率的に実行する割り当て方法を
+実現することができる．
+
+\subsection{抽象構文と抽象構文木}
+
+抽象構文は，プログラムを定義する文脈自由文法が表現する文法のうち，プログラムの
+振舞いに関連する部分のみを抽象した文法によって定義される．例えば，四則演算に
+関する構文は，図\ref{fig:abstractArithSyntax}で十分である．この文脈自由
+文法は曖昧であるが，四則演算の演算子が $\ttpl$, $\ttsb$, $\ttmu$, $\ttdv$
+であり，それらが変数または数から再帰的に構成される式を２つ両側に持つ演算で
+あることを表している．一旦，式の構文解析木が構成されれば，その意味（値）を
+計算するには，抽象構文が表現する意味に沿って計算する命令系列を生成すればよい．
+
+\begin{figure}
+    \[
+        \begin{array}{rcl}
+            E & \rightarrow & E\ \ttpl\ E           \\
+            E & \rightarrow & E\ \ttsb\ E           \\
+            E & \rightarrow & E\ \ttmu\ E           \\
+            E & \rightarrow & E\ \ttdv\ E           \\
+            E & \rightarrow & \texttt{ID}           \\
+            E & \rightarrow & \texttt{NUM}          \\
+            S & \rightarrow & \texttt{ID}\ \tteq\ E
+        \end{array}
+    \]
+    \caption{四則演算式と代入文の抽象構文}\label{fig:abstractArithSyntax}
+\end{figure}
+
+抽象構文木(abstract syntax tree)は，本質的に意味を表す抽象構文に沿って構成される
+木構造である．コード生成において，構文解析木に現れる非終端記号の情報は必要でない場合が多く，
+生成規則の持つ意味をノードに記述した方がコード生成には都合が良い．木構造がコードの意味を
+直接的に表現していると考えられることから，抽象構文木が中間コードであるとみなすことができる．
+例えば，代入式\texttt{w=x+y*z}の抽象構文木は図\ref{ASTexample}のようになる．
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}
+        \node[draw,circle,inner sep=2pt] (N0) at (0,0) {\tteq};
+        \node[draw,circle,inner sep=2pt] (N1) at (-0.5,-1) {\texttt{w}};
+        \node[draw,circle,inner sep=2pt] (N2) at (0.5,-1) {\ttpl};
+        \node[draw,circle,inner sep=2pt] (N3) at (0,-2) {\texttt{x}};
+        \node[draw,circle,inner sep=2pt] (N4) at (1,-2) {\texttt{*}};
+        \node[draw,circle,inner sep=2pt] (N5) at (0.5,-3) {\texttt{y}};
+        \node[draw,circle,inner sep=2pt] (N6) at (1.5,-3) {\texttt{z}};
+        \path[-] (N0) edge (N1) (N0) edge (N2) (N2) edge (N3) (N2) edge (N4) (N4) edge (N5) (N4) edge (N6);
+    \end{tikzpicture}
+    \caption{抽象構文木の例}\label{ASTexample}
+\end{figure}
+
+実際には構文木の構成において，\texttt{x},\texttt{y},\texttt{z}はそれぞれトークンとして$ID$
+として扱われるが，実際のコード生成においては，変数名を必要とする．字句解析においても
+トークンの他に実際の識別子の記号列が保存されている．(lexにおける\texttt{yytext}など)
+
+\subsection{逆ポーランド記法}
+
+逆ポーランド記法は引数の数が固定の演算を後置形式で記載する．計算に用いる値をメモリの値を
+$\mathsf{push}$命令で参照することによって計算することができ，算術式の中間コードとして
+古くから用いられている．逆ポーランド記法からより低レベルの機械語（バイナリコード）へ
+変換することは容易である．演算の引数となる変数を$ID$で参照するとき，$\mathsf{push}\ ID$で
+その値をスタックに積む，演算を適用するとき，n引数の演算では，$n$個の値をスタックからpopして
+演算を適用し，その結果をスタックに$\mathsf{push}$する．例えば，\texttt{x+y*z}という入力に
+対しては，$\rppush{x},\rppush{y},\rppush{z},\ttmu,\ttpl$という命令列によってスタックの先頭に
+値の計算が積まれる(図\ref{revPolExp})．
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \draw (0,0) -- +(1.5,0) (0,0) -- +(0,1) (1.5,0) -- +(0,1) (0,0.3) -- +(1.5,0);
+        \node at (0.75,0.15) {\texttt{x}};  \node at (0.75,-0.2) {$\rppush{x}$};
+        \draw (2,0) -- +(1.5,0) (2,0) -- +(0,1) (3.5,0) -- +(0,1) (2,0.3)-- +(1.5,0) (2,0.6)-- +(1.5,0);
+        \node at (2.75,0.15) {\texttt{x}};  \node at (2.75,0.45) {\texttt{y}};
+        \node at (2.75,-0.2) {$\rppush{y}$};
+        \draw (4,0) -- +(1.5,0) (4,0) -- +(0,1) (5.5,0) -- +(0,1) (4,0.3)-- +(1.5,0) (4,0.6)-- +(1.5,0) (4,0.9)--+(1.5,0);
+        \node at (4.75,0.15) {\texttt{x}};  \node at (4.75,0.45) {\texttt{y}}; \node at (4.75,0.75) {\texttt{z}};
+        \node at (4.75,-0.2) {$\rppush{z}$};
+        \draw (6,0) -- +(1.5,0) (6,0) -- +(0,1) (7.5,0) -- +(0,1) (6,0.3)-- +(1.5,0) (6,0.6)-- +(1.5,0);
+        \node at (6.75,0.15) {\texttt{x}}; \node at (6.75,0.45) {\texttt{y*z}};
+        \node at (6.75,-0.2) {$\texttt{*}$};
+        \draw (8,0) -- +(1.5,0) (8,0) -- +(0,1) (9.5,0) -- +(0,1) (8,0.3)-- +(1.5,0);
+        \node at (8.75,0.15) {$\texttt{x+y*z}$};
+        \node at (8.75,-0.2) {$\ttpl$};x
+
+    \end{tikzpicture}
+    \caption{逆ポーランド記法の計算}\label{revPolExp}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \begin{tabularx}{0.8\textwidth}{|l|>{\hsize=0.7\hsize}X|>{\hsize=1.3\hsize}X|}\hline
+              & 一般形                                                                                   & 演算子$\theta$                                                  \\\hline
+        代入文   & $C=A\theta B$\newline $B=\theta A$\newline B=A                                        & \ttpl,\ttsb,\ttmu,\ttdv,\newline{\tt and},{\tt or},{\tt not}
+        \newline$\texttt{>}$,$\texttt{>=}$,$\texttt{=}$,$\texttt{!=}$,$\texttt{<=}$,$\texttt{<}$,$\texttt{-}$                                                        \\\hline
+        ジャンプ文 & {\tt if}\ A\ {\tt goto}\ L\newline{\tt if-not}\ A\ {\tt goto}\ L\newline{\tt goto}\ L &                                                              \\\hline
+    \end{tabularx}
+    \caption{３番地コード}\label{fig:threeAddressCode}
+\end{figure}
+
+
+\subsection{3番地コード}
+
+３番地コード(3-address code)は，命令を一般的に$C=A\theta B$の形に限定して動作を記述する．
+ここで，$A$,$B$,$C$はメモリ番地であり，$A$のメモリの内容と$B$のメモリの内容に$\theta$の
+演算を適用して，結果を$C$の番地に格納することを表す．これ以外に単項演算，条件付きジャンブ
+命令などを用いることによって一般的な計算を単純な命令の組み合わせで記述することができる．
+各命令にはラベル$L$をつけることができ，ジャンプ命令の飛び先とすることができる．
+３番地コードを機械語に変換することは容易であり，３番地コードによって最適化を行うことで
+ハードウェアに依存しないコード最適化を適用することができる．
+
+\begin{figure}[H]
+    \centering
+    \begin{tabular}{ccc}
+        \multicolumn{1}{m{.4\textwidth}}{
+            \fbox{\includegraphics{fib_src-crop.pdf}}
+        }
+         &  &
+        \multicolumn{1}{m{.4\textwidth}}{
+            \fbox{\includegraphics{fib_3add-crop.pdf}}
+        }
+    \end{tabular}
+    \caption{３番地コードへの変換例}\label{3addr-example}
+\end{figure}
+
+図\ref{3addr-example}に変換例を示す．ここでは，関数呼び出しとして
+\texttt{@}関数名　という形をとっている．
+
+
+\section{実行環境}
+
+プログラミング言語として局所変数を持つことが一般的である．オブジェクト指向言語では，インスタンスが
+生成されると変数領域を割り当てて実行が終了したとき領域を解放する必要がある．命令型では，関数・手続き
+が呼び出されたときには，関数・手続きのみで有効な局所変数を割り当てることでプログラムを合成的に記述
+することが可能になっている．局所変数は関数・手続きの呼び出しごとに動的に割り当てられることで，再帰的
+な関数定義が可能になっている．関数と手続きの呼び出しは，入れ子構造であることから，
+{\bf 駆動レコード}(Activation record)という単位でスタック構造を操作することで
+実行環境を実現する．単純に{\bf スタックフレーム}(stack frame)と呼ばれることもある．
+
+\subsection{駆動レコードの構成}
+
+プログラムを実行するプロセスの全体のメモリは図\ref{memallocExample}の
+ような形となる場合が多い．
+駆動レコードの構成は一般には図\ref{activationRecordExample}の
+ような構成となる．
+
+\begin{figure}[H]
+    \centering
+    \subfloat[][メモリ配置の例]{\includegraphics[width=.2\textwidth]{memoryAlloc-crop.pdf}\label{memallocExample}}\hspace*{4em}
+    \subfloat[][駆動レコードの例]{\includegraphics{activationRecord-crop.pdf}\label{activationRecordExample}}
+    \caption{実行環境のメモリ配置}\label{runtimeMemAlloc}
+\end{figure}
+
+\begin{enumerate}
+    \item 実引数領域：引数を評価して値を格納して関数・手続きに引き渡す．
+    \item 返り値：関数の計算が終了して得られる値を格納する．
+    \item 駆動リンクへのリンク：スタックの格納単位を示す．
+    \item 外部アクセスリンク：大域変数などへの参照のための番地を格納する．
+    \item 戻り番地：関数・手続きが終了したときに実行するプログラムカウンタの
+          番地を格納する．
+    \item 局所変数領域：関数・手続きの実行時に割り当てられる変数領域を示す．
+    \item 一時計算領域：関数・手続きの実行に必要な一時変数領域を示す．
+\end{enumerate}
+
+駆動レコードを単位として，プロセスのメモリ領域に割り当てられる．
+空きメモリの量はプロセス起動時に決定されることが多い．十分な量を見込んで
+割り当てられるが，無限ループなどで異常に多くの関数呼び出しが発生すると
+プロセスのメモリ限界を超える．この場合は，通常，オペレーティングシステムが
+異常を検出してプロセスが異常終了する．
+
+\subsubsection{関数呼び出しとリターン}
+
+関数（手続き）の呼び出しは以下の順序で行われる．
+\begin{enumerate}
+    \item スタック上に駆動レコードを確保する．
+    \item 実引数の値を評価して，呼び出しが起こる駆動レコードの領域に書き込む．
+    \item 呼び出しが発生したプログラムカウンタPCの値+1をスタックに格納
+    \item 前の駆動レコードの先頭のリンクを格納
+    \item 局所領域をスタック上に確保
+    \item 呼び出された関数の命令の頭にジャンプする．
+\end{enumerate}
+
+関数（手続き）において，リターンが実行されたとき．
+\begin{enumerate}
+    \item 関数であれば返し値を駆動レコードの領域に格納
+    \item 戻りアドレスを駆動レコードから取り出す．
+    \item 駆動レコードの先頭のリンクを取り出して，現在の駆動レコードを破棄
+    \item 戻りアドレスへジャンプ
+\end{enumerate}
+
+\begin{Exmp}
+    以下のC言語風のプログラムに対する実行環境の概要は図\ref{runitmeExample}のようになる．
+    ここでは，駆動レコードのうちの変数領域のみの状況を示している．Rvは関数の
+    返り値を表す．
+
+    \begin{center}
+        \includegraphics{simple-src-crop}
+    \end{center}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics{runtime-trans-crop.pdf}
+        \caption{実行環境の変化}
+    \end{figure}
+
+    \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
+        \item \verb|main|の実行中
+        \item \verb|func(3)|の呼び出し直後
+        \item \verb|func(3)|から\verb|func(2)|を呼び出した直後
+        \item \verb|func(2)|から\verb|func(1)|を呼び出した直後
+        \item \verb|func(1)|の返り値を\verb|a|の値として２をセット
+        \item \verb|func(1)|の駆動レコードを破棄して，\verb|func(2)|の返り値を$2*2+2$で6にセット
+        \item \verb|func(2)|の駆動レコードを破棄して，\verb|func(3)|の返り値を$6*2+2$で14にセット
+        \item \verb|func(3)|の駆動レコードを破棄．
+    \end{list}
+\end{Exmp}
+
+% \section{記号表}
+
+% \section{データ型}
+
+\section{構文主導型変換}
+
+中間コードは構文解析と同時に生成することができる．このような方法を
+{\bf 構文主導型変換}(Syntax Directed Translation, SDT)と呼ぶ．この変換では
+生成規則やその途中にコード生成ルーチンを割り当てて，規則の適用にしたがって
+対応するコード生成ルーチンを呼び出して中間コードを生成する．
+
+\subsection{構文主導型変換の基礎}
+
+コード生成ルーチンとして以下の３つの関数を用いる．
+\begin{itemize}
+    \item $\newTemp{}$\\
+          あたらな領域を割り当ててそのメモリ番地を返す．
+          $\newTemp{}$を実行すると，新たに割り当てられた領域を
+          さすメモリ番地が返り値となる．
+          {\tt x}に新たに領域を割り当てるには，{\tt x}.var$\,\rpassign\,\newTemp{}$
+          とする．% 順番に割り当てられる領域を$t1,t2,t3,\cdots$で参照する．
+          ここでは，駆動レコード上の局所領域が割り当てられる．関数などの終了によって局所領域が
+          解放されるときに自動的に解放される\footnote{ヒープ領域のような場合は，明示的に
+              解放する必要がある．}．
+    \item $\newLabel{}$\\
+          新たなラベルをわりあててそのラベルの命令番地を返す．
+          割り当てられる領域を$L1,L2,\cdots$で参照する．
+    \item $\texttt{generate}$\\Ｓ
+          引数の3番地コードを生成して出力に書き込む．各コードとの対応を以下のように
+          定める．
+          \begin{center}
+              \begin{tabular}{ll}
+                  $C=A\theta B$                           & \generateassgin{$C$}{$A\theta B$} \\
+                  $B=\theta A$                            & \generateassgin{$B$}{$\theta A$}  \\
+                  $B=A$                                   & \generateassgin{$B$}{$A$}         \\
+                  $\mathsf{if}\ A\ \mathsf{goto}\ L$      & \generateif{$A$}{$L$}             \\
+                  $\mathsf{if\_not}\ A\ \mathsf{goto}\ L$ & \generateifnot{$A$}{$L$}          \\
+                  $\mathsf{goto}\ L$                      & \generategoto{$L$}                \\
+                  $L_i: $                                 & \generatelabel{$L_i$}
+              \end{tabular}
+          \end{center}
+          %以後，{\sf generete}関数では，\generate{`命令'}のように記述する．
+\end{itemize}
+
+\begin{Exmp}
+    以下の生成規則を持つCF文法を考える．
+    \[\begin{array}{rcl}
+            S & \rightarrow & \mathsf{ID}\ \tteq\ E\ \ttsc \\
+            E & \rightarrow & E^{(1)}\ \ttpl\ \mathsf{NUM} \\
+            E & \rightarrow & \mathsf{NUM}
+        \end{array}\]
+    中間コード生成は，生成規則に生成ルーチンを対応づけることで実現される．
+
+    \begin{center}
+        \begin{tabular}{l|l}
+            \multicolumn{1}{c|}{\mbox{生成規則}}                 &
+            \multicolumn{1}{c}{\mbox{コード生成ルーチン}}                                                                               \\\hline
+            $E\rightarrow\mathsf{NUM}$                       & \{E.var\,\rpassign\newTempnull\mbox{()};                        \\
+                                                             & \generateassgin{$E.var$}{$\mathsf{NUM}.val$}\}                  \\
+            $E\rightarrow E^{(1)}\,\ttpl\,\mathsf{NUM}$      & \{E.var\,\rpassign\newTempnull();                               \\
+                                                             & \generateassgin{$E.var$}{$E^{(1)}.var\ttpl\mathsf{NUM}.val$};\} \\
+            $S\rightarrow \mathsf{ID}\,\tteq\,E\,\texttt{;}$ &
+            \{\generateassgin{$\mathsf{ID}.name$}{$E.var$}\}
+        \end{tabular}
+    \end{center}
+
+    ここで，$E.var$は，非終端記号$E$に対して割り当てられる変数，$\mathsf{NUM}.val$
+    はトークン$\mathsf{NUM}$が表す数値，$\mathsf{ID}.name$は，識別子$\mathsf{ID}$
+    の名前を表す文字列を表す．
+
+    $\mathsf{ID}\tteq\mathsf{NUM}_0\ttpl\mathsf{NUM}_1\ttpl\mathsf{NUM}_2\texttt{;}$
+    に対する中間コード生成は以下の通りである．
+
+    \[\begin{array}{ll|p{15zw}}
+            \multicolumn{2}{c|}{\mbox{還元系列}} & \multicolumn{1}{c}{\mbox{生成中間コード}}                                             \\\hline
+                                             & \mathsf{ID}\tteq\mathsf{NUM}_0\ttpl\mathsf{NUM}_1\ttpl\mathsf{NUM}_2\texttt{;}
+                                             & $t1=\mathsf{NUM_0}.val$ ($E_1.var=t1$)                                         \\
+            \Leftarrow
+                                             & \mathsf{ID}\tteq E_1\ttpl\mathsf{NUM}_1\ttpl\mathsf{NUM}_2\texttt{;}
+                                             & $t2=t1\ttpl\mathsf{NUM_1}.val$ ($E_2.var=t2$)                                  \\
+            \Leftarrow
+                                             & \mathsf{ID}\tteq E_2\ttpl\mathsf{NUM}_2\texttt{;}
+                                             & $t3=t2\ttpl\mathsf{NUM_2}.val$ ($E_3.var=t3$)                                  \\
+            \Leftarrow
+                                             & \mathsf{ID}\tteq E_3\texttt{;}
+                                             & $\mathsf{ID}.name=t3$                                                          \\
+            \Leftarrow
+                                             & S
+        \end{array}\]
+\end{Exmp}
+
+\subsubsection{実行制御を含む文に対するSDT}
+
+条件文のコード生成は以下のようになる．
+
+\[\begin{array}{lcl}
+        \multirow{4}{*}
+        {$S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}$}
+         & \multirow{4}{*}{$\Rightarrow$} & \mbox{$E$のコードを生成 $E.var=t1$}                     \\
+         &                                & \texttt{if}\ \texttt{not}\ t1\ \texttt{goto}\ L1 \\
+         &                                & \mbox{$S^{(1)}$のコードを生成}                          \\
+         &                                & L1
+    \end{array}\]
+
+\[\begin{array}{lcl}
+        \multirow{4}{*}
+        {$S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}\ \texttt{else}\ S^{(2)}$}
+         & \multirow{4}{*}{$\Rightarrow$} & \mbox{$E$のコードを生成 $E.var=t1$}                     \\
+         &                                & \texttt{if}\ \texttt{not}\ t1\ \texttt{goto}\ L1 \\
+         &                                & \mbox{$S^{(1)}$のコードを生成}                          \\
+         &                                & \texttt{goto}\ L2                                \\
+         &                                & L1: \mbox{$S^{(2)}$のコードを生成}                      \\
+         &                                & L2:
+    \end{array}\]
+
+構文解析を生成規則に沿って進めるためには，条件文の生成規則が適用されたときに
+全体のコードを生成するのではなく，条件式$E$が還元されたときに，$E$のコードを
+生成して出力する必要がある．
+
+\[\begin{array}{rll}
+        S\rightarrow & \texttt{if}\ \ttlp\ E\ \ttrp & \{S.label\rpassign\newLabelnull(); \\
+                     &                              & \mbox{$E$のコード生成 ($E.var$に結果を格納)}   \\
+                     &                              & \generateifnot{E.var}{S.label};\}  \\
+                     & S                            & \mbox{$S$のコード生成}                   \\
+                     &                              & \{\generatelabel{S.label};\}
+    \end{array}\]
+
+\[\begin{array}{rll}
+        S\rightarrow & \texttt{if}\ \ttlp\ E\ \ttrp & \{S.label\rpassign\newLabelnull();S.else\rpassign\newLabelnull() \\
+                     &                              & \mbox{$E$のコード生成 ($E.var$に結果を格納)}                                 \\
+                     &                              & \generateifnot{E.var}{S.else};\}                                 \\
+                     & S^{(1)}                      & \mbox{$S^{(1)}$のコード生成}                                           \\
+                     &                              & \{\generategoto{S.label};\}                                      \\
+                     & \texttt{else}                & \{\generatelabel{S.else};\}                                      \\
+                     & S^{(2)}                      & \mbox{$S^{(2)}$のコード生成}                                           \\
+                     &                              & \{\generatelabel{S.label};\}                                     \\
+    \end{array}\]
+
+% あるいはコードを生成するタイミングで還元が発生するように生成規則を分割
+% することである．条件文の生成規則を以下のように分割する．
+\vspace*{10pt}
+
+{\tt while}文に対する構文主導型変換は以下の順番に行われる．
+
+\[S\rightarrow \texttt{while}\ \texttt{(}\ E\ \texttt{)}\ S\]
+
+この生成規則に対する中間コードは以下のようになる．
+
+\begin{center}
+    \begin{tabular}{cc}
+        \multicolumn{1}{m{.4\textwidth}}{$\begin{array}{ll}
+                                                      1: & L_1:                                              \\
+                                                      2: & \mbox{$E$のコード (t1=$E.var$)}                       \\
+                                                      3: & \texttt{if\_not}\ \mbox{t1}\ {\texttt{goto}\ L_2} \\
+                                                      4: & \mbox{$S$のコード}                                    \\
+                                                      5: & \texttt{goto}\ L_1                                \\
+                                                      6: & L_2:
+                                                  \end{array}$}
+         &
+        \multicolumn{1}{m{.4\textwidth}}{\vspace*{20pt}
+            \begin{tikzpicture}
+                \node[diamond,draw,aspect=2] (N1) at (0,-1) {$E$};
+                \node[draw,rectangle] (N2) at (0,-2) {\mbox{\quad $S$\quad}};
+                \coordinate (N0) at (0,0);
+                \node[draw] (N3) at ($(N1)+(0,-2.5)$) {$L2$:};
+                \path[->] (N0) edge (N1) (N1) edge (N2);
+                \path[-] (N2) edge ($(N2)+(0,-0.5)$) ($(N2)+(0,-0.5)$) edge ($(N2)+(-1,-0.5)$)
+                ($(N2)+(-1,-0.5)$) edge +(0,2);
+                \path[->] ($(N1)+(-1,0.5)$) edge [above] node {$L1$} ($(N1)+(0,0.5)$);
+                \path[-] (N1) edge +(1,0) ($(N1)+(1,0)$) edge +(0,-2) ($(N1)+(1,-2)$) edge +(-1,0);
+                \path[->] ($(N1)+(0,-2)$) edge (N3);
+            \end{tikzpicture}}
+    \end{tabular}
+\end{center}
+
+コード生成ルーチンを伴う生成規則は以下のようになる．
+
+\[\begin{array}{rcll}
+        S & \rightarrow & \texttt{while}\ \texttt{(} &
+        \{S.label1\,\rpassign\newLabelnull();                                                \\
+          &             &                            & \generatelabel{S.label1}\}            \\
+          &             & E                          & (\mbox{$E$のコード($E.var$に結果格納)})        \\
+          &             & \texttt{)}                 & \{S.label2\,\rpassign\newLabelnull(); \\
+          &             &                            & \generateifnot{E.var}{S.label2}       \\
+          &             & S                          & \mbox{$S$のコード生成}                      \\
+          &             &                            & \{\generategoto{S.label1};            \\
+          &             &                            & \generatelabel{S.label2}\}
+    \end{array}\]
+
+\subsection{上昇型構文主導型変換}
+
+LRパーザーにコード生成ルーチンを組み込む場合，コード生成は還元のタイミングで
+行う．したがって，条件分岐，ループのように生成規則の途中でコード生成を
+行う必要がある場合には，新たな非終端記号を導入すれば還元の際にのみ
+コード生成ルーチンを呼び出すことができる．
+
+\[S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}\ \texttt{else}\ S^{(2)}\]
+
+についてはフローチャートに沿って以下のような生成ルーチンを付加することになる．
+
+\begin{center}
+    \begin{tabular}{cc}
+        \multicolumn{1}{m{.7\textwidth}}{
+            \vspace*{-20pt}
+            $\begin{array}{rcll}
+                     S & \rightarrow & \texttt{if}\ \texttt{(}\ E\ \texttt{)} & \{S.label1=\newLabelnull();    \\
+                       &             &                                        & \generateifnot{E.var}{S.label1} \\
+                       &             & S^{(1)}                                & \{S.label2=\newLabelnull();    \\
+                       &             &                                        & \generategoto{S.label2};        \\
+                       &             &                                        & \generatelabel{S.label1}\}      \\
+                       &             & \texttt{else}\ S^{(2)}                 & \{\generatelabel{S.label2}\}
+                 \end{array}$}
+         &
+        \multicolumn{1}{m{.3\textwidth}}{
+            \begin{tikzpicture}
+                \coordinate (N0) at (0,0);
+                \node[diamond,draw,aspect=3,inner sep=0pt,label={5:{\scriptsize$\mathsf{F}$}}]
+                (N1) at (0,-1) {\hbox{\quad E\quad}};
+                \node[draw,rectangle] (N2) at (0,-2) {\hbox{\quad $S^{(1)}$\quad}};
+                \node[draw,rectangle] (N3) at (0,-3.5) {\hbox{\quad $S^{(2)}$\quad}};
+                \node[draw,rectangle] (N4) at (0,-4.5) {\scriptsize $S.label2:$};
+                \path[->] (N0) edge (N1);
+                \path[->] (N1) edge [right] node {\scriptsize$\mathsf{T}$} (N2);
+                \path[-] (N2) edge +(0,-0.5) ($(N2)+(0,-0.5)$) edge +(-1,0)
+                ($(N2)+(-1,-0.5)$) edge +(0,-1.5);
+                \path[->] ($(N2)+(-1,-2)$) edge +(1,0);
+                \path[-] (N1) edge +(1.5,0) ($(N1)+(1.5,0)$) edge +(0,-1.75)
+                ($(N1)+(1.5,-1.75)$) edge +(-1.5,0);
+                \node at ($(N3)+(.75,0.5)$) {\scriptsize $S.label1:$};
+                \path[->] ($(N1)+(0,-1.75)$) edge (N3);
+                \path[->] (N3) edge (N4);
+            \end{tikzpicture}
+        }
+    \end{tabular}
+\end{center}
+
+この生成規則に対して，コード生成が規則を還元する場合にのみ発生する等価な生成規則を
+以下のように構成する．
+
+\[\{I\rightarrow \texttt{if}\ \ttlp\ E\ \ttrp,\quad
+    S'\rightarrow IS^{(1)},\quad
+    S\rightarrow S'\ \texttt{else}\ S^{(2)}\}\]
+
+\[\begin{array}{rcll}
+        I  & \rightarrow                  & \texttt{if}\ \ttlp\ E\ \ttrp
+           & \{I.label=\newLabelnull();                                                                    \\
+           &                              &                              & \generateifnot{E.var}{I.label}\} \\
+        S' & \rightarrow                  & IS^{(1)}
+           & \{S'.label=\newLabelnull();                                                                   \\
+           &                              &                              & \generategoto{S'.label};         \\
+           &                              &                              & \generatelabel{I.label}\}        \\
+        S  & \rightarrow                  & S'\ \texttt{else}\ S^{(2)}   &
+        \{\generatelabel{S'.label}\}
+    \end{array}\]
+
+\vspace*{10pt}
+
+{\tt while}文について以下のような生成規則を構成する．
+
+\[\{I\rightarrow{\tt while},\quad S'\rightarrow\ttlp\ E\ \ttrp,\quad
+    S\rightarrow IS'S^{(1)}\}\]
+
+\[\begin{array}{rcll}
+        I  & \rightarrow & \texttt{while}\  & \{I.label=\newLabelnull();       \\
+           &             &                  & \generatelabel{I.label}\}         \\
+        S' & \rightarrow & \ttlp\ E\ \ttrp  & \{S'.label=\newLabelnull();      \\
+           &             &                  & \generateifnot{E.var}{S'.label}\} \\
+        S  & \rightarrow & IS'S^{(1)}       & \{\generategoto{I.label};         \\
+           &             &                  & \generatelabel{S'.label}\}
+    \end{array}\]
+
+%  もう一つの方法として，$\varepsilon$ルールを導入する方法がある．
+
+%  \[S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ M_1\ S^{(1)}\ \texttt{else}\ M_2\ S^{(2)},
+%  \quad M_1\rightarrow\varepsilon,\quad M_2\rightarrow\varepsilon\]
+
+%  \[\begin{array}{rcll}
+%   M_1 & \rightarrow & \varepsilon & \{M_1.label=\newLabelnull();\\
+%       &             &             & \generate
+
+\subsection{下降型構文主導型変換}
+
+LL(1)下降型構文解析にコード生成に組み込む場合は，より直観的にコード生成する
+ことができる．生成規則の右辺で生成ルーチンに到達すれば，そのルーチンを
+実行すればよい．このことは下降型の構文解析では，構文図を用いて示される．
+
+構文図をたどる際に構文要素の項目に応じてコードを生成する．
+
+\begin{Exmp}
+    以下の拡張BNFで定義されるプログラム$P$を考える．
+    \[\begin{array}{crl}
+            P & := & S\ (\ttsc S)^\ast                                                                                                           \\
+            S & := & \mathsf{ID}\ \ttassgn\ E\ |\ \ttif B\ \ttthen\ S\ \ttelse S\ \ttfi\ |\ \ttwhile\ B\ \ttdo\ S\ \ttod                         \\
+            E & := & T((\ttpl|\ttsb)T)^\ast                                                                                                      \\
+            T & := & F((\ttmu|\ttdv)F)^\ast                                                                                                      \\
+            F & := & \ttlp\ E\ \ttrp\ |\ \mathsf{ID}\ |\ \mathsf{NUM}                                                                            \\
+            B & := & A(\ttor A)^\ast                                                                                                             \\
+            A & := & N(\ttand N)^\ast                                                                                                            \\
+            N & := & C\ |\ \ttneg\,C                                                                                                             \\
+            C & := & \ttlp\ B\ttrp\ |\ \mathsf{ID}\,\ttlt\,\mathsf{ID}\ |\ \mathsf{ID}\,\ttlt\,\mathsf{NUM}\ |\ \mathsf{NUM}\,\ttlt\,\mathsf{ID}
+        \end{array}\]
+    これらの構文図式は図\ref{SynDiagramExample}のようになる．
+
+    \begin{figure}[H]\centering
+        \includegraphics[scale=0.85]{SynDiag-fig-crop.pdf}
+        \caption{$P$の構文図式}\label{SynDiagramExample}
+    \end{figure}
+
+    例えば，$S$については，解析の経路をたどりながら
+    以下のように中間コードを生成する．\verb|nextsym|に先読みトークンの
+    情報が格納されており，\verb|getNextsym()|で次のトークンを読む．
+    \begin{center}
+        \begin{mdframed}[userdefinedwidth=.8\linewidth]
+            \begin{tabbing}
+                \qquad\=\qquad\=\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\= \kill
+                // \verb|nextsym|には先読みトークンがあらかじめ格納されている\\
+                {\rm\bf If} \verb|nexsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
+                \> \verb|getNextsym()|\\
+                \>{\rm\bf If} \verb|nextsym|.kind = `{\sf =}' {\rm\bf then}\>\>// 代入記号\\
+                \>\> Eのコードを生成(\verb|$tempE|に結果を格納)\>// $E$\\
+                \>\> $\mathsf{generate}$(`$\mathsf{var}$({\sf ID}.val) = \verb|$tempE|')\>// 代入本体\\
+                \>{\rm\bf else} \verb|error()|\\
+                {\rm\bf else if} \verb|nextsym|.kind = {\sf if} {\rm\bf then}\>\>\>// 条件文\\
+                \> \verb|getNextsym()|\\
+                \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
+                \> $L_1=\mathsf{newlabel}$()\>\>// 偽の場合の飛び先\\
+                \> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_1$')\>\>// 分岐命令本体\\
+                \> Sのコードを生成\>\>// 条件が真の場合の$S$\\
+                \> $L_2=\mathsf{newlabel}$()\>\>// 偽の命令の後への飛び先\\
+                \> $\mathsf{generate}$(`\verb|goto| $L_2$')\\
+                \> $\mathsf{generate}$(`\verb|label| $L_1$')\\
+                \> Sのコードを生成\>\>// 条件が偽の場合の$S$\\
+                \> $\mathsf{generate}$(`\verb|label| $L_2$')\>\>// 真の$S$のジャンプ先\\
+                {\rm\bf else if} \verb|nextsym|.kind = {\sf while} {\rm\bf then}\>\>\>// 繰り返し文\\
+                \> \verb|getNextsym()|\\
+                \> $L_1=\mathsf{newlabel}$()\\
+                \> $\mathsf{generate}$(`\verb|label| $L_1$')\>\>// 繰り返しで戻るラベル\\
+                \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
+                \> {\rm\bf If} \verb|nextSym|.kind = {\sf do} {\rm\bf then}\\
+                \>\> $L_2=\mathsf{newlabel}$()\\
+                \>\> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_2$')\\
+                \>\> Sのコードを生成\>// 繰り返し本体の$S$\\
+                \>\> $\mathsf{generate}$(`\verb|goto| $L_1$')\>// 繰り返しに戻る\\
+                \>\> $\mathsf{generate}$(`\verb|label| $L_2$')\>// 脱出先のラベル\\
+                \> {\rm\bf else} \verb|error()|\\
+                {\rm\bf else}\\
+                \>\verb|error()|
+            \end{tabbing}
+        \end{mdframed}
+    \end{center}
+\end{Exmp}
+
+ここで，\verb|nextsym|.{\it kind} はトークンの種類，\verb|nextsym|.{\it val} はトークン
+の値を表す．{\sf var}($s$)は文字列$s$を持つ識別子が変数であるとき，記号表を
+参照してメモリ内の番地を与える．
+
+他の非終端記号の構文グラフについても同様に３番地コードを生成することができる．
+
+\subsection{構文主導定義による意味定義}
+
+構文主導定義(Syntax-Directed Translation, SDD)は生成規則の構文要素に「属性」を割り当てることによって，
+特定の意味を与えることができる．
+構文主導定義では，コード生成ルーチンを陽に与える代わりに，構文要素間に成立する等式を意味規則として
+与える．形式言語理論における属性文法(Attributed Grammar)に基づく．
+非終端記号$X$に対して$X.a$は，$X$に対する属性$a$を表す．
+例えば，生成規則 $E\rightarrow E^{(1)}\ttpl\mathsf{NUM}$に対して，
+各構文要素がもつ値属性($val$)に対する関係$E.val=E^{(1)}.val+\mathsf{NUM}.val$に
+よってこの生成規則が与える意味を定義する．属性は，数，型，表参照，文字列など，どういった種類の
+値でもよい．
+
+\begin{Exmp}
+    以下の意味規則つきの生成規則を持つ文法 $G_A=(\{L,E,T,F\},\{\ttpl,\ast,\ttlp,\ttrp,\mathsf{NUM},\mathbf{n}\},P,L)$を考える．
+    \[P=\left\{\begin{array}{lll}
+            0: & L\rightarrow E\ \mathbf{n} & \{L.val=E.val\}               \\
+            1: & E\rightarrow E_1\ \ttpl\ T & \{E.val=E_1.val+T.val\}       \\
+            2: & E\rightarrow T             & \{E.val=T.val\}               \\
+            3: & T\rightarrow T_1\ast F     & \{T.val=T_1.val\times F.val\} \\
+            4: & T\rightarrow F             & \{T.val=F.val\}               \\
+            5: & F\rightarrow \ttlp E\ttrp  & \{F.val=E.val\}               \\
+            6: & F\rightarrow \mathsf{NUM}  & \{F.val=\mathsf{NUM}.val\}
+        \end{array}\right\}\]
+    規則$0: L\rightarrow E\ \mathbf{n}$は，計算終了記号$\mathbf{n}$を入力することで，値計算をすることを表す．
+    $\mathsf{NUM}$は数のトークンであり，$\mathsf{NUM}.val$は，そのトークンが表す属性としての値である．
+    図\ref{fig:Eval-attrib}は $3+4*5$に対する構文解析木とその属性評価である．
+
+    \begin{figure}[H]
+        \begin{center}
+            \begin{tikzpicture}
+                \node (NR) at (0,0) {$L$};
+                \node (N0) at ($(NR)+(-1.5,-1)$) {$E$};
+                \node (N1) at ($(NR)+(2.5,-1)$) {$\mathbf{n}$};
+                \node (N00) at ($(N0)+(-1,-1)$) {$E$};
+                \node (N01) at ($(N0)+(2,-1)$) {$T$};
+                \node (N000) at ($(N00)+(0,-1)$) {$T$};
+                \node (N0000) at ($(N000)+(0,-1)$) {$F$};
+                \node (N010) at ($(N01)+(-1,-1)$) {$T$};
+                \node (N011) at ($(N01)+(1,-1)$) {$F$};
+                \node (N0100) at ($(N010)+(0,-1)$) {$F$};
+                \node (N0110) at ($(N011)+(0,-1)$) {\scriptsize $\mathsf{NUM}$};
+                \node (N00000) at ($(N0000)+(0,-1)$) {\scriptsize $\mathsf{NUM}$};
+                \node (N01000) at ($(N0100)+(0,-1)$) {\scriptsize $\mathsf{NUM}$};
+                \node (N000000) at ($(N00000)+(0,-1)$) {3};
+                \node (N010000) at ($(N01000)+(0,-1)$) {4};
+                \node (N01100) at ($(N0110)+(0,-2)$) {5};
+                \node (N02) at ($(N0)+(0,-5)$) {\ttpl};
+                \node (N012) at ($(N01)+(0,-4)$) {\ttmu};
+                \path[-] (NR) edge (N0) (NR) edge (N1);
+                \path[-] (N0) edge (N00) (N0) edge (N01);
+                \path[-] (N00) edge (N000) (N000) edge (N0000) (N0000) edge (N00000);
+                \path[-] (N01) edge (N010) (N01) edge (N011);
+                \path[-] (N010) edge (N0100) (N0100) edge (N01000);
+                \path[-] (N011) edge (N0110);
+                \path[-] (N00000) edge (N000000) (N01000) edge (N010000) (N0110) edge (N01100);
+                \path[-] (N0) edge (N02);
+                \path[-] (N01) edge (N012);
+
+                \node (V00000) at ($(N00000)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{3}$}};
+                \node (V0000) at ($(N0000)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{3}$}};
+                \node (V000) at ($(N000)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{3}$}};
+                \node (V00) at ($(N00)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{3}$}};
+                \node (V01000) at ($(N01000)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{4}$}};
+                \node (V0100) at ($(N0100)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{4}$}};
+                \node (V010) at ($(N010)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{4}$}};
+                \node (V0110) at ($(N0110)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{5}$}};
+                \node (V011) at ($(N011)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{5}$}};
+                \node (V01) at ($(N01)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{20}$}};
+                \node (V0) at ($(N0)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{23}$}};
+                \node (VR) at ($(NR)+(0.5,-0.25)$) {\bluetext{.val=$\mathsf{23}$}};
+                \path[->,line width=1pt,color=blue] (V00000) edge (V0000);
+                \path[->,line width=1pt,color=blue] (V0000) edge (V000);
+                \path[->,line width=1pt,color=blue] (V000) edge (V00);
+                \path[->,line width=1pt,color=blue] (V01000) edge (V0100);
+                \path[->,line width=1pt,color=blue] (V0100) edge (V010);
+                \path[->,line width=1pt,color=blue] (V0110) edge (V011);
+                \path[->,line width=1pt,color=blue] (V010) edge (V01) (V011) edge (V01);
+                \path[->,line width=1pt,color=blue] (V00) edge (V0) (V01) edge (V0);
+                \path[->,line width=1pt,color=blue] (V0) edge (VR);
+            \end{tikzpicture}
+        \end{center}
+        \caption{解析木と属性評価}\label{fig:Eval-attrib}
+    \end{figure}
+
+\end{Exmp}
+
+\begin{Def}
+    文脈自由文法$G=(N,\Sigma,P,S)$に対するSDDは$(G,\mathcal{A},E)$として
+    与えられる．
+    \begin{itemize}
+        \item $\mathcal{A}$は属性の集合である．$X\in N\cup\Sigma$に対して，
+              $\mathcal{A}|_X$は，$X$に割り当てられた属性の集合を表す．
+              $X.a$は，$X$に割り当てられた属性値を表し，$X.a\in\mathcal{A}$である.
+        \item $E$は生成規則$p\in P$に対して，意味規則を与える．
+              意味規則は，属性間に成立する等式の集合である．
+              属性間に成立する等式は以下の形を持つ．
+              \[X_{i_1}.a_{j_1}=f(X_{i_2}.a_{j_2},\cdots,X_{i_n}.a_{j_m})\in E(p)\]
+              であるとき，$X_k$は$p$に現れる$N\cup\Sigma$である．
+              $f$は意味関数であり，引数となる属性に対して定義されているとする．
+              $f$は引数となる属性に対して計算可能な関数であり，計算手続きはメモリ更新などの
+              副作用を持たない．
+        \item
+              意味規則の等式において，$X_{i_1}$が$p$の左辺の非終点記号であるとき，
+              $X_{i_1}.a_{j_1}$を合成属性(syntheiszed attribute)とよび，
+              そうでないとき相続属性(inherited attribute)とよぶ．$X\in N\cup\Sigma$
+              に対して，合成属性の集合を$S(X)$, 相続属性の集合を$I(X)$と書く．
+              $X\in\Sigma$に対して$I(X)=\varnothing$であり，すべての属性$X.a$は，
+              字句解析時に決定している．
+    \end{itemize}
+
+    $E$の定義において，以下の3つの条件を満たす．
+    \begin{enumerate}
+        \item $S(X)\cap I(X)=\varnothing$
+        \item $S(X)\cup I(X)=\mathcal{A}|_X$
+        \item $Y_1\rightarrow Z_1,\cdots,Z_n\in P$に対して，
+              $Y.a\in S(Y)$および$Z_i.a\in I(Z_i)$のそれぞれに対して，
+              ちょうど１つの意味規則の等式が存在する．
+    \end{enumerate}
+\end{Def}
+
+\begin{Exmp}
+    次に与えられる属性文法について考える．
+
+    $G=(\{T,L\},\{\mathsf{max},\mathsf{min},\mathsf{NUM},`\ttlp',`\ttrp',`\ttcm'\},P,T)$ $\mathcal{A}=\{val,op\}$,
+    \[P,E=\left\{\begin{array}{ll}
+            T\rightarrow\mathsf{min}`\ttlp' L`\ttrp'
+             & \{L.op=\mathsf{min},T.val=L.val\}                              \\
+            T\rightarrow\mathsf{max}`\ttlp' L `\ttrp'
+             & \{L.op=\mathsf{max},T.val=L.val\}                              \\
+            L\rightarrow\mathsf{NUM}
+             & \{L.val=\mathsf{NUM}.val\}                                     \\
+            L\rightarrow L^{(1)} `\ttcm' \mathsf{NUM}
+             & \{L.val=f(L.op,L^{(1)}.val,\mathsf{NUM}.val),L^{(1)}.op=L.op\}
+        \end{array}\right\}\]
+    $f(L.op,L^{(1)}.val,\mathsf{NUM}.val)$は，
+    $L.op(L^{(1)}.val,\mathsf{NUM}.val)$を計算する意味関数とする．
+
+    $S(T)=\{val\}$, $I(T)=\varnothing$, $S(L)=\{val\}$, $I(L)=\{op\}$
+
+    \begin{figure}[H]
+        \begin{center}
+            \begin{tikzpicture}
+                \node (NR) at (0,0) {$T$};
+                \node (N0) at ($(NR)+(-1.5,-1)$) {$\mathsf{max}$};
+                \node (N1) at ($(NR)+(0,-1)$) {`\ttlp'};
+                \node (N2) at ($(NR)+(2,-1)$) {$L$};
+                \node (N3) at ($(NR)+(4,-1)$) {`\ttrp'};
+                \node (N20) at ($(N2)+(-1,-1)$) {$L^{(1)}$};
+                \node (N21) at ($(N2)+(0,-1)$) {`\ttcm'};
+                \node (N22) at ($(N2)+(1,-1)$) {$\mathsf{NUM}_3$};
+                \node (N200) at ($(N20)+(-1,-1)$) {$L^{(2)}$};
+                \node (N201) at ($(N20)+(0,-1)$) {`\ttcm'};
+                \node (N202) at ($(N20)+(1,-1)$) {$\mathsf{NUM}_2$};
+                \node (N2000) at ($(N200)+(0,-1)$) {$\mathsf{NUM}_1$};
+                \node (N20000) at ($(N2000)+(0,-1)$) {$3$};
+                \node (N2020) at ($(N202)+(0,-1)$) {5};
+                \node (N220) at ($(N22)+(0,-1)$) {4};
+                \path (NR) edge (N0) (NR) edge (N1) (NR) edge (N2) (NR) edge (N3);
+                \path (N2) edge (N20) (N2) edge (N21) (N2) edge (N22);
+                \path (N20) edge (N200) (N20) edge (N201) (N20) edge (N202);
+                \path (N200) edge (N2000);
+                \path (N2000) edge (N20000) (N202) edge (N2020) (N22) edge (N220);
+                \node (V2000) at ($(N2000)+(10,0)$) {$\mathsf{NUM}_1.val$};
+                \node (V202) at ($(N202)+(8,0)$) {$\mathsf{NUM}_2.val$};
+                \node (V22) at ($(N22)+(7,0)$) {$\mathsf{NUM}_3.val$};
+                \node (V200) at ($(N200)+(8,0)$) {$L^{(2)}.val$};
+                \node (V20) at ($(N20)+(7,0)$) {$L^{(1)}.val$};
+                \node (V2) at ($(N2)+(6,0)$) {$L.val$};
+                \node (O2) at ($(N2)+(4,0)$) {$L.op$};
+                \node (O20) at ($(N20)+(5,0)$) {$L^{(1)}.op$};
+                \node (O200) at ($(N200)+(6,0)$) {$L^{(2)}.op$};
+                \node (T0) at ($(NR)+(8,0)$) {$T.val$};
+
+                \draw[style=dashed,->,line width=1pt] (N0) -- +(0,1.5) -- +(7.5,1.5) -- (O2);
+                \path[style=dashed,->] (O2) edge (O20) (O20) edge (O200);
+                \path[style=dashed,->] (O200) edge (V200) (O20) edge (V20) (O2) edge (V2);
+                \path[style=dashed,->] (V2000) edge (V200) (V202) edge (V20) (V22) edge (V2);
+                \path[style=dashed,->] (V200) edge (V20) (V20) edge (V2) (V2) edge (T0);
+            \end{tikzpicture}
+        \end{center}
+        \caption{属性の評価}\label{fig:attr-eval}
+    \end{figure}
+\end{Exmp}
+
+属性文法において，属性の計算方法が巡回すると属性の計算ができなくなる．
+例えば，以下の意味規則を持つ場合は属性の計算ができない．
+
+\[\begin{array}{ll}
+        A\rightarrow B & \{A.s = B.i, B.i = A.s + 1\}
+    \end{array}\]
+
+属性文法に基づく意味を計算する場合は，合成属性に限定する(S-Attribute Definition)，
+あるいは，相続属性の出現を限定する(L-Attribute Definition)ことによって巡回を避けるための
+十分条件が知られている．
+
+\subsection{コンパイラコンパイラによるコード生成}
+
+\subsubsection{ソースプログラムの仕様}
+
+ブロック構造とループ構造を持つ単純なプログラミング言語PL-Simpleを以下のように
+定義する．
+
+\begin{align*}
+\bnfnts{program} & \bnfarr \bnfts{program}\ \bnfts{IDENT}\ \bnfts{;}\ \bnfnts{outblock}\ \bnfts{.}\\
+\bnfnts{outblock} & \texttt{::=} 
+\bnfnts{var\_decl\_part}\ \bnfnts{statement}\\
+\bnfnts{var\_decl\_part} & \texttt{::=} \bnfnts{var\_decl\_list} \bnfts{;} \vert \texttt{/* empty */}\\
+\bnfnts{var\_decl\_list} & \bnfarr \bnfnts{var\_decl\_list} \bnfts{;} \bnfnts{var\_decl} \vert \bnfnts{var\_decl}\\
+\bnfnts{var\_decl} & \bnfarr \bnfts{var} \bnfnts{id\_list}\\
+\bnfnts{id\_list} & \bnfarr \bnfts{IDENT} \vert \bnfnts{id\_list} \bnfts{,} \bnfts{IDENT}\\
+\bnfnts{statement\_list} & \bnfarr \bnfnts{statement\_list} \bnfts{;} \bnfnts{statement} \vert \bnfnts{statement}\\
+\bnfnts{statement} & \bnfarr \bnfnts{assignment\_statement}
+             \vert \bnfnts{if\_statement}\\
+            & \vert \bnfnts{while\_statement}
+             \vert \bnfnts{for\_statement}
+             \vert \bnfnts{null\_statement}\\
+            & \vert \bnfnts{block\_statement}
+             \vert \bnfnts{read\_statement}
+             \vert \bnfnts{write\_statement}\\
+\bnfnts{assignment\_statement} & \bnfarr \bnfts{IDENT} \bnfts{:=} \bnfnts{expression}\\
+\bnfnts{if\_statement} & \bnfarr \bnfts{if} \bnfnts{condition} \bnfts{then} \bnfnts{statement} \bnfnts{else\_statement}\\
+\bnfnts{else\_statement} & \bnfarr \bnfts{else} \bnfnts{statement} \vert /* empty */\\
+\bnfnts{while\_statement} & \bnfarr \bnfts{while} \bnfnts{condition} \bnfts{do} \bnfnts{statement}\\
+\bnfnts{for\_statement} & \bnfarr \bnfts{for} \bnfts{IDENT} \bnfts{:=} \bnfnts{expression} \bnfts{to} \bnfnts{expression} \bnfts{do} \bnfnts{statement}\\
+\bnfnts{block\_statement} & \bnfarr \bnfts{begin} \bnfnts{statement\_list} \bnfts{end}\\
+\bnfnts{read\_statement} & \bnfarr \bnfts{read} \bnfts{(} \bnfts{IDENT} \bnfts{)}\\
+\bnfnts{write\_statement} & \bnfarr \bnfts{write} \bnfts{(} \bnfnts{expression} \bnfts{)}\\
+\bnfnts{null\_statement} & \bnfarr \texttt{/* empty */}\\
+\bnfnts{condition} & \bnfarr \bnfnts{expression} \bnfts{=} \bnfnts{expression}
+            \vert \bnfnts{expression} \bnfts{<>} \bnfnts{expression}\\
+            & \vert \bnfnts{expression} \bnfts{<} \bnfnts{expression}
+            \vert \bnfnts{expression} \bnfts{<=} \bnfnts{expression}\\
+            & \vert \bnfnts{expression} \bnfts{>} \bnfnts{expression}
+            \vert \bnfnts{expression} \bnfts{>=} \bnfnts{expression}\\
+\bnfnts{expression} & \bnfarr \bnfnts{term}
+              \vert \bnfts{+} \bnfnts{term}
+              \vert \bnfts{-} \bnfnts{term}
+              \vert \bnfnts{expression} \bnfts{+} \bnfnts{term}
+              \vert \bnfnts{expression} \bnfts{-} \bnfnts{term}\\
+\bnfnts{term} & \bnfarr \bnfnts{factor}
+        \vert \bnfnts{term} \bnfts{*} \bnfnts{factor}
+        \vert \bnfnts{term} \bnfts{div} \bnfnts{factor}\\
+\bnfnts{factor} & \bnfarr \bnfnts{var\_name}
+          \vert \bnfts{NUMBER}
+          \vert \bnfts{(} \bnfnts{expression} \bnfts{)}\\
+\bnfnts{var\_name} & \bnfarr \bnfts{IDENT}\\
+\end{align*}
+
+ここで，識別子トークン$\texttt{IDENT}$は\verb|[a-zA-Z][a-zA-Z_0-9]*|, 数値トークン$\texttt{NUMBER}$は\verb|(+|-|)?[0-9]+|で定義されるとする．ここで\verb|?|は０回または１回にマッチする文字列，\verb|+|は１回以上の繰り返しに
+マッチする文字列を表す．
+
+\subsubsection{目的コードの仕様}
+
+生成の対象とする目的コードセットを以下のようなものとする．
+$\texttt{s}$は実行時に用いられるデータを格納するための配列であり十分な領域が確保されているとする．
+$\texttt{s}$は評価においてはスタックとして用いられる．
+
+命令長は1 wordであり、命令は次の形式を持つ。
+\begin{center}
+\begin{tabularx}{.3\textwidth}{|c|Y|Y|Y|Y|}\hline
+    OPCODE & $b$ & $i$ & $a$\\\hline
+\end{tabularx}
+\end{center}
+% \[
+% \begin{array}{|c|c|c|c|}\hline
+% \mathrm{OPCODE}&b&i&a\\\hline
+% \end{array}
+% \]
+\begin{description}
+\item[$b$] ベースレジスタの指定。
+\item[$i$] インデックスレジスタの指定。
+\item[$a$] アドレス（displacement）。命令により定数や演算の指定にも使う。
+\end{description}
+命令領域（読出し専用）はword単位で番地を持ち、0番地から実行する。
+PCが示す番地の命令をIRに格納し、PCを1増加させてから、IRの命令を実行する。
+初期状態は次のとおりである。
+\[
+\mathrm{PC}=0,\quad R_1=0,\quad R_2=-1,\quad R_3=0,\quad R_4=0.
+\]
+以下では動作をC言語風に記述する。スタックは整数データを読み書きする領域であり、
+\texttt{s[Rn]}はレジスタ\texttt{Rn}が示す番地の内容を表す。
+各動作は記述順に実行する。
+
+\paragraph{1. Load literal}
+\inst{lit}
+\begin{verbatim}
+R2 = R2 + 1; s[R2] = a
+\end{verbatim}
+\ignored{$b$と$i$}
+\noindent 原文の\texttt{'a'}は即値$a$を表す。
+
+\paragraph{2. Load}
+\inst{lod}
+\begin{verbatim}
+R2 = R2 + 1; s[R2] = s[Rb + Ri + a]
+\end{verbatim}
+$b$と$i$が指定するレジスタの内容と$a$を加えたものをオペランドアドレスとする。
+ただし、$b=0$のときベースによるアドレス修飾は行わず、$i=0$のときも同様である。
+
+\paragraph{3. Store}
+\inst{sto}
+\begin{verbatim}
+s[Rb + Ri + a] = s[R2]; R2 = R2 - 1
+\end{verbatim}
+アドレスの計算は\texttt{lod}と同様であり、$b=0$または$i=0$の項は加えない。
+
+\paragraph{4. Move to index register}
+\inst{mvx}
+\begin{verbatim}
+Ri = s[R2]; R2 = R2 - 1
+\end{verbatim}
+\ignored{$b$と$a$}
+
+\paragraph{5. Arithmetic operation}
+\inst{opr}
+\par $a$により次の11種類の演算を指定する。
+\ignored{$b$と$i$}
+\begin{longtable}{|c|p{0.83\linewidth}|}
+\hline $a$ & 動作\\\hline
+\endhead
+0 & \texttt{s[R2] = -s[R2]}\\\hline
+1 & \texttt{R2 = R2 - 1; s[R2] = s[R2] + s[R2+1]}\\\hline
+2 & \texttt{R2 = R2 - 1; s[R2] = s[R2] - s[R2+1]}\\\hline
+3 & \texttt{R2 = R2 - 1; s[R2] = s[R2] * s[R2+1]}\\\hline
+4 & \texttt{R2 = R2 - 1; s[R2] = s[R2] div s[R2+1]}\\\hline
+5 & \texttt{R2 = R2 - 1;} $s[R_2]=s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+6 & \texttt{R2 = R2 - 1;} $s[R_2]\ne s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+7 & \texttt{R2 = R2 - 1;} $s[R_2]<s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+8 & \texttt{R2 = R2 - 1;} $s[R_2]\le s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+9 & \texttt{R2 = R2 - 1;} $s[R_2]>s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+10 & \texttt{R2 = R2 - 1;} $s[R_2]\ge s[R_2+1]$なら\texttt{s[R2] = 1}、そうでなければ\texttt{s[R2] = 0}。\\\hline
+\end{longtable}
+
+% \paragraph{6. Increment stack top}
+% \inst{int}
+% \begin{verbatim}
+% R2 = R2 + a
+% \end{verbatim}
+% \ignored{$b$と$i$}
+
+% \paragraph{7. Procedure call}
+% \inst{cal}
+% \begin{verbatim}
+% s[R2+1] = R1; s[R2+2] = PC;
+% s[R2+3] = R3; s[R2+4] = R4;
+% R1 = R2 + 5; R2 = R2 + 4; PC = a
+% \end{verbatim}
+% \ignored{$b$と$i$}
+
+% \paragraph{8. Return}
+% \inst{rtn}
+% \begin{verbatim}
+% R2 = R1 - 5; PC = s[R1-3];
+% R3 = s[R1-2]; R4 = s[R1-1]; R1 = s[R1-4]
+% \end{verbatim}
+% \ignored{$b$、$i$、$a$}
+
+\paragraph{6. Unconditional Jump}
+\inst{jmp}
+\begin{verbatim}
+PC = a
+\end{verbatim}
+\ignored{$b$と$i$}
+
+\paragraph{7. Jump on condition}
+\inst{jpc}
+\begin{verbatim}
+if s[R2] = 0 then PC = a;
+R2 = R2 - 1
+\end{verbatim}
+\ignored{$b$と$i$}
+
+\paragraph{8. Read data}
+\inst{get}
+\par \texttt{R2 = R2 + 1}として、標準入力から次のデータ（整数値）を読み、
+\texttt{s[R2]}に格納する。
+\ignored{$b$、$i$、$a$}
+
+\paragraph{9. Write data}
+\inst{put}
+\par \texttt{s[R2]}の内容を標準出力に出力し、\texttt{R2 = R2 - 1}とする。
+\ignored{$b$、$i$、$a$}
+
+\subsubsection{JAVACCによるコード生成}
+
+{\tt newlabel()}はラベルの記号を生成して表に登録し，表のエントリーポイント
+を返す．{\tt genlabel(label)}は{\tt label}のエントリーに対して，次に
+生成される命令へのポインタを格納する．
+
+{\tt while}文については以下のようにコード生成ルーチンを生成規則に挿入する．
+
+\begin{verbatim}
+void WhileStatement() : { Label startlabel; Label exitlabel; } {
+  <WHILE> { startlabel = newlabel(); genlabel(startlabel); }
+  Condition() { exitlabel = newlabel(); emit("jpc", exitlabel); }
+  <DO> Statement() { emit("jmp", startlabel); genlabel(exitlabel); }
+}
+\end{verbatim}
+
+if文については，以下のように生成規則を拡張する．{\tt LOOKHEAD}は，{\tt else}が次にあるかどうかを先読みする．
+
+\begin{verbatim}
+void IfStatement() : { Label falselabel; } {
+  <IF> Condition() { falselabel = newlabel(); emit("jpc", falselabel); }
+  <THEN> Statement() ElseStatement(falselabel)
+}
+void ElseStatement(Label falselabel) : { Label endlabel = null; } {
+  [ LOOKAHEAD(<ELSE>) <ELSE>
+    { endlabel = newlabel(); emit("jmp", endlabel); genlabel(falselabel); }
+    Statement() ]
+  { if (endlabel != null) genlabel(endlabel); else genlabel(falselabel); }
+}
+\end{verbatim}
+
+式については以下のようにコード生成する．BNFが左再帰製をもつため，$_{tail}$
+をもつ非終端記号を導入する．
+
+\begin{verbatim}
+void Expression() : {} {
+  ( Term() | <PLUS> Term() #UnaryPlus(1)
+  | <MINUS> Term() #Negate(1) { emit("opr", 0); } )
+  Expression_tail()
+}
+/* <expression_{tail}>. Emit before recursion to preserve left associativity. */
+void Expression_tail() #void : {} {
+  [ ( <PLUS> Term() #Add(2) { emit("opr", 1); }
+    | <MINUS> Term() #Subtract(2) { emit("opr", 2); } )
+    Expression_tail() ]
+}
+void Term() : {} { Factor() Term_tail() }
+/* <term_{tail}> */
+void Term_tail() #void : {} {
+  [ ( <TIMES> Factor() #Multiply(2) { emit("opr", 3); }
+    | <DIV> Factor() #Divide(2) { emit("opr", 4); } )
+    Term_tail() ]
+}
+void Factor() : {} { VarName() | Number() | <LPAREN> Expression() <RPAREN> }
+void VarName() : { Token name; } { name=Identifier() { load(variable(name)); } }
+Token Identifier() : { Token token; } {
+  token=<IDENT> { jjtThis.jjtSetValue(token.image); return token; }
+}
+\end{verbatim}
+
+フルセットのjavacc記述を\url{https://github.com/syuen1/26compiler-support/PLsimple-javacc}で公開する．
+
+\subsubsection{SLYによるコード生成}
+
+SLYを用いてコード生成する場合，LALR(1)による構文解析によるので，
+還元時にコード生成する．コード生成規則を生成のタイミングで以下のように
+分割する．
+
+\begin{align*}
+\bnfnts{assignment\_target} & \bnfarr \bnfts{IDENT} \bnfts{ASSIGN}\\
+\bnfnts{assignment\_statement} & \bnfarr \bnfnts{assignment\_target} \bnfnts{expression}
+\end{align*}
+
+\begin{verbatim}
+    @_("IDENT ASSIGN")
+    def assignment_target(self, p):
+        return self.variable(p.IDENT)
+
+    @_("assignment_target expression")
+    def assignment_statement(self, p):
+        self.emit("sto", p.assignment_target)
+\end{verbatim}
+
+\begin{align*}
+\bnfnts{if\_head} & \bnfarr \bnfts{IF} \bnfnts{condition} \bnfts{THEN}\\
+\bnfnts{if\_statement} & \bnfarr \bnfnts{if\_head} \bnfnts{statement} \bnfnts{else\_statement}\\
+\bnfnts{else\_statement} & \bnfarr \bnfts{ELSE} \bnfnts{else\_start} \bnfnts{statement} \vert \texttt{/* empty */}\\
+\bnfnts{else\_start} & \bnfarr \texttt{/* empty */}\\
+\end{align*}
+
+\begin{Verbatim}[frame=single]
+    @_("IF condition THEN")
+    def if_head(self, p):
+        return self.emit("jpc")
+        label = self.newlabel()
+        self.emit("jpc", label)
+        return label
+
+    @_("if_head statement else_statement")
+    def if_statement(self, p):
+        # An absent else patches the false jump; a present else patches its end jump.
+        self.patch(p.if_head if p.else_statement is None else p.else_statement)
+        # Define the false label for an absent else, or the end label for a present else.
+        self.genlabel(p.if_head if p.else_statement is None else p.else_statement)
+
+    @_("ELSE else_start statement")
+    def else_statement(self, p):
+        return p.else_start
+
+    @_("%prec IF_WITHOUT_ELSE")
+    def else_statement(self, p):
+        return None
+
+    @_("")
+    def else_start(self, p):
+        # Stack immediately to the left: if_head, statement, ELSE.
+        false_jump = p[-3]
+        end_jump = self.emit("jmp")
+        self.patch(false_jump)
+        end_jump = self.newlabel()
+        self.emit("jmp", end_jump)
+        self.genlabel(false_jump)
+        return end_jump
+\end{Verbatim}
+
+\begin{align*}
+\bnfnts{loop\_start} & \bnfarr \texttt{/* empty */}\\
+\bnfnts{while\_head} & \bnfarr \bnfts{WHILE} \bnfnts{loop\_start} \bnfnts{condition} \bnfts{DO}\\
+\bnfnts{while\_statement} & \bnfarr \bnfnts{while\_head} \bnfnts{statement}
+\end{align*}
+
+\begin{Verbatim}[frame=single]
+    @_("")
+    def loop_start(self, p):
+        return len(self.code)
+        label = self.newlabel()
+        self.genlabel(label)
+        return label
+
+    @_("WHILE loop_start condition DO")
+    def while_head(self, p):
+        exit_label = self.newlabel()
+        self.emit("jpc", exit_label)
+        return WhileContext(p.loop_start, self.emit("jpc"))
+        return WhileContext(p.loop_start, exit_label)
+
+    @_("while_head statement")
+    def while_statement(self, p):
+        context = p.while_head
+        self.emit("jmp", context.start)
+        self.patch(context.exit_jump)
+        self.genlabel(context.exit_jump)
+\end{Verbatim}
+
+還元時にコード生成を行う場合は，上記のようにコード生成をするタイミングで
+$\varepsilon$規則を追加することによって，プログラミング言語を定義する
+文法の生成規則を拡張してコード生成を行うことができる． if文においては，
+条件のコードを生成した後，条件が偽であった場合の飛び先命令{\tt jpc}を
+生成し，else の前でthenで実行した命令が終了後の{\tt jmp}命令を
+$\varepsilon$規則で生成し，elseの後で条件が偽であった場合の飛び先
+番地を決定している．
+while文では，ループ条件の前にループ本体の実行後のジャンプ先ラベルを
+生成し，条件の直後にループの脱出条件をチェックする命令{\tt jpc}を
+生成している．
+
+フルセットのsly記述を\url{https://github.com/syuen1/26compiler-support/PLsimple-sly}で公開する．
+
+\section{コード生成例}
+
+\begin{tabular}{ccc}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0A;
+var n, sum;
+begin
+  n := 10;
+  sum := 0;
+  while n > 0 do
+  begin
+    sum := sum + n;
+    n := n - 1;
+  end;
+  write(sum)
+end.
+\end{Verbatim}
+{\tt PL0A.pl0} (1から10までの和を表示)
+    \end{minipage}
+    & \hspace*{3cm}& 
+    \begin{minipage}{.2\linewidth}
+\begin{Verbatim}[numbers=left]
+int,0,0,2
+lit,0,0,10
+sto,0,0,0
+lit,0,0,0
+sto,0,0,1
+lod,0,0,0
+lit,0,0,0
+opr,0,0,9
+jpc,0,0,18
+lod,0,0,1
+lod,0,0,0
+opr,0,0,1
+sto,0,0,1
+lod,0,0,0
+lit,0,0,1
+opr,0,0,2
+sto,0,0,0
+jmp,0,0,5
+lod,0,0,1
+put,0,0,0
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+
+\begin{tabular}{ccc}
+        \begin{minipage}{.5\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0B;
+var m, n, x;
+begin
+  read(n);
+  while 1 < n do
+    begin
+      x := n;
+      begin
+        m := x div 2;
+        while x <> (x div m) * m do
+          m := m - 1;
+        if m = 1 then
+          write(x)
+      end;
+      n := n - 1
+    end
+end.
+\end{Verbatim}
+{\tt PL0B.pl0} (入力した値より小さい素数を出力)
+    \end{minipage}
+     & \hspace*{3cm} &
+    \begin{minipage}{.2\linewidth}
+\begin{Verbatim}[numbers=left]
+int,0,0,3
+get,0,0,0
+sto,0,0,1
+lit,0,0,1
+lod,0,0,1
+opr,0,0,7
+jpc,0,0,37
+lod,0,0,1
+sto,0,0,2
+lod,0,0,2
+lit,0,0,2
+opr,0,0,4
+sto,0,0,0
+lod,0,0,2
+lod,0,0,2
+lod,0,0,0
+opr,0,0,4
+lod,0,0,0
+opr,0,0,3
+opr,0,0,6
+jpc,0,0,26
+lod,0,0,0
+lit,0,0,1
+opr,0,0,2
+sto,0,0,0
+jmp,0,0,13
+lod,0,0,0
+lit,0,0,1
+opr,0,0,5
+jpc,0,0,32
+lod,0,0,2
+put,0,0,0
+lod,0,0,1
+lit,0,0,1
+opr,0,0,2
+sto,0,0,1
+jmp,0,0,3
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{document}

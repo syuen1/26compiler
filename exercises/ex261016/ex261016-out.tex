@@ -1,0 +1,60 @@
+\documentclass[dvipdfmx]{jarticle}
+\hoffset=-25mm \voffset=-25mm
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{23cm}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\newcounter{coffee}
+\newcounter{bean}
+\begin{document}
+\begin{flushright}
+  \texttt{2026/10/16}
+\end{flushright}
+\begin{center}{\bf\Large
+    2026年度　コンパイラ演習課題(3)
+  }\end{center}
+\begin{itemize}
+  \item TACTの課題の添付ファイルとしてPDFファイルで提出すること．
+  \item 手書きレポートをPDFとして提出方法は講義webサイトを
+        参照\footnote{\url{https://sites.google.com/sqlab.jp/26compiler/how-to-make-report}}すること．
+  \item 提出期限: 10月27日(火) 23:55(JST)
+\end{itemize}
+\begin{list}{[\arabic{coffee}]}{\usecounter{coffee}}
+    \item 以下の文法はLL(1)解析可能ではあるがLALR(1)解析可能でないことをそれぞれ構文解析表を構成して説明せよ．
+        \[\langle\{S,A,E,F,X\},\{\texttt{(},\texttt{)},\texttt{[},\texttt{]},\left\{
+            \begin{array}{clcl}
+                1: & S\rightarrow \verb|(|X & 5: & X\rightarrow F\verb|]| \\
+                2: & S\rightarrow E\verb|]| & 6: & E \rightarrow A        \\
+                3: & S\rightarrow F\verb|)| & 7: & F\rightarrow A         \\
+                4: & X\rightarrow E\verb|)| & 8: & A\rightarrow\varepsilon
+            \end{array}
+        \right\},S\rangle\]
+    \item 以下の文法について，LALR(1)構文解析表はと複数の動作をもつエントリが存在する．
+            \[\langle\{S,E\},\{\texttt{while},\texttt{do},\texttt{:=},\texttt{+},id\},
+            \left\{\begin{array}{clcl}
+                0: & S\rightarrow E\ \# & 3: & E\rightarrow E\ \texttt{+}\ E\\
+                1: & E\rightarrow \texttt{while}\ E\ \texttt{do}\ E & 4: & E\rightarrow id\\
+                2: & E\rightarrow id\texttt{:=}E & & \\
+            \end{array}\right\},S\rangle\]
+        \begin{list}{(\alph{bean})}{\usecounter{bean}}
+            \item LALR(1)構文解析表を作成せよ．
+            \item 複数の動作がある状態について説明し，一般的な構文解析木を構成するためには，
+                どちらの動作を優先すべきであるかについて解答せよ．
+        \end{list}
+    \item 以下の文法について
+             \[\langle\{S,X,M\},\{\texttt{a},\texttt{b},\texttt{c},\texttt{d}\},\left\{
+            \begin{array}{clcl}
+                0: & S\rightarrow X         & 3: & X\rightarrow \verb|d|\verb|c| \\
+                1: & X\rightarrow M \verb|a| & 4: & X\rightarrow\verb|b|\verb|d|\verb|a|\\
+                2: & X\rightarrow \verb|b|M\verb|c|         & 5: & M\rightarrow\verb|d|
+            \end{array}\right\},S\rangle\]
+
+        LR(1)解析可能であるがSLR(1)解析可能でないことを以下の方法で説明せよ．
+
+        講義ページのGoogle Colaboratoryの実行環境で示したpythonプログラムを用いて，
+        colaboratoryでLR(1)構文解析表とSLR(1)構文解析表を作成する過程を示せ．
+        この過程をブラウザの印刷機能などを利用して，PDFに変換し，
+        ファイルを結合して一つのPDFにまとめて提出すること．
+\end{list}
+\end{document}
