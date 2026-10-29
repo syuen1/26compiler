@@ -1,0 +1,20 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\[
+ \begin{array}{l}
+  \mathsf{newLabel}(L1)\\
+  \mathsf{generate}(\verb|L1:|)\\
+  \mathsf{generate}(t1:=x<20)\\
+  \mathsf{newLabel}(L2)\\
+  \mathsf{generate}(\verb|if not|\ t1\ \mathsf{goto}\ \verb|L2|)\\
+  \mathsf{generate}(t2:=r+x)\\
+  \mathsf{generate}(r:=t2)\\
+  \mathsf{generate}(t3:=x+1)\\
+  \mathsf{generate}(x:=t3)\\
+  \mathsf{generate}(\mathsf{goto}\ \verb|L1|)\\
+  \mathsf{generate}(\verb|L2:|)
+ \end{array}
+\]
+\end{document}

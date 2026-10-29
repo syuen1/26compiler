@@ -1,0 +1,27 @@
+# Fdb version 4
+["dvipdf"] 1793275658.45176 "semantic-rules1.dvi" "semantic-rules1.pdf" "semantic-rules1" 1793275659.01334 0
+  "semantic-rules1.dvi" 1793275658.43719 2436 e5ec9dd2bed4e31fbee2be4eee0240a0 "latex"
+  (generated)
+  "semantic-rules1.pdf"
+  (rewritten before read)
+["latex"] 1793275658.15627 "/Users/shojiyuen/github/26compiler/exercises/ex261030/semantic-rules1.tex" "semantic-rules1.dvi" "semantic-rules1" 1793275659.01308 0
+  "/Users/shojiyuen/github/26compiler/exercises/ex261030/semantic-rules1.tex" 1793275595.5548 1140 d9f9986ada4871beed98c5c2d8ab0a49 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmss10.tfm" 1136768653 1316 b636689f1933f24d1294acdf6041daaa ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmss8.tfm" 1136768653 1296 d77f431d10d47c8ea2cc18cf45346274 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm" 1136768653 768 1321e9409b4137d6fb428ac9dc956269 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm" 1136768653 768 d7b9a2629a0c353102ad947dc9221d49 ""
+  "/usr/local/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-dvipdfmx.def" 1708463273 29970 47025554fcc2f3f1287c3fb073711f3c ""
+  "/usr/local/texlive/2024/texmf-dist/tex/platex/base/jarticle.cls" 1601501154 25873 fd34d08164a3ea7afd6bc7fe99629a3d ""
+  "/usr/local/texlive/2024/texmf-dist/tex/platex/base/jsize10.clo" 1601501154 8603 0e3b68ad462d501024c2959e1acaa910 ""
+  "/usr/local/texlive/2024/texmf-dist/web2c/texmf.cnf" 1708706663 41649 5d6ae549fbbcb850a863f69aa41f3d10 ""
+  "/usr/local/texlive/2024/texmf-var/web2c/euptex/platex.fmt" 1739785316 8157532 02c73494a0e0f87594e2af543d768196 ""
+  "/usr/local/texlive/2024/texmf.cnf" 1710266656 577 e590dabc9e28c5b61546e15f63eebcdf ""
+  "mymacros.tex" 1793275488.38471 870 3dbb712170f31ea6c038aa5ad8053c4b ""
+  "semantic-rules1.aux" 1793275658.43548 32 3985256e7290058c681f74d7a3565a19 "latex"
+  "semantic-rules1.tex" 1793275595.5548 1140 d9f9986ada4871beed98c5c2d8ab0a49 ""
+  (generated)
+  "semantic-rules1.aux"
+  "semantic-rules1.dvi"
+  "semantic-rules1.log"
+  (rewritten before read)

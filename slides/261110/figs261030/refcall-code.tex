@@ -1,0 +1,18 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\begin{document}
+\begin{verbatim}
+f:     int _,_,1
+       lit _,_,10
+       lod 1,0,-4  // xの環境のR1の値
+       mvx _,3,_   // R3<-R1
+       sto 0,3,1
+       lod 1,0,-4  // xの環境のR1の値
+       mvx _,3,_   // R3<-R1
+       lod 0,3,1
+       lit _,_,10
+       opr _,_,1
+       sto 1,0,-5
+       rtn _,_,_
+\end{verbatim}
+\end{document}

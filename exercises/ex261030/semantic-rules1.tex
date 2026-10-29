@@ -1,0 +1,26 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\include{mymacros}
+\begin{document}
+\[
+\begin{array}{rcll}
+    S & \rightarrow & \mathsf{ID}\tteq E & \{\genassign{\mathsf{ID}.name}{E.var}\}\\
+    S & \rightarrow & \ttif\ttlp E\ttrp & 
+    \{S.label_1{\rm :=}{\tt newlabel()};
+    \genifnot{E.var}{S.label_1}\}\\
+    & & S^{(1)} & \{S.label_2{\rm :=}{\tt newlabel()};
+    \gengoto{S.lable_2}\}\\
+    & & \ttelse & \{\genlabel{S.label_1}\}\\
+    & & S^{(2)} & \{\genlabel{S.label_2}\}\\
+    E & \rightarrow & E^{(1)} \ttand D & \{E.var:=\makenewtemp;\\
+    & & & \genassign{E.var}{E^{(1)}.var\ \wedge\ D.var}\}\\
+    E & \rightarrow & D & \{E.var:=\makenewtemp;\genassign{E.var}{D.var}\}\\
+    D & \rightarrow & D^{(1)}< C & \{D.var:=\makenewtemp;\\
+    & & & \genassign{D.var}{D^{(1)}.var<C.var}\}\\
+    D & \rightarrow & C & \{D.var:=\makenewtemp;\genassign{D.var}{C.var}\}\\
+    C & \rightarrow & C^{(1)}-\mathsf{ID} & \{C.var:=\makenewtemp;\\
+      &  & & \genassign{C.var}{C^{(1)}.var-\mathsf{ID}.name}\}\\
+    C & \rightarrow & \mathsf{ID} & C.var:=\makenewtemp;
+    \genassign{C.var}{\mathsf{ID}.name}
+\end{array}\]
+\end{document}

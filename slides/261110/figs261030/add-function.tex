@@ -1,0 +1,17 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\begin{Verbatim}
+define i32 @add(i32,i32) {
+entry:
+  %x = alloca i32
+  %y = alloca i32
+  store i32 %0, i32* %x
+  store i32 %1, i32* %y
+  %2 = load i32, i32* %x
+  %3 = load i32, i32* %y
+  %4 = add i32 %2, %3
+  ret i32 %4
+\end{Verbatim}
+\end{document}

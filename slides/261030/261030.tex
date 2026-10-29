@@ -16,7 +16,6 @@
 %\usepackage{epsbox}
 %\usepackage{multirow}
 \usepackage{fancybox}
-\usepackage{ascmac}
 \usepackage{fancyvrb}
 %\usepackage{listings}
 \usepackage{tabularx}
@@ -28,14 +27,12 @@
 %\usepackage{pst-all}
 %\include{prooftree}
 %\lstloadlanguages{pascal}
-\usepackage{mathrsfs}
-
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\familydefault}{\sfdefault}
 
-\graphicspath{{figs261030/}}
-
 %\include{cmacros}
+
+\graphicspath{{figs261030/}}
 
 \include{mymacros}
 
@@ -58,1174 +55,1339 @@
 
 \frame{\titlepage}
 
-\section{最適化}
+\section{構文主導型変換}
 
-\subsection{静的単一代入}
+\subsection{属性文法}
 
 \begin{frame}
-  \frametitle{静的単一代入を用いた最適化}
+ \frametitle{属性文法}
 
-  データフロー解析のもうひとつの手法:
-  静的単一代入(Static Single Assignment:SSA)\\
-  \redtext{各変数の定義がプログラム中で唯一}
+ 属性文法(attribute grammar):抽象構文木に属性を加えた文法
 
-  変数の値は変わらないとする。二度目の代入が発生すると変数名を変更\\
-  % \quad\greentext{変数を見ればUdチェーンがすぐに判明する。}\\
-  \quad\greentext{値が同じの共通部分式が判別できる=式として一致}
+ \greentext{構文主導型変換への応用=コード生成に関する情報を属
+ 性として扱う}
 
-  変換例：例6.20、6.21\\
-  定義ごとに変数に添字をつける。合流する場合は、$\phi$関数で表現
+ 属性文法 $A_g=(G,{\cal A},E)$
+ \begin{list}{}{}
+  \item $G=(N,\Sigma,P,S)$はCF文法
+  \item ${\cal A}$:属性の集合\\
+	${\cal A}=\cup_{X\in
+	N\cup\Sigma}{\cal A}(X)$.  $a\in{\cal A}(X)$のとき、
+	$X.a$と書く。
+  \item $E$:意味規則の集合\\
+	$p\in P$に対して以下のような規則定める。
+	\[
+	 p\{X_i.a_i=f_i(X_{i_1}.a_{i_1},\ldots,X_{i_n}.a_{i_n})\}
+	\]
+ \end{list}
 
-  いかにして、SSA形式を得るか？
-  \begin{list}{}{}
-    \item [(1)] $\phi$関数の挿入
-    \item [(2)] 変数の添字の決定
-  \end{list}
-  SSA形式において最適化
-  \begin{list}{}{}
-    \item [(3)] SSAから逆変換する。($\phi$関数の消去)
-  \end{list}
+ \[\begin{array}{ll}
+  E\rightarrow E^{(1)}\texttt{+}E^{(2)} & \{E.val=E^{(1)}.val+E^{(2)}.val\}\\
+  E\rightarrow \texttt{NUM} & \{E.val=\texttt{NUM}.val\}
+ \end{array}
+   \]
+%  \begin{center}
+%   \includegraphics[scale=1]{figs191113/attribGram01.eps}
+%  \end{center}
 
-  近年のコンパイラでよく用いられる手法
+\end{frame}
+
+
+\begin{frame}
+ \frametitle{属性の種類}
+
+ \begin{list}{}{}
+  \item 合成(synthesized)属性\\
+	\greentext{右辺の属性から合成された左辺の属性}:
+  \item 相続(inherited)属性 (「継承属性」とも言う)\\
+	\greentext{合成以外の属性}
+ \end{list}
+
+
+ \[G=(\{T,L\},\{\texttt{MAX},\texttt{MIN},\texttt{NUM},`\texttt{(}',`\texttt{)}',`\texttt{,}'\},P,T)\]
+
+ \scalebox{0.8}{
+ $\mathcal{A}$:
+ \begin{tabular}{|c|c|c|}\hline
+    & 合成属性 & 相続属性\\\hline
+  $T$ & $T.val$ & \\\hline
+  $L$ & $L.val$ & $L.op$\\\hline
+ \end{tabular}
+ }
+
+\vspace*{5pt}
+
+{\small
+%P,E:\\
+
+$P=\left\{\begin{array}{ll}
+  T\rightarrow\texttt{MIN'('}L\texttt{')'} & \{L.op=\texttt{MIN},T.val=L.val\}\\
+  T\rightarrow\texttt{MAX'('}L\texttt{')'} & \{L.op=\texttt{MAX},T.val=L.val\}\\
+  L\rightarrow\texttt{NUM} & \{L.val=\texttt{NUM}.val\}\\
+  L\rightarrow L^{(1)}\texttt{',' NUM} & \left\{\begin{array}{l}L.val=f(L.op,L^{(1)}.val,\texttt{NUM}.val),\\
+    L^{(1)}.op=L.op\end{array}\right\}
+\end{array}\right\}$
+ }
+%  \begin{center}
+%   \includegraphics[scale=.8]{figs191113/AttributeExample.eps}
+%  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{属性文法に基づくコード生成例}
+  $G$に生成規則$\{S\rightarrow T\#\}$を加えた拡張文法に対するLR解析
+
+  \vspace*{3pt}
+
+  $P=\left\{\begin{array}{rlcrl}
+    0: & S\rightarrow T\#, & & 3: & L\rightarrow\texttt{NUM},\\
+    1: & T\rightarrow\texttt{MIN}\ `\texttt{(}'\ L\ `\texttt{)}', & & 4: & L\rightarrow L\ `\texttt{,}'\ \texttt{NUM},\\
+    2: & T\rightarrow\texttt{MAX}\ `\texttt{(}'\ L\ `\texttt{)}' & & & 
+  \end{array}\right\}$
+
+  \vspace*{3pt}
+
+  $\mathsf{Follow}_1(T)=\{\#\}$, 
+  $\mathsf{Follow}_1(L)=\{\texttt{)},`\texttt{,}'\}$
+
 
 \end{frame}
 
 \begin{frame}
-  \frametitle{例}
-
+  \frametitle{属性文法に基づくコード生成例}
   \begin{center}
-    \begin{tabular}{c}
-      \includegraphics[height=.4\textheight]{ex6_20r1.pdf}
-      \\
-      \includegraphics[height=.4\textheight]{ex6_21r1.pdf}
-    \end{tabular}
-  \end{center}
+  \begin{tabularx}{\textwidth}{XX}
+  \includegraphics[scale=0.45]{maxmin-lrautomaton-crop.pdf}
+  &
+  \includegraphics[scale=0.5]{maxmin-parsetab-crop.pdf}\\
+  {\small LR(0)遷移系} & {\small SLR(1)構文解析表}
+  \end{tabularx}
+\end{center}
 \end{frame}
 
 \begin{frame}
-  \frametitle{$\phi$関数の挿入}
-
-  根つきグラフ：$(V,E)$ 先行頂点を持たない唯一の接点$v_o$(根)が存在
-
-  \begin{center}
-    \includegraphics[width=\textwidth]{def6_22.pdf}
-  \end{center}
-
-  パス$p$上の$x$の定義=$x_1$,$q$上の$x$の定義=$x_2$
-  定義合流条件の$v$に、$x_3=\phi(x_1,x_2)$
-\end{frame}
-
-\begin{frame}
-  \frametitle{定義合流条件}
-  \begin{center}
-    \includegraphics[width=.5\textwidth]{confluenceCondition.pdf}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{支配関係}
-
-  支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
-
-  \only<1>{
-    \begin{center}
-      \includegraphics[width=.7\textwidth]{def6_23.pdf}
-    \end{center}
-
-    $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 (図6.7)
-  }
-  \only<2>{
-    \begin{center}
-      \begin{tabular}{cc}
-
-        \begin{tikzpicture}
-          \node[draw,circle] (v0) at (0,3) {$v_0$};
-          \node[draw,circle] (u) at (0,1.5) {$u$};
-          \node[draw,circle] (v) at (0,0) {$v$};
-          \node at (0,2.25) {$\cdots$};
-          \node at (0,0.75) {$\cdots$};
-          \path[->] (v0) [out=-30,in=30] edge (u);
-          \path[->] (v0) [out=-60, in=60] edge (u);
-          \path[->] (v0) [out=240,in=120] edge (u);
-          \path[->] (v0) [out=210, in=150] edge (u);
-          \path[->] (u) [out=-30,in=30] edge (v);
-          \path[->] (u) [out=-60, in=60] edge (v);
-          \path[->] (u) [out=240,in=120] edge (v);
-          \path[->] (u) [out=210, in=150] edge (v);
-        \end{tikzpicture}
-
-         &
-        \begin{tabular}{c}                                                         \\[-12zw]
-          $u\underline{\gg}v$                                         \\[1zw]
-          $u\underline{\gg}u$                                         \\
-          $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
-          $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
-          $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
-          $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
-        \end{tabular}
-      \end{tabular}
-    \end{center}
-  }
-\end{frame}
-
-\begin{frame}{フローグラフ$\rightarrow$支配木}
-  \begin{tabular}{cc}
-    \begin{minipage}{.4\textwidth}
-      \scalebox{0.6}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6)
-          {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-                               & \mathtt{j=1}                               \\[-2pt]
-                               & \mathtt{k=1}                               \\[-2pt]
-                               & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4)
-          {\small $\begin{array}{ll}
-                L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-              \end{array}$};
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i=i+1}   \\
-                              & \mathtt{goto L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j=i+k} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,0)
-          {\small $\begin{array}{ll}
-                L2: & \mathtt{k=i+j} \\
-              \end{array}$};
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     &
-    \begin{minipage}{.5\textwidth}
-      \scalebox{0.6}{
-        \begin{tikzpicture}
-          \node[draw,circle] (v0) at (0,3) {$v_0$};
-          \node[draw,circle] (v1) at (0,1.5) {$v_1$};
-          \node[draw,circle] (v2) at (0,0) {$v_2$};
-          \node[draw,circle] (v3) at (1.5,1.5) {$v_3$};
-          \node[draw,circle] (v4) at (1.5,0) {$v_4$};
-          \path[->] (v0) edge (v1)  (v0) edge (v3)  (v1) edge (v2)  (v1) edge (v4) (v3) edge (v4) (v2) [out=225,in=135] edge (v1);
-          \node at (0.75,-1) {\small フローグラフ};
-
-          \node[draw,circle] (w0) at (4.5,3) {$v_0$};
-          \node[draw,circle] (w1) at (3,1.5) {$v_1$};
-          \node[draw,circle] (w2) at (3,0) {$v_2$};
-          \node[draw,circle] (w3) at (4.5,1.5) {$v_3$};
-          \node[draw,circle] (w4) at (6,1.5) {$v_4$};
-          \path[->] (w0) edge (w1) (w0) edge (w3) (w0) edge (w4) (w1) edge (w2);
-          \node at (4.5,-1) {\small 支配木};
-        \end{tikzpicture}
-      }
-    \end{minipage}
-  \end{tabular}
-\end{frame}
-
-\begin{frame}
-  \frametitle{静的単一代入を用いた最適化}
-
-  データフロー解析のもうひとつの手法:\\
-  静的単一代入(Static Single Assignment:SSA)\\
-  \redtext{各変数の定義がプログラム中で唯一}
-
-  二度目の代入が発生すると変数名を変更\\
-  % \quad\greentext{変数を見ればUdチェーンがすぐに判明する。}\\
-  \quad\greentext{値が同じの共通部分式が判別できる=式として一致}
-
-  %  変換例：例6.20、6.21\\
-  定義ごとに変数に添字をつける。合流する場合は、$\phi$関数で表現
-
-  いかにして、SSA形式を得るか？
-
-  \vspace*{5pt}
-
-  \begin{list}{}{}
-    \item [(1)] $\phi$関数の挿入
-    \item [(2)] 変数の添字の決定
-  \end{list}
-  \par\vspace*{3pt}\par
-  \qquad\redtext{SSA形式において最適化}
-  \par\vspace*{3pt}\par
-  \begin{list}{}{}
-    \item [(3)] SSAから逆変換する。($\phi$関数の消去)
-  \end{list}
-
-  \greentext{近年のコンパイラでよく用いられる手法}
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{例}
-
-  \begin{center}
-    \begin{tabular}{c}
-      \includegraphics[height=.4\textheight]{ex6_20r1.pdf}
-      \\
-      \includegraphics[height=.4\textheight]{ex6_21r1.pdf}
-    \end{tabular}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{$\phi$関数の挿入}
-
-  根つきグラフ：$(V,E)$\\
-  先行頂点を持たない唯一の接点$v_o$(根)が存在
-
-  % {\scriptsize
-  \begin{itembox}[l]{定義 ({\bf 定義合流条件})}
-    変数$x$の$\phi$関数が頂点$v$に挿入されるための必要十分
-    条件は，次の条件(1)$\sim$(4)を満たす２つのパス$p$:$V_1,\ldots,v_k$および
-    $q$:$u_1,\ldots,u_\ell$が存在することである．
-    \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-      \item $k>1$, $\ell>1$
-      \item $v_1$,$u_1$の両方に$x$の定義が存在
-      \item $v_k=u_\ell=v$
-      \item $\{v_1,\ldots,v_{k-1}\}\cap\{u_1,\ldots,u_{\ell-1}\}=\varnothing$
-    \end{list}
-  \end{itembox}
-  % }
-
-  %   \begin{center}
-  %    \includegraphics[width=\textwidth]{def6_22.pdf}
-  %   \end{center}
-
-  %   パス$p$上の$x$の定義=$x_1$,$q$上の$x$の定義=$x_2$
-  %  定義合流条件の$v$に、$x_3=\phi(x_1,x_2)$
-\end{frame}
-
-\begin{frame}
-  \frametitle{定義合流条件}
-  \begin{center}
-    \includegraphics[width=.5\textwidth]{confluenceCondition.pdf}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{支配関係}
-
-  {\small
-    \begin{itembox}[l]{定義 (頂点間の支配関係)}
-      フローグラフ$G=(V,E)$が与えられたとき，$u,v\in V$に対して，
-      開始頂点$v_0$から$v$に至るすべてのパス$p:v_0,\ldots,v_k$(ここで
-      $v=v_k$)において，$u\in\{v_0,\ldots,v_k\}$であるとき，
-      $u$は$v$を支配するといい，$u\vdom v$と書く．
-    \end{itembox}}
-
-  {\small
-    \begin{itembox}[l]{命題}
-      $\vdom$は，反射率($u\vdom u$)および
-      推移律($u\vdom v$かつ$v\vdom w$ならば$u\vdom w$)
-      を満たす．
-    \end{itembox}}
-
-  {\small
-    \begin{trivlist}
-      \item $u\vdom v$かつ$u\not= v$のとき，$u$は$v$を強く支配するといい，$u\svdom v$
-      と書く．
-      \item $Dom(v)=\{u\,|\,u\vdom v\}$を$v$は支配頂点の集合を表す．
-    \end{trivlist}
-  }
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{支配関係}
-
-  \begin{itemize}
-    \item $Dom(v)\not=\varnothing$
-    \item $Dom(v)\backslash\{v\}\not=\varnothing$のとき，
-          唯一の$u\in Dom(v)\backslash\{v\}$が存在して，
-          すべての$w\in Dom(v)\backslash\{v\}$に対して，$w\vdom u$である．\\
-          （唯一性の証明）$u_1,u_2\in Dom(v)\backslash\{v\}$であるならば，開始頂点から$v$へすべてのパス上に$u_1,u_2$が存在する．よって，$u_1\vdom u_2$または
-          $u_2\vdom u_1$である．したがって，$u_1=u_2$となる．\\
-          このような$u$を$idom(v)$と書く．
-  \end{itemize}
-
-  \begin{itembox}[l]{(支配木)}
-    有向グラフ$(V,E')$:$E=\{(idom(v),v)\,|\,v\in V\}$は，木構造となり，
-    これを支配木とよぶ．
-  \end{itembox}
-  %支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
-\end{frame}
-%   \only<1>{
-%   \begin{center}
-%    \includegraphics[width=.7\textwidth]{def6_23.pdf}
-%   \end{center}
-
-%   $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 (図6.7)
-%  }
-%   \only<2>{
-\begin{frame}
-  \frametitle{支配関係，支配木}
-  \begin{center}
-    \begin{tabular}{cc}
-
-      \begin{tikzpicture}
-        \node[draw,circle] (v0) at (0,3) {$v_0$};
-        \node[draw,circle] (u) at (0,1.5) {$u$};
-        \node[draw,circle] (v) at (0,0) {$v$};
-        \node at (0,2.25) {$\cdots$};
-        \node at (0,0.75) {$\cdots$};
-        \path[->] (v0) [out=-30,in=30] edge (u);
-        \path[->] (v0) [out=-60, in=60] edge (u);
-        \path[->] (v0) [out=240,in=120] edge (u);
-        \path[->] (v0) [out=210, in=150] edge (u);
-        \path[->] (u) [out=-30,in=30] edge (v);
-        \path[->] (u) [out=-60, in=60] edge (v);
-        \path[->] (u) [out=240,in=120] edge (v);
-        \path[->] (u) [out=210, in=150] edge (v);
-      \end{tikzpicture}
-
-       &
-      \begin{tabular}{c}                                                         \\[-12zw]
-        $u\underline{\gg}v$                                         \\[1zw]
-        $u\underline{\gg}u$                                         \\
-        $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
-        $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
-        $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
-        $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
-      \end{tabular}
-    \end{tabular}
-  \end{center}
-\end{frame}
-
-\begin{frame}{フローグラフ$\rightarrow$支配木}
-  \begin{tabular}{cc}
-    \begin{minipage}{.4\textwidth}
-      \scalebox{0.6}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6)
-          {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-                               & \mathtt{j=1}                               \\[-2pt]
-                               & \mathtt{k=1}                               \\[-2pt]
-                               & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4)
-          {\small $\begin{array}{ll}
-                L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-              \end{array}$};
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i=i+1}   \\
-                              & \mathtt{goto L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j=i+k} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,0)
-          {\small $\begin{array}{ll}
-                L2: & \mathtt{k=i+j} \\
-              \end{array}$};
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     &
-    \begin{minipage}{.5\textwidth}
-      \scalebox{0.6}{
-        \begin{tikzpicture}
-          \node[draw,circle] (v0) at (0,3) {$v_0$};
-          \node[draw,circle] (v1) at (0,1.5) {$v_1$};
-          \node[draw,circle] (v2) at (0,0) {$v_2$};
-          \node[draw,circle] (v3) at (1.5,1.5) {$v_3$};
-          \node[draw,circle] (v4) at (1.5,0) {$v_4$};
-          \path[->] (v0) edge (v1)  (v0) edge (v3)  (v1) edge (v2)  (v1) edge (v4) (v3) edge (v4) (v2) [out=225,in=135] edge (v1);
-          \node at (0.75,-1) {\small フローグラフ};
-
-          \node[draw,circle] (w0) at (4.5,3) {$v_0$};
-          \node[draw,circle] (w1) at (3,1.5) {$v_1$};
-          \node[draw,circle] (w2) at (3,0) {$v_2$};
-          \node[draw,circle] (w3) at (4.5,1.5) {$v_3$};
-          \node[draw,circle] (w4) at (6,1.5) {$v_4$};
-          \path[->] (w0) edge (w1) (w0) edge (w3) (w0) edge (w4) (w1) edge (w2);
-          \node at (4.5,-1) {\small 支配木};
-        \end{tikzpicture}
-      }
-    \end{minipage}
-  \end{tabular}
-\end{frame}
-
-\begin{frame}
-  \frametitle{支配辺境}
-
-  フローグラフ$G=(V,E)$
-
-  \begin{Def}
-    $v$の支配辺境(Dominance Frontier)
-    \[DF(v)=\{u\in V|\exists w.w\in
-      pred(u),v\underline{\gg}w,v\not\gg u\}
-    \]
-  \end{Def}
-
-  \greentext{強く支配していれば$\phi$関数を挿入する必要なし}
-
-  \begin{center}
-    \begin{tikzpicture}
-      \draw[style=dashed] (0,0) rectangle (4,1);
-      \node[draw,circle,minimum size=3mm] (u1) at (1,0.5) {};
-      \node at (1,0.5) {\scriptsize $u_1$};
-      \node[draw,circle,minimum size=3mm] (u2) at (2,0.5) {};
-      \node at (2,0.5) {\scriptsize $u_2$};
-      \node[draw,circle,minimum size=3mm] (u3) at (3,0.5) {};
-      \node at (3,0.5) {\scriptsize $u_3$};
-
-      \node[draw,circle,minimum size=3mm] (w1) at (1,2) {};
-      \node at (1,2) {\scriptsize $w_1$};
-      \node[draw,circle,minimum size=3mm] (w2) at (2,2) {};
-      \node at (2,2) {\scriptsize $w_2$};
-      \node[draw,circle,minimum size=3mm] (w3) at (3,2) {};
-      \node at (3,2) {\scriptsize $w_3$};
-
-      \node[draw,circle,minimum size=3mm] (v) at (2,3.5) {};
-      \node at (2,3.5) {\scriptsize $v$};
-
-      \node[fill,circle,minimum size=2mm] (p0) at (0,3) {};
-      \node[fill,circle,minimum size=2mm] (p1) at (2.5,3.5) {};
-      \node[fill,circle,minimum size=2mm] (p2) at (3.5,3) {};
-
-      \path[->] (v) edge (w1) (v) edge (w2) (v) edge (w3)
-      (w1) edge (u1) (w2) edge (u2) (w3) edge (u3)
-      (p0) edge (u1) (p1) edge (u2) (p2) edge (u3);
-    \end{tikzpicture}
-  \end{center}
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{支配辺境の計算}
-
-  フローグラフ$G=(V,E)$
-
-  \begin{Lem}
-    \[
-      DF(v)=DF_{local}(v)\cup\bigcup_{w\in Child(v)}DF^v_{up}(w)
-    \]
-    ここで、
-
-    \[
-      \begin{array}{rcl}
-        DF_{local}(v) & = & \{u|(v,u)\in
-        E,\mathsf{idom}(u)\not=v\}                                \\
-        \multicolumn{3}{p{.5\textwidth}}{
-          \mbox{\greentext{$v$の次の頂点で他からのフローが存在する}}}
-        \\[10pt]
-        DF^v_{up}(w)  & = & \{u\in DF(w)|\mathsf{idom}(u)\not=v\} \\
-        \multicolumn{3}{p{.5\textwidth}}{
-        \mbox{\greentext{$w$は支配木において$v$の子で$u$から見て、}}}             \\
-        \multicolumn{3}{p{.5\textwidth}}{\mbox{\greentext{
-              $v$は$w$よりも上(根に近い)にある。}}}
-      \end{array}
-    \]
-
-  \end{Lem}
-  支配木の葉から$DF$を計算していく(p129：例)
-\end{frame}
-
-\begin{frame}
-  \frametitle{定義合流条件の計算}
-
-  \begin{list}{}{}
-    \item [定義合流条件($\mathscr{S}$)]
-          二つのパス $p(=v_1,\cdots,v_k)$, $q(=u_1,\cdots,u_l)$
-          \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-            \item $k\ge 2$, $l\ge 2$
-            \item $v_1,u_1\in S$
-            \item $v_k=u_l=v$
-            \item $\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,u_{l-1}\}=\emptyset$
-          \end{list}
-
-          \vspace*{5pt}
-
-    \item $J(S)=\{v|\mbox{上の条件を満たす$v$}\}$
-  \end{list}
-
-  \vspace*{5pt}
-
-  \redtext{\small
-    変数$x$が定義される場所の集合を$S$とすると
-    $J(S)$は、$x$に対して最初に$\phi$関数$x=\phi(x,x)$が挿入
-    される場所}
-
-  \vspace*{5pt}
-
-  {\small\greentext{
-      $\phi$関数によって新たに定義が挿入されるため、さらに挿入が必
-      要:次の漸化式で不動点$J^+(S_0)$を計算}}
-
+  \frametitle{属性文法に基づくコード生成例}
+  \scriptsize{
   \[
-    \begin{array}{rcl}
-      S_{i+1}      & = & J(S_0\cup S_i)                   \\
-      J^{n+1}(S_0) & = & J(S_0\cup J^n(S_0))              \\
-      J^+(S_0)     & = & \lim_{n\leftarrow\infty}J^n(S_0)
+    \begin{array}{clllll}
+       & (I_0,& \texttt{MIN(3,5,7)\#},& \varepsilon)\\
+    \vdash & (I_0\texttt{MIN}I_2, & \texttt{(3,5,7)\#},& \varepsilon)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4, & \texttt{3,5,7)\#}, & \varepsilon)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4\texttt{3}I_7, & \texttt{,5,7)\#}, & \varepsilon)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6, & \texttt{,5,7)\#},& 3) & \%1.val=3\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}, & \texttt{5,7)\#},& 3)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#}, & 3)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6, & \texttt{,7)\#},& 34)& \%2.val=f(\only<1>{\%1.op}\only<2>{\redtext{min}},\%1.val,5);\\
+    \only<1>{       &                                         &                &    & \%2.op=\%1.op\\}
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}, & \texttt{7)\#},& 34)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#}, & 34)\\
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6, & \texttt{)\#}, & 344) & \%3.val=f(\only<1>{\%2.op}\only<2>{\redtext{min}},\%2.val,7);\\
+    \only<1>{       &                                         &               &      & \%3.op=\%2.op\\}
+    \vdash & (I_0\texttt{MIN}I_2\texttt{(}I_4 L I_6\texttt{)}I_9, & \texttt{\#}, & 344)\\
+    \vdash & (I_0 T I_1, & \texttt{\#}, & 3441) & \only<1>{\redtext{\%3.op=min;}}\%4.val=\%3.val\\
+    \vdash & (acc, & \texttt{\#}, & 34410)
     \end{array}
-  \]
+    \]
+    }
+    \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
+    \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
 
+    $T.val=\%4.val$
 \end{frame}
 
 \begin{frame}
-  \frametitle{支配辺境と合流条件}
-
-  \begin{itembox}[l]{定理}
-    $DF(S)=\bigcup_{v\in S}DF(v)$のとき、
-    \[
-      F_{i+1}=DF(S_0\cup F_i)\quad(i\ge 0,F_0=\emptyset)
+  \frametitle{属性文法に基づくコード生成例}
+  \scriptsize{
+  \[
+    \begin{array}{clllll}
+       & (I_0,& \texttt{MAX(3,5,7)\#},& \varepsilon)\\
+    \vdash & (I_0\texttt{MAX}I_2, & \texttt{(3,5,7)\#},& \varepsilon)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4, & \texttt{3,5,7)\#}, & \varepsilon)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4\texttt{3}I_7, & \texttt{,5,7)\#}, & \varepsilon)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6, & \texttt{,5,7)\#},& 3) & \%1.val=3\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}, & \texttt{5,7)\#},& 3)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}5I_{12}, & \texttt{,7)\#}, & 3)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6, & \texttt{,7)\#},& 34)& \%2.val=f(\only<1>{\%1.op}\only<2>{\greentext{max}},\%1.val,5);\\
+    \only<1>{       &                                         &                &    & \%1.op=\%2.op\\}
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}, & \texttt{7)\#},& 34)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{,}I_{10}7I_{12}, & \texttt{)\#}, & 34)\\
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6, & \texttt{)\#}, & 344) & \%3.val=f(\only<1>{\%2.op}\only<2>{\greentext{max}},\%2.val,7);\\
+    \only<1>{       &                                         &               &      & \%2.op=\%3.op\\}
+    \vdash & (I_0\texttt{MAX}I_2\texttt{(}I_4 L I_6\texttt{)}I_9, & \texttt{\#}, & 344)\\
+    \vdash & (I_0 T I_1, & \texttt{\#}, & 3442) & \only<1>{\redtext{\%3.op=max;}}\%4.val=\%3.val\\
+    \vdash & (acc, & \texttt{\#}, & 34410)
+    \end{array}
     \]
-    とするとき，$DF^+(S_0)=\lim_{n\leftarrow\infty}F_n$とする．
-    このとき，
-    \[
-      DF^+(S_0)=J^+(S_0)
-    \]
-  \end{itembox}
+    }
 
-  \greentext{合流条件は支配辺境から計算可能}
+    \only<1>{\greentext{相続属性($f$の第一引数)が最後に決定される}}
+    \only<2>{\greentext{相続属性($f$の第一引数)をバックパッチによって関数を書き換える}}
+
+    $T.val=\%4.val$
+
+\end{frame}
+
+% \subsection{バックパッチ}
+
+% \begin{frame}
+%  \frametitle{バックパッチ}
+
+%  条件分岐のコード生成の場合、ラベルの値はあとで決定する
+
+%  \[
+% p  \mathsf{if}\ E\ \mathsf{then}\ S
+%  \]
+
+% \begin{center}
+%  \begin{tabular}{lrl}
+% 1:&    & $E$のコード\\
+% 2:&    & if not $E.\mathsf{result}$ goto $L$\\
+% 3:&    & $S$のコード\\
+% 4:&$L$:&
+%  \end{tabular}
+% \end{center}
+
+%  $S$をコンパイルするまで$L$の値は決まらない。2の時点で$L$の具
+%  体的なアドレスはわからない。
+
+% % 厳密には1パスでコード生成はできない。
+
+% \begin{list}%
+%  {$\bullet$} %default label
+%  {} %formatting parameter
+%  \item とび先のアドレスの表を作成しておいて、アドレスが決定した時点で
+%  $L$の値を待つコードをかきかえる。 
+%  \item 命令を一旦生成するがどこが未決かを管理する。
+% \end{list}
+
+% \greentext{LLVM 実行系においては，LLVM抽象マシンがラベルを解決してくれる．}
+
+% \end{frame}
+
+
+
+\begin{frame}{LLVMによる条件文コード}
+	
+	\texttt{if} {$B$} \texttt{then} {$S_1$} \texttt{else} {$S_2$}
+
+	\vspace*{5mm}
+
+	\begin{tabular}{l}
+		\texttt{\%1 = } [$B$ を計算するコード]\\
+		\texttt{br i1 \%1, label \%L1, label \%L2}\\
+		\texttt{L1:}\\
+    \quad [$S_1$のコード]\\
+		\texttt{br label \%L3}\\
+		\texttt{L2:}\\
+		\quad [$S_2$のコード]\\
+		\texttt{br label \%L3}\\
+		\texttt{L3:}
+	\end{tabular}
+	
+\greentext{\texttt{L1},\texttt{L2},\texttt{L3}は実際に定義される前に参照される．}
+
+\greentext{$S_2$の後の\%3へのジャンプは不要．}
 
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{例6.29}
+ \frametitle{条件文における論理式}
+ 条件文における条件の評価：結果待ち / 短絡型\\
+ \greentext{条件が副作用を持つ場合に違いが出る}\\
+ \texttt{if (x>100 \&\& (z=y)<30) \{ 文1 \} else \{ 文2 \}}\\
+ \texttt{z=y}の評価結果は\texttt{y}の値\\
+ \greentext{{\tt z=y}が実行されるか？}\\
+ 結果待ち=評価される、短絡型=\texttt{x>100}のとき評価される\\
+
+\begin{tabular}{ll}
+短絡型：& 条件文の評価中にif文を評価する．\\
+結果待：& 条件文の式を評価してからifを評価する．
+\end{tabular}
+
+\greentext{短絡型の評価を行う場合が多い(C, python)}
+
+\greentext{javaの場合：\texttt{\&\&},\texttt{||}が短絡型，\texttt{\&},\texttt{|}が結果待ち}
+%\greentext{java: $\texttt{\&\&}$, $\texttt{\|\|}$は短絡型，\texttt{\&}, \texttt{|}は結果待ち}
+
+%  \begin{verbatim}
+%    t1:=x>100;if not t1 goto L1;
+%    t2:=y;z:=t2;t4:=t2<30;if not t4 goto L1;
+%    文1.code; goto L2;
+% L1:文2.code;
+% L2:
+%  \end{verbatim}
+%  \greentext{文1を読まないと、L1が決定しない。}\\
+%  \greentext{文2を読まないと、L2が決定しない。}
+\end{frame}
+
+\section{関数}
+
+\subsection{引数受け渡し}
+
+\begin{frame}
+  \frametitle{関数引数・返り値と駆動レコード}
 
   \begin{tabular}{ccc}
-    \begin{minipage}{.4\textwidth}
-      \scalebox{0.8}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-          {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-                               & \mathtt{j=1}                               \\[-2pt]
-                               & \mathtt{k=1}                               \\[-2pt]
-                               & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<2>{
-            \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i=}\phi\mathtt{(i,i)}              \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i=i+1}   \\
-                              & \mathtt{goto L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j=i+k} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \only<1>{
-            \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{k=i+j} \\
-                \end{array}$};}
-          \only<2>{
-            \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i=}\phi\mathtt{(i,i)} \\
-                      & \mathtt{j=}\phi\mathtt{(j,j)} \\
-                      & \mathtt{k=i+j}                \\
-                \end{array}$};}
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-          \path[->] (v3) edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     & \hspace*{1zw} &
-    \begin{minipage}{.5\textwidth}
-      \begin{tabular}{l}
-        $i$の定義：$S_0=\{v_0,v_2\}$  \\
-        $j$の定義：$S'_0=\{v_0,v_3\}$ \\
-        $k$の定義：$S''_0=\{v_0,v_4\}$
-      \end{tabular}
+  \begin{minipage}{.4\textwidth}
+  \includegraphics{activeRecord-crop.pdf}
+  \end{minipage}
+  & \quad &
+  \begin{minipage}{.45\textwidth}
+    $\texttt{f}(x_1,\cdots,x_n)$でスタック上に
+    作成される駆動レコード（の一部）\\
+    局所変数: $y_1,\cdots,y_m$\\[10pt]
+    \greentext{これに従った記号表を生成}
+  \end{minipage}
+　\end{tabular}
 
-      \[
-        \begin{array}{l}
-          DF^+(S_0)=\{v_1,v_4\} \\
-          DF^+(S'_0)=\{v_4\}    \\
-          DF^+(S''_0)=\emptyset
-        \end{array}
-      \]
-    \end{minipage}
-  \end{tabular}
+\vspace*{10pt}
 
+ \begin{description}
+   \item [値呼び：]
+   $\texttt{x=f(}e_1,\cdots,e_n\texttt{)}$\\
+ $e_i$を評価してその値を$x_i$の領域にコピー
+   \item [参照呼び：]
+   $\texttt{x=f(}z_1,\cdots,z_n\texttt{)}$\\
+   $z_i$のアドレスを$x_i$にコピー
+ \end{description}
 \end{frame}
 
-\subsection{SSA形式への変換}
+\begin{frame}[fragile=singleslide]
+ \frametitle{引数受渡し}
+ \greentext{引数=パラメータ(parameter)}\\
+ 2種類の受渡し方法
+ \begin{list}{}{}
+  \item 値渡し：実引数の値を評価して仮引数に代入
+  \item 参照渡し：実引数の値を評価して\underline{ポインタ}を仮引数に代入
+ \end{list}
+
+\vfill
+
+\begin{center}
+\begin{tabular}{ccc}
+\multicolumn{1}{c}{値呼び} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{参照呼び}\\\cline{1-1}\cline{3-3}
+\multicolumn{1}{|m{.35\textwidth}|}{
+\includegraphics[scale=.8]{swap-value-crop.pdf}
+}
+& &
+\multicolumn{1}{|m{.4\textwidth}|}{
+\includegraphics[scale=.8]{swap-ref-crop.pdf}}
+\\\cline{1-1}\cline{3-3}
+\end{tabular}
+\end{center}
+
+\begin{list}{}{}
+\item 値呼びの場合：全く効果なし。\\
+\greentext{入れ替えられた値は駆動レコード内で実行後破棄}
+\item 参照呼びの場合：値が入れ替えられる。\\
+\greentext{{\tt swap}中の{\tt y=x}, {\tt x=t}の代入先は、
+      実引数の領域}
+\end{list}
+\end{frame} 
 
 \begin{frame}
-  \frametitle{SSA形式への変換}
+  \frametitle{値呼びのコンパイル}
+  \%0: xの値，\%1: yの値が格納されているアドレス
+
+\vspace*{5pt}
+
+\begin{center}
   \begin{tabular}{cc}
-    \begin{minipage}{.5\textwidth}
-
-      \scalebox{0.8}{
-        \begin{tikzpicture}
-          \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-            {\small $\begin{array}{ll}\hspace*{1zw}
-                   & \mathtt{i=1}                               \\[-2pt]
-                   & \mathtt{j=1}                               \\[-2pt]
-                   & \mathtt{k=1}                               \\[-2pt]
-                   & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};}
-          \only<2->{\node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-            {\small $\begin{array}{ll}\hspace*{1zw}
-                   & \mathtt{i_1=1}                              \\[-2pt]
-                   & \mathtt{j_1=1}                              \\[-2pt]
-                   & \mathtt{k_1=1}                              \\[-2pt]
-                   & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};}
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i=}\phi\mathtt{(i,i)}              \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<2>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i=}\phi\mathtt{(i_1,i)}            \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<3>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i)}          \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<4->{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i_3)}        \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \only<1-3>{\node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-            {\small $\begin{array}{ll}
-                  \hspace*{1zw} & \mathtt{i=i+1}   \\
-                                & \mathtt{goto L3}
-                \end{array}$};}
-          \only<4->{\node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-            {\small $\begin{array}{ll}
-                  \hspace*{1zw} & \mathtt{i_3=i_2+1} \\
-                                & \mathtt{goto L3}
-                \end{array}$};}
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \only<1-4>{\node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-            {\small $\begin{array}{ll}
-                  L1: & \mathtt{j=i+k} \\
-                \end{array}$};}
-          \only<5->{\node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-            {\small $\begin{array}{ll}
-                  L1: & \mathtt{j_2=i_1+k_1} \\
-                \end{array}$};}
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \only<1,2>{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i=}\phi\mathtt{(i,i)} \\
-                      & \mathtt{j=}\phi\mathtt{(j,j)} \\
-                      & \mathtt{k=i+j}                \\
-                \end{array}$};}
-          \only<3,4,5>{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i=}\phi\mathtt{(i_2,i)} \\
-                      & \mathtt{j=}\phi\mathtt{(j_1,j)} \\
-                      & \mathtt{k=i+j}                  \\
-                \end{array}$};}
-          \only<6->{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i_4=}\phi\mathtt{(i_2,i_1)} \\
-                      & \mathtt{j_3=}\phi\mathtt{(j_1,j_2)} \\
-                      & \mathtt{k_2=i_4+j_3}                \\
-                \end{array}$};}
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-          \path[->] (v3) edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     &
-    \begin{minipage}{.5\textwidth}
-      \begin{center}
-        \begin{tikzpicture}
-          \only<1-3>{\node[draw,circle,minimum size=3mm] (vt2) at (0,0) {};}
-          \only<4>{\node[draw,circle,minimum size=3mm,fill=red] (vt2) at (0,0) {};}
-          \only<5->{\node[draw,circle,minimum size=3mm,fill=blue] (vt2) at (0,0) {};}
-          \only<1,2>{\node[draw,circle,minimum size=3mm] (vt1) at (0,1) {};}
-          \only<3>{\node[draw,circle,minimum size=3mm,fill=red] (vt1) at (0,1) {};}
-          \only<4->{\node[draw,circle,minimum size=3mm,fill=blue] (vt1) at (0,1) {};}
-          \only<1>{\node[draw,circle,minimum size=3mm] (vt0) at (1,2) {};}
-          \only<2>{\node[draw,circle,minimum size=3mm,fill=red] (vt0) at (1,2) {};}
-          \only<3->{\node[draw,circle,minimum size=3mm,fill=blue] (vt0) at (1,2) {};}
-          \only<1-4>{\node[draw,circle,minimum size=3mm] (vt3) at (1,1) {};}
-          \only<5>{\node[draw,circle,minimum size=3mm,fill=red] (vt3) at (1,1) {};}
-          \only<6->{\node[draw,circle,minimum size=3mm,fill=blue] (vt3) at (1,1) {};}
-          \only<1-5>{\node[draw,circle,minimum size=3mm] (vt4) at (2,1) {};}
-          \only<6->{\node[draw,circle,minimum size=3mm,fill=red] (vt4) at (2,1) {};}
-
-          \node at (0,0) {\scriptsize $v_2$};
-          \node at (0,1) {\scriptsize $v_1$};
-          \node at (1,2) {\scriptsize $v_0$};
-          \node at (1,1) {\scriptsize $v_3$};
-          \node at (2,1) {\scriptsize $v_4$};
-
-          \path[->] (vt0) edge (vt1) (vt0) edge (vt3) (vt0) edge (vt4) (vt1) edge (vt2);
-        \end{tikzpicture}
-      \end{center}
-      \[
-        \only<1>{\begin{array}{ll}
-            stack(i)=[] & c(i)=1 \\
-            stack(j)=[] & c(j)=1 \\
-            stack(k)=[] & c(k)=1 \\
-          \end{array}}
-        \only<2>{\begin{array}{ll}
-            stack(i)=[1] & c(i)=2 \\
-            stack(j)=[1] & c(j)=2 \\
-            stack(k)=[1] & c(k)=2 \\
-          \end{array}}
-        \only<3>{\begin{array}{ll}
-            stack(i)=[1,2] & c(i)=3 \\
-            stack(j)=[1]   & c(j)=2 \\
-            stack(k)=[1]   & c(k)=2 \\
-          \end{array}}
-        \only<4>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1]     & c(j)=2 \\
-            stack(k)=[1]     & c(k)=2 \\
-          \end{array}}
-        \only<5>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1,2]   & c(j)=3 \\
-            stack(k)=[1]     & c(k)=2 \\
-          \end{array}}
-        \only<6>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1,2]   & c(j)=3 \\
-            stack(k)=[1,2]   & c(k)=3 \\
-          \end{array}}
-      \]
-    \end{minipage}
+    \multicolumn{1}{m{.3\textwidth}}{
+  \includegraphics[scale=.8]{swap-value-crop.pdf}}
+&
+    \multicolumn{1}{m{.5\textwidth}}{
+  \includegraphics[scale=.7]{swap-v-ll-crop.pdf}}
   \end{tabular}
-\end{frame}
-
-\subsection{SSA形式に対する最適化}
-
-\begin{frame}
-  \frametitle{SSA形式に対する最適化}
-  SSA形式：データフロー解析ずみのプログラム\\[2zw]
-
-  \greentext{構文的にフローが表現されている}
-  $\Rightarrow$
-  \redtext{最適化を効果的に適用できる}：
-  \greentext{更新のチェックが不要}
-
-  例：DAGの構成が容易
-
-  \vspace*{1zw}
-
-  \begin{itemize}
-    \item 定数伝播
-    \item コピー伝播
-    \item 共通部分式の削除
-    \item ループ不変コードの移動
-    \item 不用コードの削除
-  \end{itemize}
+\end{center}
 \end{frame}
 
 \begin{frame}
-  \frametitle{SSA最適化例 [佐々:06]}
+  \frametitle{参照呼びのコンパイル}
+  \%0: xの値，\%1: yの値が格納されているアドレス
 
-  \only<1>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc01.pdf}
-         & $\Rightarrow$ &
-        \includegraphics{ssasrc02.pdf}
-        \\[1zw]
-        \multicolumn{3}{c}{\greentext{SSA形式へ変換}}
-      \end{tabular}
-    \end{center}
-  }
+\vspace*{5pt}
 
-  \only<2>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc02.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc03.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{共通部分式除去}}
-      \end{tabular}
-    \end{center}
-  }
-
-  \only<3>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc03.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc04.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{コピー伝播}}
-      \end{tabular}
-    \end{center}
-  }
-
-  \only<4>{
-    \begin{center}
-      \begin{center}
-        \begin{tabular}{ccc}
-          \includegraphics{ssasrc04.pdf}
-           & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-          \includegraphics{ssasrc05.pdf}               \\[1zw]
-          \multicolumn{3}{c}{\greentext{共通部分式除去、定数伝播}}
-        \end{tabular}
-      \end{center}
-    \end{center}
-  }
-
-  \only<5>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc05.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc06.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{コピー伝播、定数伝播、恒等式}}
-      \end{tabular}
-    \end{center}
-  }
-
+\begin{center}
+  \begin{tabular}{cc}
+    \multicolumn{1}{m{.4\textwidth}}{
+  \includegraphics[scale=.8]{swap-ref-crop.pdf}}
+&
+    \multicolumn{1}{m{.5\textwidth}}{
+  \includegraphics[scale=.7]{swap-ref-ll-crop.pdf}}
+  \end{tabular}
+\end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{最適化の条件}
+\subsection{関数定義}
 
-  最適化を行うときに支配関係を壊さないようにする。
+\begin{frame}[fragile]{関数定義/値呼び}
 
-  \begin{center}
-    \includegraphics[height=.5\textheight]{SSAincorrectOpt.pdf}
-  \end{center}
+  \scalebox{0.75}{
+  \begin{tikzpicture}
+    \draw[draw] (-0.5,0.5) rectangle (5,-1.5);
+    \node[anchor=west] (L01) at (0,0) {\texttt{int add(int x,int y) \{}};
+    \node[anchor=west] at (1,-0.5) {\texttt{return x+y;}};
+    \node[anchor=west] at (0,-1) {\texttt{\}}};
 
-  $z<0$の評価は同じ方向にしかブランチしない\\
-  $\Rightarrow$ $z<0$ならば3の$\phi$関数はいつも$x_1$を$x_2$へ代入\\
-  5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\
-  (支配関係を壊すと一般にはデータフローが保証されない)\\
-  \greentext{静的と動的のギャップを$\phi$関数で埋めているため}
+    \draw[draw] (5.5,0.5) rectangle (13,-5);
+    \node[anchor=west] at (6,0) {\texttt{define i32 @add(i32,i32) \{}};
+    \node[anchor=west] at (6,-0.5) {\texttt{entry:}};
+    \node[anchor=west] at (6.5,-1) {\texttt{\% x = alloca i32}};
+    \node[anchor=west] at (6.5,-1.5) {\texttt{\% y = alloca i32}};
+    \node[anchor=west] at (6.5,-2) {\texttt{store i32 \% 0, i32* \% x}};
+    \node[anchor=west] at (6.5,-2.5) {\texttt{store i32 \% 1, i32* \% y}};
+    \node[anchor=west] at (6.5,-3) {\texttt{\% 2 = load i32, i32* \% x}};
+    \node[anchor=west] at (6.5,-3.5) {\texttt{\% 3 = load i32, i32* \% y}};
+    \node[anchor=west] at (6.5,-4) {\texttt{\% 4 = add i32 \% 2, \% 3}};
+    \node[anchor=west] at (6.5,-4.5) {\texttt{ret i32 \% 4}};
+  \end{tikzpicture}}
+  \parbox{.8\textwidth}{
+{\small
+関数定義：\\\texttt{define }$\langle$型$\rangle$\texttt{\@}$\langle$関数名$\rangle$(引数型,$\cdots$,引数型)$\rangle$}\\[10pt]
+{\small $i$番目の引数 $\% (i-1)$で参照 }
+}\\[5pt]
+{\small
+関数呼出（値呼び）：
+\verb|%ret = call i32 @add(%2,%3), align 4|
+}
 \end{frame}
 
-% \begin{frame}
-%   \frametitle{条件付き定数伝播}
-%   \begin{center}
-%     {\begin{tabularx}{.75\textwidth}{XXX}
-%       \multicolumn{1}{m{.35\textwidth}}{
-%       \includegraphics[height=.7\textheight]{prog-example-crop.pdf}
-%       }
-%       & \multicolumn{1}{m{2em}}{$\Rightarrow$} &
-%       \multicolumn{1}{m{.4\textwidth}}{
-%       \includegraphics[height=.7\textheight]{SSA-prog-crop.pdf}
-%       }
-%      \end{tabularx}}
-%   \end{center}
-%   \centerline{\greentext{6のブロックは実行されるか？}}
+% \begin{frame}[fragile]
+% 	\frametitle{関数定義/値呼出}
+% 	\begin{tabular}{c}
+% \includegraphics[scale=0.8]{add-c.eps}
+% \\[10pt]
+% \includegraphics[scale=0.8]{add-function.eps}
+% \end{tabular}
+% \parbox{.55\textwidth}{
+% {\scriptsize
+% 関数定義：\\\texttt{define }$\langle$型$\rangle$\texttt{\@}$\langle$関数名$\rangle$(引数型,$\cdots$,引数型)$\rangle$}\\[10pt]
+% $i$番目の引数 $\% (i-1)$で参照
+% }\\[5pt]
+% 関数呼出（値呼び）：
+% \verb|%ret = call i32 @add(%2,%3), align 4|
+% \end{frame}
+
+% \begin{frame}{関数定義/参照呼出}
+%   \scalebox{0.7}{
+%     \begin{tikzpicture}
+%       \draw[draw] (-0.5,0.5) rectangle (5.5,-2.5);
+%       \node[anchor=west] (L01) at (0,0) {\texttt{int add(int *x,int *y) \{}};
+%       \node[anchor=west] at (1,-0.5) {\texttt{int t;}};
+%       \node[anchor=west] at (1,-1) {\texttt{t = *x;}};
+%       \node[anchor=west] at (1,-1.5) {\texttt{*x = *y;}};
+%       \node[anchor=west] at (1,-2) {\texttt{*y = t;}};
+  
+%       \draw[draw] (6,0.5) rectangle (15,-9);
+%       \node[anchor=west] at (6.5,0) {\texttt{define vod @swap(i32*,i32*) \{}};
+%       \node[anchor=west] at (7,-0.5) {\texttt{\% 3 = alloca i32*, align 8}};
+%       \node[anchor=west] at (7,-1) {\texttt{\% 4 = alloca i32*, align 8}};
+%       \node[anchor=west] at (7,-1.5) {\texttt{\% 5 = alloca i32, align 4}};
+%       \node[anchor=west] at (7,-2) {\texttt{store i32* \% 0, i32** \% 3, align 8}};
+%       \node[anchor=west] at (7,-2.5) {\texttt{store i32* \% 1, i32** \% 4, align 8}};
+%       \node[anchor=west] at (7,-3) {\texttt{\% 6 = load i32*, i32** \% 3, align 8}};
+%       \node[anchor=west] at (7,-3.5) {\texttt{\% 7 = load i32, i32* \% 6, align 4}};
+%       \node[anchor=west] at (7,-4) {\texttt{store i32 \% 7, i32* \% 5, align 4}};
+%       \node[anchor=west] at (7,-4.5) {\texttt{\% 8 = load i32*, i32** \% 4, align 8}};
+%       \node[anchor=west] at (7,-5) {\texttt{\% 9 = load i32, i32* \% 8, align 4}};
+%       \node[anchor=west] at (7,-5.5) {\texttt{\% 10 = load i32*, i32** \% 3, align 8}};
+%       \node[anchor=west] at (7,-6) {\texttt{store i32 \% 9, i32* \% 10, align 4}};
+%       \node[anchor=west] at (7,-6.5) {\texttt{\% 11 = load i32, i32* \% 5, align 4}};
+%       \node[anchor=west] at (7,-7) {\texttt{\% 12 = load i32*, i32** \% 4, align 8}};
+%       \node[anchor=west] at (7,-7.5) {\texttt{store i32 \% 11, i32* \% 12, align 4}};
+%       \node[anchor=west] at (7,-8) {\texttt{ret void}};
+%       \node[anchor=west] at (6.5,-8.5) {\texttt{\}}};
+%     \end{tikzpicture}}
+% \end{frame}
+
+% \begin{frame}[fragile]
+% 	\frametitle{関数定義/参照呼出}
+% 	\begin{tabularx}{\textwidth}{|X|c|X|}\cline{1-1}\cline{3-3}
+% 	\includegraphics[width=.4\textwidth]{swap-ref-ll.eps}& &
+% 	\includegraphics[width=.4\textwidth]{swap-ref.eps}\\\cline{1-1}\cline{3-3}
+% 	\end{tabularx}
+% \end{frame}
+
+% \section{型}
+
+% \subsection{型定義}
+
+% \begin{frame}[fragile]
+%  \frametitle{型(Type)}
+
+
+%  プログラミング言語における型に関する情報
+%  \begin{list}{}{}
+%   \item [型検査:] プログラムの識別子(変数、関数名など)の一貫
+% 	性
+% 	\begin{verbatim}
+% int x; char c; float y;
+% x = y + c;
+% 	\end{verbatim}
+%   \item [変換への適用:] 変数が必要とするメモリ領域量
+% 	\begin{tabular}{rl}
+% 	\verb|int|: & 32ビットまたは64ビット\\
+% 	\verb|char|: & 8ビットまたは16ビット\\
+% 	\verb|float|: & 32ビット(符号1,指数8,仮数23)\\
+%         \verb|double|: & 64ビット (符号1,指数11,仮数52)
+% 	\end{tabular}
+% 	% \begin{pspicture}(0,0)(8,1)
+% 	%  \psframe(0,0)(8,0.5)
+% 	%  \psline(0.5,0)(0.5,0.5)
+% 	%  \psline(1,0)(1,0.5)
+% 	%  \rput(1.75,0.25){$\cdots$}
+% 	%  \psline(2.5,0)(2.5,0.5)
+% 	%  \psline(3,0)(3,0.5)
+% 	%  \psline(3.5,0)(3.5,0.5)
+% 	%  \rput(5.5,0.25){$\cdots$}
+% 	%  \psline(7.5,0)(7.5,0.5)
+% 	%  \psline(0,0.5)(0.1,0.6)(0.4,0.6)(0.5,0.5)
+% 	%  \rput(0.25,0.8){\scriptsize 符号}
+% 	%  \psline(0.5,0.5)(0.6,0.6)(2.9,0.6)(3,0.5)
+% 	%  \rput(1.75,0.8){\scriptsize 指数}
+% 	%  \psline(3,0.5)(3.1,0.6)(7.9,0.6)(8,0.5)
+% 	%  \rput(5.5,0.8){\scriptsize 仮数}
+% 	% \end{pspicture}
+%  \end{list}
+% \end{frame}
+
+% \begin{frame}[fragile]
+% \frametitle{型の意味}
+
+% \begin{enumerate}
+%  \item 型から領域の大きさを知ることができる。
+%  \item 構造体,レコードなどのデータ構造
+%  \item 配列宣言によるデータ領域
+% \end{enumerate}
+
+% 	\verb|x = y + c | という式は妥当か？\\
+% 	\greentext{構文木は構成可能であるが、意味的に誤り\\
+% '加算'の意味が定義できない}
+
+% \greentext{再帰的データ構造}:木構造、リスト構造
+
+% \vspace*{1zw}
+
+% \begin{tabular}{cc}
+% \begin{minipage}{.6\textwidth}
+% \begin{verbatim}
+% struct NODE {
+%    DATATYPE data;
+%    struct NODE *leftchild;
+%    struct NODE *rightchild;
+% }
+% \end{verbatim}
+% \end{minipage}
+%  &
+%  \begin{minipage}{.4\textwidth}
+% \begin{verbatim}
+% struct NODE {
+%    DATATYPE data;
+%    struct NODE *next;
+% }
+% \end{verbatim}
+% \end{minipage}
+% \end{tabular}
+% \end{frame}
+
+% \begin{frame}[fragile]
+%  \frametitle{型宣言}
+
+% 配列とポインタを含む型宣言を考える．
+
+%  \begin{eqnarray*}
+%   D & \rightarrow & T\ \mathsf{id}\ ;\ D\ |\ \varepsilon\\
+%   T & \rightarrow & \mathtt{int}\ |\ \mathtt{char}\ |\ TC\ |\ \mathtt{\&}T\\
+%   C & \rightarrow & \varepsilon\ |\ \mathtt{[}\ \mathsf{num}\ \mathtt{]}C\\
+%  \end{eqnarray*}
+
+% 型宣言：\texttt{int x; int[10] y; \&char[3][10] z;}
+
+%  それぞれの型式：\\
+%  x:\greentext{\sf integer}\\
+%  y:\greentext{\sf array(0..9,integer)}\\ 
+%  z:\greentext{\sf
+%  array(0..2,array(0..9,$\uparrow$character))}\\
+
+%  \vspace*{1zw}
+
+%  C言語：\texttt{int x;int y[10];char *z[3][10];}
+% \end{frame}
+
+% \begin{frame}[fragile]
+%  \frametitle{型属性の計算}
+%  型宣言の意味規則として計算する．（64ビットマシンを想定)
+%  \[
+%   \begin{array}{rclp{.7\textwidth}}
+%    T & \rightarrow & T_1 & $\{t=T_1.type;w=T_1.size\}$\\
+%      &             & C & $\{T.type=C.type;T.width=C.size\}$\\
+%    T & \rightarrow & \mathtt{\&}T_1 &
+%     $\{T.type=\mathsf{pointer}(T_1.type);\newline T.size=8\}$\\
+%    B & \rightarrow & \mathtt{int} &
+%     $\{B.type=\mathsf{integer};B.size=8\}$\\
+%    B & \rightarrow & \mathtt{char} &
+%     $\{B.type=\mathsf{real};B.size=1\}$\\
+%    C & \rightarrow & \varepsilon &
+%     $\{C.type=t;C.size=w\}$\\
+%    C & \rightarrow & [\mathsf{num}]C_1 &
+%     $\{C.type=\mathsf{array(0..num}.value-1,C_1.type\mathsf{)};\newline
+%     C.size=\mathsf{num}.value\times C_1.size\}$\\
+%   \end{array}
+%  \]
+%  \verb|&int[10][30]|.type={\sf array}(0..9,{\sf
+%  array}(0..29,{\sf integer})),\\
+%  \verb|&int[10][30]|.size=2400
+
+%  \vspace*{3mm}
+
+%  \greentext{記号表にこのような属性を登録する}
 % \end{frame}
 
 % \begin{frame}
-%   \frametitle{条件付き定数伝播アルゴリズム}
-%   {\scriptsize
-%   \begin{tabular}{l}
-%   $\mathcal{B}[n]=true$ならばブロック$n$は実行される可能性あり\\
-%   $\mathcal{V}[x]$ 定数$c$, 決まらない$\top$, 初期化されない$\bot$
-%   \end{tabular}}
+% \frametitle{式の型}
 
-%   \vspace*{5pt}
+% \[
+%  \begin{array}{rcl}
+%   P & \rightarrow & D;E\\
+%  D & \rightarrow & T\ \mathsf{id}\ ;\ D\ |\ \varepsilon\\
+%  T & \rightarrow & \mathtt{int}\ |\ \mathtt{char}\ |\ TC\ |\ \mathtt{\&}T\\
+%  C & \rightarrow & \varepsilon\ |\ \mathtt{[}\ \mathsf{num}\ \mathtt{]}C\\
+%   E & \rightarrow & \mathsf{c}\ |\ \mathsf{n}\ |\ \mathsf{id}\ |\ E+E\
+%    |\ \mathtt{\&}E\ |\ \mathtt{\ast}E\ |\ E[E]\\
+%  \end{array}
+% \]
 
-%   {\scriptsize\color[rgb]{0,0.5,0}
-%   $\phi(x_1,\ldots,x_n)$において，$x_i$のフロー元となる直近のブロックを$b_i$と書く．
-%   }
-
-%   \vspace*{5pt}
-
-%   {\scriptsize
-%   初期化：$\mathcal{B}[n]=false$ ($1\leq n\leq N$), 
-%   $\mathcal{V}[x]=\bot$ ($x\in X$)
-%   }
-
-%   \vspace*{5pt}
-
-%   {\scriptsize 
-%   \begin{list}{Step \arabic{coffee}.}{\usecounter{coffee}}
-%     \item 実行の引数となる変数$x\in P$について，$\mathcal{V}(x)\leftarrow\top$ 
-%     \item $\mathcal{B}[1]\leftarrow true$
-%   \end{list}
-%   $\mathcal{B}$と$\mathcal{V}$が変化しなくなるまでStep 3 $\sim$ Step 10を繰り返す．
-%   \begin{list}{Step \arabic{coffee}.}{\usecounter{coffee}\setcounter{coffee}{2}}
-%     \item
-%     $\mathcal{B}[n]=true$の次のブロックが唯一の$m$のとき，
-%     $\mathcal{B}[m]\leftarrow true$
-%     \item $z\leftarrow x\; op\; y$に対して$\mathcal{V}[x]=c_1$ かつ $\mathcal{V}[y]=c_2$
-%     のとき，$\mathcal{V}[z]\leftarrow c_1\; op\; c_2$
-%     \item $z\leftarrow x\; op\; y$に対して$\mathcal{V}[x]=\top$ または $\mathcal{V}[y]=\top$
-%     のとき，$\mathcal{V}[z]\leftarrow\top$
-%     \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
-%     $\mathcal{V}[x_i]=c_i$, $\mathcal{V}[x_j]=c_j$, $c_i\not=c_j$となる
-%     $i,j$が存在し，$\mathcal{B}[b_i]=\mathcal{B}[b_j]=true$のとき，$y\leftarrow\top$
-%     \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
-%     $\mathcal{V}[x_i]=\top$となる$i$が存在するならば$\mathcal{V}[y]=\top$
-%     \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
-%     $\mathcal{B}[b_i]=true$である$x_i$ですべて$\mathcal{V}[x_i]=c$であり，
-%     $\mathcal{B}[b_j]=false$である$x_j$ですべて$\mathcal{V}[x_j]=\bot$ならば，
-%     $\mathcal{V}[y]\leftarrow c$
-%     \item $\mathbf{if}\ x<y\ \mathbf{goto}\ B_i\ \mathbf{else}\ B_j$に対して
-%     $\mathcal{V}[x]=\top$ または $\mathcal{V}[y]=\top$ならば
-%     $\mathcal{B}[i]\leftarrow true$, $\mathcal{B}[j]\leftarrow true$
-%     \item $\mathbf{if}\ x<y\ \mathbf{goto}\ B_i\ \mathbf{else}\ B_j$に対して
-%     $\mathcal{V}[x]=c_1$, $\mathcal{V}[y]=c_2$のとき，$c_1<c_2$ならば
-%     $\mathcal{B}[i]\leftarrow true$, $c_1\not<c_2$ならば$\mathcal{B}[j]\leftarrow true$.
-%   \end{list}
-%   }
+% \[
+%  \begin{array}{rc}
+%   \mathtt{int}\ i;i+(1+2) & \only<2->{\mbox{OK}}\\
+%   \mathtt{\& int}\ i;i+4 & \only<3->{\mbox{NG}}\\
+%   \mathtt{int[10]}\ a;\mathtt{int}\ k;a[k]+3 & \only<4->{\mbox{OK}}\\
+%   \mathtt{\& int[10]}\ a;\mathtt{\&\& int[4]}\ b;\ast\ast a[\ast b] &
+%    \only<5->{\mbox{NG}}\\
+%  \end{array}
+% \]
 
 % \end{frame}
 
 % \begin{frame}
-% \frametitle{条件付き定数伝播}
+% \frametitle{意味規則による型検査}
+% \[
+% \begin{array}{lp{.8\textwidth}}
+%  E\rightarrow\mathsf{c} & $E.type=\mathtt{char}$\\
+%  E\rightarrow\mathsf{n} & $E.type=\mathtt{int}$\\
+%  E\rightarrow\mathsf{id} & $E.type=\mathsf{id}.type$\\
+%  E\rightarrow E_1+E_2 & $E.type=\mathbf{if}\ E_1.type=\mathtt{int}\
+%   \mathrm{and}\ E_2.type=\mathtt{int}\newline
+%   \mathbf{then}\ \mathtt{int}\ \mathbf{else}\ \mathtt{error}$\\
+%  E\rightarrow \mathtt{\&}E_1 & $E.type=\mathsf{pointer}(E_1.type)$\\
+%  E\rightarrow \mathtt{\ast}E_1 & $\mathbf{if}\ t\ exists\ such\ that
+%   \mathsf{pointer}(t)=E_1.type\newline
+%   \mathbf{then}\ E.type=t\ \mathbf{else}\ \mathtt{error}$\\
+%  E\rightarrow E_1[E_2] &
+%   $E.type=\mathbf{if}\ E_1.type=\mathsf{array}(s,t)\ \mathrm{and}\
+%   E_2.type=\mathtt{int}\ \mathbf{then}\ t\ \mathbf{else}\ \mathtt{error}$
+% \end{array}
+% \]
+% \end{frame}
+
+% \begin{frame}[fragile]
+% \frametitle{柔軟な型の扱い}
+% 型を厳密に扱うこと：\\
+% コンパイラとしては有利だが、プログラマには負担l\\
+% \greentext{型に対するポリシー=プログラミング言語設計の基本概
+% 念の1つ}
+% \begin{list}{$\cdot$}{}
+%  \item{型変換}
+%       意味として互換性を持つデータ型についてエラーとせず、型を変換
+%       して適当な意味を割り当てる。
+%       \begin{list}{}{}
+% 	\item 派生型(subtype)：$S<:T$\\
+% 	      $\mathtt{int}<:\mathtt{float}$
+% %	\item オブジェクト指向言語におけるサブクラス (is-a関
+% %	      係)
+% 	      $\mathtt{func}(T\ x):S$に対して、$T'<:T$となる型$T'$の
+% 	      適用を許す。$S<:S'$となる型$S'$の返り値を許す。\\
+%       \end{list}
+%       \verb|float x,z;int y;z=x+y;y=x-z;|(1番目OK, 2番目NG)
+%  \item{多相型(Polymorphic type)}:
+%       いろいろな型を受け取る関数\\
+%       \verb|function len(x)=if null(x) then 0 else len(tl(x))+1|\\
+%       ${\tt tl}$:tail関数 先頭の要素だけを除いたものを返す\\
+%       \greentext{\small tail関数が適用できる型ならば{\tt len}を適用可
+%       能}
+% \end{list}
+% \end{frame}
+
+% \subsection{配列の型}
+
+% \begin{frame}[fragile]
+%  \frametitle{配列型データの参照}
+%  1次元配列 $\mathtt{a}[n]$=$\mathtt{a}.addr+n-1$\\
+%  2次元配列
+%  $\mathtt{b}[m][n]$=$\mathtt{b}.addr+\mathtt{C1}\times
+%  m+n-1$(横優先)\\
+% % ここで、$\mathtt{int[C1][C2]}\ b$と宣言されているとする。\\
+%  $\mathtt{b}[m][n]$=$\mathtt{b}.addr+\mathtt{C2}\times
+%  n+m-1$(縦優先)
+
+% %\begin{center}
+% % \includegraphics[scale=0.8]{figs191113/array-fig.eps}
+% %\end{center}
 
 % \begin{center}
-%   \begin{tabularx}{.6\textwidth}{cc}
-%     \multicolumn{1}{m{.3\textwidth}}{
-%      \includegraphics[width=.3\textwidth]{SSA-prog-crop.pdf}
-%      }
-%      &
-%      {\small
-%      \begin{tabularx}{0.3\textwidth}{XXXXX}
-%        $B$ & $\mathcal{E}[B]$ & & $x$ & $\mathcal{V}[x]$\\\cline{1-2}\cline{4-5}
-%        1 & $true$ & & $i_1$ & $1$\\
-%        2 & $true$ & & $j_1$ & $1$\\
-%        3 & $true$ & & $j_2$ & $1$\\
-%        4 & $true$ & & $j_3$ & $1$\\
-%        5 & $true$ & & $j_4$ & $1$\\
-%        6 & $false$ & & $j_5$ & $\bot$\\
-%        7 & $true$ & & $k_1$ & $0$\\
-%          &        & & $k_2$ & $\top$\\
-%          &        & & $k_3$ & $\top$\\
-%          &        & & $k_4$ & $\top$\\
-%          &        & & $k_5$ & $\bot$
-%      \end{tabularx}}
-%    \end{tabularx}
-%    \end{center}
-%    \greentext{$j$は定数が伝播して，$j<20$の判定がいつも成立．$k$は$\top$なので$k<100$の
-%    判定は実行時}
+% \scalebox{0.5}{
+% \begin{tikzpicture}
+% \node at (1,4) {b[0][0]};
+% \node at (1,3) {b[1][0]};
+% \node at (1,2) {$\vdots$};
+% \node at (1,1) {b[98][0]};
+% \node at (1,0) {b[99][0]};
+% \node at (3,4) {b[0][1]};
+% \node at (3,3) {b[1][1]};
+% \node at (3,2) {$\vdots$};
+% \node at (3,1) {b[98][1]};
+% \node at (3,0) {b[99][1]};
+% \node at (5,4) {$\cdots$};
+% \node at (5,3) {$\cdots$};
+% \node at (5,2) {$\ddots$};
+% \node at (5,1) {$\cdots$};
+% \node at (5,0) {$\cdots$};
+% \node at (7,4) {b[0][98]};
+% \node at (7,3) {b[1][98]};
+% \node at (7,2) {$\vdots$};
+% \node at (7,1) {b[98][98]};
+% \node at (7,0) {b[99][98]};
+% \node at (9,4) {b[0][99]};
+% \node at (9,3) {b[1][99]};
+% \node at (9,2) {$\vdots$};
+% \node at (9,1) {b[98][99]};
+% \node at (9,0) {b[99][99]};
+% \path[->] (-0.5,4.5) edge [below,sloped] node {縦優先} (-0.5,-0.5);
+% \path[->] (0,4.5) edge [above] node {横優先} (9.5,4.5);
+% \node[anchor=east] at (-0.7,4.5) {C1=C2=100};
+% \end{tikzpicture}
+% }
+% \end{center}
+ 
+% % \[
+% % \begin{array}{cccccc}
+% %  b[0][0] & b[0][1] & \cdots & b[0][\mathtt{C2}-2] & b[0][\mathtt{C2}-1]\\
+% %  b[1][0] & b[1][1] &        & b[1][\mathtt{C2}-2] & b[1][\mathtt{C2}-1]\\
+% %   \vdots & \vdots  &        &    \vdots           &  \vdots\\
+% %  b[\mathtt{C1}-2][0] & b[\mathtt{C1}-2][1] &  & b[\mathtt{C1}-2][\mathtt{C2}-2] & b[\mathtt{C1}-2][\mathtt{C2}-1]\\
+% %  b[\mathtt{C1}-1][0] & b[\mathtt{C1}-1][1] &  & b[\mathtt{C1}-1][\mathtt{C2}-2] & b[\mathtt{C1}-1][\mathtt{C2}-1]\\
+% % \end{array}
+% % \]
+% % 多次元配列は、メモリ上に1列にならべる。
+% %
+% % どの次元から並べるかは任意性がある。
+
+%  \greentext{ループで回すときには、実行性能に差が出ることがあ
+%  る。}
+
+% %  {\small
+% % \texttt{for(int i=0;i<C1,i++) for(int j=0;j<C2,j++)} b[i][j]へのアクセス
+% %  }
+
+% {\tt C1}、{\tt C2}が大きい場合：\\
+% \greentext{横優先のとき内側のループはキャッシュ内におさまる
+%  可能性大}\\
+% \greentext{縦優先のとき主記憶へのアクセスが発生する可能性大}
+
 % \end{frame}
 
 % \begin{frame}
-%   \frametitle{条件付き定数伝播}
-%   \begin{center}
-%     \begin{tabularx}{0.8\textwidth}{XXX}
-%       \multicolumn{1}{m{.3\textwidth}}{
-%         \only<1>{\includegraphics[width=.3\textwidth]{SSA-prog-crop.pdf}}
-%         \only<2>{\includegraphics[width=.3\textwidth]{SSA-prog-opt1-crop.pdf}}
-%       }
-%       &
-%       \multicolumn{1}{m{2em}}{$\Rightarrow$} 
-%       &
-%       \multicolumn{1}{m{.3\textwidth}}
-%       {
-%         \only<1>{\includegraphics[width=.3\textwidth]{SSA-prog-opt1-crop.pdf}}
-%         \only<2>{\includegraphics[width=.3\textwidth]{SSA-prog-opt2-crop.pdf}}
-%       }
-%     \end{tabularx}
-%   \end{center}
+%  \frametitle{インデックス修飾}
+
+%  \texttt{a[n] = a.addr + n - 1}
+ 
+%  \vspace*{10pt}
+ 
+%  \texttt{a.addr}:ベースアドレス
+ 
+%  \texttt{n-1}：インデックス
+ 
+%  \vspace*{10pt}
+ 
+%  使用頻度が高いのでハードウェアで実現されることも多い
+%  (初期のマイクロコンピュータなど）
+ 
+%  \vspace*{10pt}
+
+%  アドレス計算；ベースレジスタ+相対番地+インデックスレジスタ
+
+%  \greentext{配列の位置計算を高速に行いたい}
+
+% \vspace*{10pt}
+
+% LLVM: \texttt{getelementptr}を用いる．
+
 % \end{frame}
 
-\subsection{SSA形式からの逆変換}
+\section{コード最適化}
 
 \begin{frame}
-  \frametitle{SSA形式からの逆変換：$\phi$関数の消去}
+  \begin{center}
+  {\Huge コード最適化}
+  \end{center}
+\end{frame}
 
-  \begin{tabular}{ccc}
-    \begin{minipage}{.4\textwidth}
-      \begin{tikzpicture}
-        \node[draw] (u1) at (0,2) {$x_1=\cdots$};
-        \node[draw] (u2) at (2,2) {$x_2=\cdots$};
-        \node[draw] (v0) at (1,0) {$x_3=\phi(x_1,x_2)$};
-        \path[->] (u1) edge (v0) (u2) edge (v0);
-        \node at ($(u1)+(-1,0)$) {$u_1$};
-        \node at ($(u2)+(-1,0)$) {$u_2$};
-        \node at ($(v0)+(-1.5,0)$) {$v$};
-      \end{tikzpicture}
-    \end{minipage}
-     & $\Rightarrow$ &
-    \begin{minipage}{.4\textwidth}
-      \begin{tikzpicture}
-        \node[style=dashed,draw] (uu1) at (0,2) {$x_1=\cdots$};
-        \node[style=dotted,draw] (uw1) at (0,1) {$x_3=x_1$};
-        \node[style=dashed,draw] (uu2) at (2.5,2) {$x_2=\cdots$};
-        \node[style=dotted,draw] (uw2) at (2.5,1) {$x_3=x_2$};
-        \node at ($(uu1)+(-1.1,0)$) {$u_1$};
-        \node at ($(uw1)+(-1.1,0)$) {$w_1$};
-        \node at ($(uu2)+(-1.1,0)$) {$u_2$};
-        \node at ($(uw2)+(-1.1,0)$) {$w_2$};
-        \node[minimum width=1.5cm, minimum height=5mm,draw] (ww1) at (1.25,0) {};
-        \node at ($(ww1)+(-1.1,0)$) {$v$};
-        \draw (-0.9,0.6) rectangle +(1.8,1.8);
-        \draw (1.6,0.6) rectangle +(1.8,1.8);
-        \path[->](uu1) edge (uw1)  (uu2) edge (uw2) (uw1) edge (ww1)  (uw2) edge (ww1);
-      \end{tikzpicture}
-    \end{minipage}
+\subsection{概要}
+
+\begin{frame}
+ \frametitle{コード最適化}
+ 
+ 実行の意味を変えることなく実行を高速化すること。
+
+ \begin{list}{}{}
+  \item 実行の意味：入力と出力\\
+	最適化の対象によって入力と出力は変わる。\\
+	\greentext{プログラム解析が必要}
+ \end{list}
+
+
+ \begin{itemize}
+  \item 機械独立なコード最適化\\
+	\quad =3番地コードのレベルで実行を効率化
+  \item 機械依存なコード最適化\\
+	\quad =対象マシンのアーキテクチャに依存\\
+	\qquad (VLIW、マルチコアなど)
+ \end{itemize}
+
+\end{frame}
+
+\subsection{局所最適化}
+
+\begin{frame}
+ \frametitle{基本ブロック}
+
+ 最後以外分岐のない文の並び
+
+\begin{center}
+ \only<1>{\includegraphics[width=.8\textwidth]{basic-block-fig-r2-crop.pdf}}
+ \only<2>{\includegraphics[width=.8\textwidth]{basic-block-fig2-r2-crop.pdf}}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+ \frametitle{局所最適化}
+
+ 基本ブロック内だけを見て最適化すること
+
+ 覗き穴最適化(Peep-hole optimization)
+
+ \begin{itemize}
+  \item 定数伝播(constant propagation)\\
+	\greentext{定数の計算、参照を定数そのものでおきかえる}
+  \item 共通部分式の削除(common subexpression elimination)\\
+	\greentext{共通の部分式を抽出して結果を一時変数に保存
+	するようにして、二回目以降計算しない。}
+  \item コピー伝播(copy propagation)\\
+	\greentext{余分な変数の仲介を減らす。}\\
+	\greentext{データ依存性を減らして命令の並列発行が可能
+	になる場合がある。}
+  \item 不要コードの除去(deadcode elimination)\\
+	\greentext{使われない変数に関する計算を消去する。}
+  \item 代数的性質の利用\\
+	\greentext{演算子が持つ代数的性質(可換則、結合則、分
+	配則、計算のためのコストなど)}
+ \end{itemize}
+\end{frame}
+
+\begin{frame}
+ \frametitle{DAGによる局所最適化}
+
+ DAG=Directed Asyclic Graph\\
+ \greentext{閉路(ループ)をもたない有効グラフ}
+
+ \greentext{基本ブロック内のデータ依存性を一意的に表現}
+
+ DAGの構成アルゴリズム 6.6
+
+
+\end{frame}
+
+\begin{frame}
+ \frametitle{DAGの構成}
+ \begin{tabular}{cc}
+ \begin{minipage}{.45\textwidth}
+
+  \begin{tikzpicture}
+   \node[draw,circle] (a0) at (0,0) {$a_0$};
+   \node[draw,circle] (b0) at (1.5,0) {$b_0$};
+   \node[draw,circle] (c0) at (3,1) {$c_0$};
+   \uncover<2->{\node[draw,circle] (AST) at (0.75,1) {$\ast$};}
+   \uncover<2-6>{\node at ($(AST)+(0.5,0)$) {$x$};}
+   \uncover<3->{\node[draw,circle] (PLUS) at (2,2) {$+$};
+     \node at ($(PLUS)+(0.5,0)$) {$y$};}
+   \uncover<4->{\node at ($(AST)+(0.8,0)$) {$,d$};}
+   \uncover<5->{\node[draw,circle] (MIN) at (2,3.5) {$-$};
+     \node at ($(MIN)+(0.5,0)$) {$e$};}
+   \uncover<7->{\node[draw,circle] (PL2) at (2,5) {$+$};
+   \node at ($(PL2)+(0.5,0)$) {$x$};}
+   \only<2->{
+   \path[-] (a0) edge (AST) (b0) edge (AST);
+   }
+   \only<3->{
+   \path[-] (AST) edge (PLUS) (c0) edge (PLUS);
+   }
+   \only<5->{
+   \path[-] (MIN) edge (AST) (MIN) edge (c0);
+   }
+   \only<7->{
+   \path[-] (PL2) edge (AST) (PL2) edge (MIN);
+   }
+  \end{tikzpicture}
+
+ \end{minipage}
+  &
+   \begin{minipage}{.4\textwidth}
+
+    \begin{tikzpicture}
+     \node[anchor=west] at (0,3) {\texttt{x=\redtext{a}*\redtext{b}}};
+     \only<1,3->{\node[anchor=west] at (0,2.5) {\texttt{y=x+\redtext{c}}};}
+     \only<1,4->{\node[anchor=west] at (0,2) {\texttt{d=\redtext{a}*\redtext{b}}};}
+     \only<1,5->{\node[anchor=west] at (0,1.5) {\texttt{e=d-\redtext{c}}};}
+     \only<1,7->{\node[anchor=west] at (0,1) {\texttt{x=d+e}};}
+
+     \only<6>{
+     \node at (2,2.5) {$\Rightarrow$};
+     \node[anchor=west] at (3,3) {\texttt{x=a*b}};
+     \node[anchor=west] at (3,2.5) {\texttt{y=x+c}};
+     \node[anchor=west] at (3,2) {\texttt{d=x}};
+     \node[anchor=west] at (3,1.5) {\texttt{e=d-c}};
+     }
+
+     \only<7>{
+     \node[anchor=west] at (3,3) {\texttt{d=a*b}};
+     \node[anchor=west] at (3,2.5) {\texttt{y=d+c}};
+     \node[anchor=west] at (3,2) {\texttt{e=d-c}};
+     \node[anchor=west] at (3,1.5) {\texttt{x=d+e}};
+     }
+
+    \end{tikzpicture}
+
+   \end{minipage}
+ \end{tabular}
+\end{frame}
+
+\begin{frame}
+ \frametitle{不要コードの消去}
+ \begin{tabular}{cc}
+  \parbox{.3\textwidth}{これ以降、$x$しか使用しないとすると
+  \only<2>{$\mathtt{y=d+c}$は消去}}
+  \begin{minipage}{.4\textwidth}
+
+   \begin{tikzpicture}
+    \only<1,2>{\node[draw,circle] (a0) at (0,0) {$a_0$};
+    \node[draw,circle] (b0) at (1.5,0) {$b_0$};
+    \node[draw,circle] (c0) at (3.25,1) {$c_0$};
+    \node[draw,circle] (AST) at (0.75,1) {$\ast$};
+    \node[draw,circle] (MIN) at (2,3.5) {$-$};
+    \node[draw,circle] (PL2) at (2,5) {$+$};
+    \node at ($(AST)+(0.5,0)$) {$d$};
+    \node at ($(MIN)+(0.5,0)$) {$e$};
+    \node at ($(PL2)+(0.5,0)$) {$x$};
+    \path[-] (a0) edge (AST) (b0) edge (AST)
+             (AST) edge (MIN) (c0) edge (MIN)
+             (AST) edge (PL2) (MIN) edge (PL2);
+    }
+    \only<1>{\node[draw,circle] (PL1) at (2,2) {$+$};
+    \node at ($(PL1)+(0.5,0)$) {$y$};
+    \path[-] (AST) edge (PL1)  (c0) edge (PL1);
+    }
+    
+   \end{tikzpicture}
+
+  \end{minipage}
+  &
+   \begin{minipage}{.4\textwidth}
+
+    \begin{tikzpicture}
+     \node[anchor=west] at (0,3.5) {\texttt{d=a*b}};
+     \only<1>{\node[anchor=west] at (0,3.1) {\texttt{y=d+c}};}
+     \node[anchor=west] at (0,2.7) {\texttt{e=d-c}};
+     \node[anchor=west] at (0,2.3) {\texttt{x=d+e}};
+    \end{tikzpicture}
+
+   \end{minipage}
+ \end{tabular}
+
+ \vspace*{10pt}
+
+ \greentext{不要な変数を上からたどって消していく。}\\
+ \greentext{$e$,$d$は直接使わないが、$x$の計算に必要なので消去できない。}
+\end{frame}
+
+\begin{frame}
+ \frametitle{代数的性質}
+ \begin{center}
+ \begin{tabular}{ccc}
+ \begin{minipage}{.3\textwidth}
+  \scalebox{0.8}{
+  \begin{tikzpicture}
+   \node[draw,circle] (a0) at (0,0) {$a_0$};
+   \node[draw,circle] (b0) at (1.5,0) {$b_0$};
+   \node[draw,circle] (c0) at (3,0) {$c_0$};
+   \node[draw,circle] (AS1) at (0.75,1) {$\ast$};
+   \node[draw,circle] (AS2) at (2.25,1) {$\ast$};
+   \node[draw,circle] (PL) at (1.5,2) {$+$};
+   \path[-] (a0) edge (AS1)  (b0)edge (AS1)  (b0) edge (AS2)
+            (c0) edge (AS2)  (AS1) edge (PL) (AS2) edge (PL);
+  \end{tikzpicture}
+  }
+ \end{minipage}
+  &
+  $\Rightarrow$
+ &
+ \begin{minipage}{.3\textwidth}
+  \scalebox{0.8}{
+  \begin{tikzpicture}
+   \node[draw,circle] (a0) at (0,0) {$a_0$};
+   \node[draw,circle] (c0) at (1.5,0) {$c_0$};
+   \node[draw,circle] (b0) at (3,0) {$b_0$};
+   \node[draw,circle] (PL) at (0.75,1) {$+$};
+   \node[draw,circle] (AS) at (1.5,2) {$\ast$};
+   \path[-] (a0)edge (PL)  (c0)edge (PL) (PL) edge  (AS) (b0) edge (AS);
+  \end{tikzpicture}
+  }
+ \end{minipage}\\
+  \begin{minipage}{.3\textwidth}
+\begin{tabular}{l}
+{\tt t1=a*b}\\
+{\tt t2=b*c}\\
+{\tt t3=t1+t2}\\
+\end{tabular}
+  \end{minipage}
+& &
+  \begin{minipage}{.3\textwidth}
+\begin{tabular}{l}
+{\tt t1=a+c}\\
+{\tt t2=t1*b}
+\end{tabular}
+  \end{minipage}
   \end{tabular}
 
-  \vspace*{10pt}
+\vspace*{1zw}
 
-  \redtext{$\phi$関数に対してはコード生成ができない。}
+\par\noindent
+\greentext{分配則=DAG上でのパターンマッチング}
+ \end{center}
+ \end{frame}
 
-  \vspace*{5pt}
+% \begin{frame}[fragile]
+%  \frametitle{配列参照}
 
-  \greentext{(先の例はたまたま$\phi$関数まで消えてしまった。)}
+% \begin{enumerate}
+%  \item $\mathtt{x = a[i]}$の形の配列参照\\
+%        演算子\texttt{=[]}のノードを生成し、子として$a_0$および$i$、
+%        ノードに$x$をラベルづけする。
+%  \item \texttt{a[i]=x}の形の配列代入\\
+%        演算子\texttt{[]=]}のノードを生成し、
+%        子として、$a_0$, $i$, $x$をとり、$a_0$を参照している
+%        \texttt{=[]}ノードに'killed'マークをつける。
+%        $a[i]$は共通部分式として用いることはできない。
+% \end{enumerate}
 
-  \vspace*{1zw}
+%  \vspace*{0.5cm}
 
-  \greentext{ノード$w_1$,$w_2$を挿入して、$\phi$関数を消去}
+%  \begin{tabular}{ccc}
+%  \begin{tabular}{l}
+% {\tt x = a[i]}\\
+% {\tt a[j]=y}\\
+% {\tt z=a[i]}
+%  \end{tabular}
+%   & \hspace*{1cm} &
 
-  \vspace*{10pt}
+% \begin{tikzpicture}
+%  \node (a0) at (0,0) {$a_0$};
+%  \node (i0) at (1.5,0) {$i_0$};
+%  \node (j0) at (3,0) {$j_0$};
+%  \node (y0) at (4.5,0) {$y_0$};
 
-  3番地コード$\rightarrow$SSA形式$\rightarrow$最適化$\rightarrow$ $\phi$関数消去
+%  \node[draw] (Ar1) at (0.75,1) {\texttt{=[]}};
+%  \node[draw] (Ar2) at (3.75,1) {\texttt{=[]}};
 
-\end{frame}
+%  \node[draw] (Ar3) at (0.75,2.5) {\texttt{=[]}};
+ 
+%  \node (Ann0) at (0.75,1.5) {\sf Killed};
 
-\begin{frame}
-  \frametitle{逆変換アルゴリズム}
+%  \node at ($(Ar1)+(0.8,0)$) {$x$};
+%  \node at ($(Ar3)+(0.8,0)$) {$z$};
 
-  \begin{trivlist}
-    \item [1.] フローグラフの変換\\
-    $\phi$関数を持つブロックに対して挿入条件を満たさないまで、代
-    入文を挿入する。
+%  \path (a0) edge (Ar2)  (i0) edge (Ar2)  (j0) edge (Ar2) (y0) edge (Ar2);
+%  \path (a0) edge (Ar1)  (i0) edge (Ar1);
+%  \path (a0) [out=120,in=225] edge (Ar3);
+%  \path (i0) [out=60, in=315] edge (Ar3);
+% \end{tikzpicture}
+%  \end{tabular}
+ 
+% \end{frame}
 
-    \vspace*{1zw}
+% \subsection{大域的最適化}
+ 
+%  \begin{frame}
+%  \frametitle{大域的コード最適化}
+%  基本ブロックを越える最適化
 
-    挿入条件：$\phi$関数を持つブロックが複数の先行頂点を持ち、そ
-    のうちの一つが複数の後続頂点を持つ。
+%  \begin{list}{}{}
+%   \item ループ最適化
+%   \item 手続き呼び出し最適化
+%   \item データフロー解析
+%   \item 静的単一代入(SSA)解析
+%  \end{list}
+% \end{frame}
 
-    先行ブロックの最後がgoto文の場合は、goto文の直前に代入文を挿
-    入する。
-    \item [2.] $\phi$関数の消去
-  \end{trivlist}
+% \begin{frame}
+%  \frametitle{ループ最適化(1/3)}
+%  ループ内のコード実行回数:ループ外のコードよりも一般に多い\\
+%  ループ内のコードは慎重に最適化\\
+%  本当に毎回実行しなければならないか？できるだけ効率よく実行
+%  \begin{list}{}{}
+%   \item ループ不変式の移動\\
+% 	\greentext{ループから影響をうけない式を外に出す}l\\
+% 	例6.8
+%   \item ループ内の演算の強さの軽減\\
+% 	強い演算：時間のコストが大きい演算\\
+% 	足し算$<$掛け算 (加算器$<$乗算器)\\
+% 	例6.9
+%  \end{list}
+% \end{frame}
 
-\end{frame}
+% \begin{frame}
+%  \frametitle{例}
+%  \begin{center}
+%  \begin{tabular}{ccc}
+%   \multicolumn{3}{l}{例6.8}\\
+%   \includegraphics[scale=.7]{ex6_8_1.eps}
+%   & $\Rightarrow$ & 
+%   \includegraphics[scale=.7]{ex6_8_2.eps} \\[1zw]
+%   \includegraphics[scale=.7]{ex6_8_3.eps}
+%   & $\Rightarrow$ & 
+%   \includegraphics[scale=.7]{ex6_8_4.eps} \\[1zw]
+%   \multicolumn{3}{l}{例6.9}\\
+%   \includegraphics[scale=.7]{ex6_9_1.eps}
+%   & $\Rightarrow$ & 
+%   \includegraphics[scale=.7]{ex6_9_2.eps}
+%  \end{tabular}
+%  \end{center}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{逆変換例}
+% \begin{frame}
+%  \frametitle{ループ最適化(2/3)}
+%  \begin{list}{}{}
+%   \item 帰納変数消去\\
+% 	\greentext{帰納変数(ループを制御する変数)は減らす。}\\
+% 	\greentext{参照数の減少}
+% 	\begin{center}
+% 	 \begin{tabular}{ccc}
+% 	  \includegraphics[scale=.75]{ex6_10_1.eps}
+% 	  & $\Rightarrow$ &
+% 	  \includegraphics[scale=.75]{ex6_10_2.eps}
+% 	 \end{tabular}
+% 	\end{center}
+	
+%   \item ループ融合とループ分離\\
+%   \item ループ展開とソフトウェアパイプライン
+%  \end{list}
+% \end{frame}
 
-  %\greentext{(p.136 演習問題3)}
+% \begin{frame}
+%  \frametitle{ループ展開とソフトウェアパイプライン}
+%  \begin{center}
+%  \begin{tabular}{ccc}
+%   \includegraphics[scale=.75]{ex6_14_1.eps}
+%   & $\Rightarrow$ &
+%   \includegraphics[scale=.75]{ex6_14_2.eps}
+%  \\
+%  \end{tabular}
 
-  \only<1>{
-    \begin{center}
-      \scalebox{0.75}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-          {\small $\begin{array}{ll}\hspace*{1zw}
-                 & \mathtt{i_1=1}                              \\[-2pt]
-                 & \mathtt{j_1=1}                              \\[-2pt]
-                 & \mathtt{k_1=1}                              \\[-2pt]
-                 & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-          {\small $\begin{array}{ll}
-                L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i_3)}        \\[-2pt]
-                    & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-              \end{array}$};
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i_3=i_2+1} \\
-                              & \mathtt{goto\ L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j_2=i_1+k_1} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-          {\small $\begin{array}{ll}
-                L2: & \mathtt{i_4=}\phi\mathtt{(i_2,i_1)} \\
-                    & \mathtt{j_3=}\phi\mathtt{(j_1,j_2)} \\
-                    & \mathtt{k_2=i_4+j_3}                \\
-              \end{array}$};
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-          \path[->] (v3) edge (v4);
-        \end{tikzpicture}
-      }
-    \end{center}
-  }
-  \only<2>{
-    \scalebox{0.8}{
-      \begin{tikzpicture}
-        \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-        {\small $\begin{array}{ll}\hspace*{1zw}
-               & \mathtt{i_1=1}                              \\[-2pt]
-               & \mathtt{j_1=1}                              \\[-2pt]
-               & \mathtt{k_1=1}                              \\[-2pt]
-               & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};
-        \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-        \node[anchor=west,draw, minimum width=3.8cm,minimum height=5mm,fill=lightlightgrey] (w0) at (0,5)
-        {$\hspace*{1zw}\mathtt{i_2=i_1}$};
-        \node at ($(w0)+(-2.2,0)$) {$w_0$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,3.8)
-        {$\mathtt{L3:\ if}\ q'\ \mathtt{goto}\ \mathtt{L2}$};
-        \node at ($(v1)+(-2.2,0)$) {$v_1$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2)
-        {$\begin{array}{ll}\hspace*{1zw} & \mathtt{i_3=i_2+1} \\[-2pt]
-                               & \mathtt{i_2=i_3}   \\[-2pt]
-                               & goto\ L3\end{array}$};
-        \node at ($(v2)+(-2.2,0.6)$) {$v_2$};
-        \node[anchor=west,draw,minimum width=3cm,minimum height=8mm,fill=lightlightgrey] (w1) at (5,2)
-        {$\begin{array}{ll}L2: & \mathtt{i_4=i_2} \\[-2pt] & \mathtt{j_3=j_1}\\[-2pt]
-                     & goto\ L4
-            \end{array}$};
-        \node at ($(w1)+(-1.8,0.3)$) {$w_1$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v3) at (9,4)
-        {$\begin{array}{ll}L1: & \mathtt{j_2=i_1+k_1} \\
-                     & \mathtt{i_4=j_1}     \\ & \mathtt{j_3=j_2}\end{array}$};
-        \node at ($(v3)+(-2.2,0.4)$) {$v_3$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v4) at (9,0)
-        {$L4:$\ $\mathtt{k_2=i_4+j_3}$};
-        \node at ($(v4)+(-2.2,0)$) {$v_4$};
-        \path[->] (v0) edge (w0)  (w0) edge (v1)  (v1) edge (v2)  (v2) [out=190,in=170,looseness=1] edge (v1);
-        \path[->] (v1) [out=350,in=135] edge (w1)  (w1) [out=330,in=120] edge (v4);
-        \path[->] (v3) edge (v4);
-        \path[->] (v0) [out=330,in=135] edge (v3);
-      \end{tikzpicture}
-    }
-  }
-\end{frame}
+%   \[
+%    \begin{array}{c|ccc}
+%     &P_1 &P_2 &P_3 \\\hline
+%    1 & A_1 & & \\
+%    2 & B_1 & A_2 & \\
+%    3 & C_1 & B_2 & A_3 \\
+%    4 & A_4 & C_2 & B_3 \\
+%    5 & B_4 & A_5 & C_3 \\
+%    \vdots & \multicolumn{3}{c}{\vdots}\\
+%    \end{array}
+%   \]
+%  並列に実行可能
+%  \end{center}
+% \end{frame}
+
+% \begin{frame}
+%  \frametitle{手続き呼出し最適化}
+
+%  \begin{list}{}{}
+%   \item {\bf インライン展開}:\ \\
+%  手続き呼出し=駆動レコードを用いてスタック上に情報を保存
+
+%  \greentext{操作としてはコストが大きい}
+
+%  スタック操作：実メモリへの正確な順序での書き込みを要求
+
+%  短い手続きや関数であればそのまま置き換えてしまった方が
+%  効率がよい。
+
+%   \item {\bf 末尾再帰}:\\
+
+% 	手続の最後の再帰よびだしは、gotoに置き換え可能。
+	
+% 	\greentext{呼出しから復帰しても駆動レコード上の局所環境を使って
+% 	実行する命令が存在しない。局所領域も再利用可能}
+%  \end{list}
+
+% \end{frame}
+
+% \begin{frame}
+%  \frametitle{末尾再帰の例}
+%  \begin{tabular}{ccc}
+%   \includegraphics[scale=.6]{ex6_16_1.eps}
+%   & $\Rightarrow$ &
+%   \includegraphics[scale=.6]{ex6_16_2.eps}\\
+%   & & $\Downarrow$\\
+%   & &
+%   \includegraphics[scale=.6]{ex6_16_3.eps}
+%  \end{tabular}
+% \end{frame}
+
+% \subsection{データフロー解析}
+
+% \begin{frame}
+%  \frametitle{データフロー解析}
+
+%  \vspace*{10pt}
+
+%  \greentext{(教科書6.4:詳細については省略)}
+
+%  \vspace*{10pt}
+
+%  ステートメント$S$に対するデータフロー
+
+%  \[
+%   out[S]=gen[S]\cup(in[S]-kill[S])
+%  \]
+
+%  プログラム上での位置(行番号)：
+%  \begin{tabular}{ll}
+%   $in[S]$ & $S$に入力されるデータ\\
+%   $out[S]$ & $S$から出力されるデータ\\
+%   $gen[S]$ & $S$で定義されるデータ\\
+%   $kill[S]$ & $S$で上書きされるデータ\\
+%  \end{tabular}
+
+%  入力から出力への制御がきまっていればよいので、基本ブロック単位で考えれ
+%  ばよい。
+
+%  ループ：データフロー方程式を解いて全体的に必要なデータを計算する。
+% \end{frame}
+
+% \begin{frame}{データフロー方程式}
+% % \begin{tabular}{ccc}
+% %  \begin{minipage}{.2\textwidth}
+% % \begin{tikzpicture}
+% %  \node[draw] (S1) at (0,1.5) {$S_1$};
+% %  \node[draw] (S2) at (0,0) {$S_2$};
+% %  \path[->] (S1) edge (S2);
+% % \end{tikzpicture}
+% %  \end{minipage}
+% %  &
+% %  \begin{minipage}{.25\textwidth}
+% %   \begin{tikzpicture}
+% %    
+% %   \end{tikzpicture}
+% %  \end{minipage}
+% % \end{tabular}
+
+% \scalebox{0.7}{
+% \begin{tikzpicture}
+%  \node[draw] (B5) at (2,0) {EXIT};
+%  \node[draw] (B4) at (2,1) {$d_7$:\texttt{i=u3}};
+%  \node[draw] (B3) at (0,2) {$d_6$:\texttt{a=u2}};
+%  \node[draw] (B2) at (2,3.25) {$\begin{array}{ll}
+%   d_4: & \texttt{i=i+1}\\[-3pt]
+%   d_5: & \texttt{j=j-1}
+% 		       \end{array}$};
+%  \node[draw] (B1) at (2,5) {$\begin{array}{ll}
+%   d_1: & \texttt{i=m-1}\\[-3pt]
+%   d_2: & \texttt{j=n}\\[-3pt]
+%   d_3: & \texttt{a=u1}
+% 			\end{array}$};
+%  \node[draw] (B0) at (2,6.5) {ENTRY};
+
+%  \node at ($(B1)+(1.5,0)$) {$B_1$};
+%  \node at ($(B2)+(1.5,0)$) {$B_2$};
+%  \node at ($(B3)+(1.2,0)$) {$B_3$};
+%  \node at ($(B4)+(1.2,0)$) {$B_4$};
+
+%  \path[->] (B0) edge (B1) (B1) edge (B2) (B2) edge (B4)
+%            (B2) edge (B3) (B3) edge (B4) (B4) edge (B5);
+%  \path[->] (B4) [out=210,in=150,looseness=3] edge (B2);
+
+%  \node[anchor=west] at ($(B1)+(2.5,0)$) {$\begin{array}{ll}
+%   gen_{B_1} & = \{d_1,d_2,d_3\}\\[-3pt]
+%   kill_{B_1} & = \{d_4,d_5,d_6,d_7\}
+% 			   \end{array}$};
+%  \node[anchor=west] at ($(B2)+(2.5,0)$) {$\begin{array}{ll}
+%   gen_{B_2} & = \{d_4,d_5\} \\[-3pt]
+%   kill_{B_2} & = \{d_1,d_2,d_7\}
+% 			   \end{array}$};
+%  \node[anchor=west] at ($(B3)+(4.5,0)$) {$\begin{array}{ll}
+%   gen_{B_3} & = \{d_6\}\\[-3pt]
+%   kill_{B_3} & = \{d_3\}
+% 			   \end{array}$};
+%  \node[anchor=west] at ($(B4)+(2.5,0)$) {$\begin{array}{ll}
+%   gen_{B_4} & = \{d_7\} \\[-3pt]
+%   kill_{B_4} & = \{d_1,d_4\}
+% 			   \end{array}$};
+
+% \end{tikzpicture}
+% }
+
+% {\footnotesize
+% \begin{eqnarray*}
+%  IN[B_2] & = & OUT[B_1]\cup OUT[B_4]\\
+%  OUT[B_2] & = & gen_{B_2}\cup(IN[B_2]-kill_{B_2})
+% \end{eqnarray*}
+% }
+
+% (Ahoら：Compilers より引用)
+% \end{frame}
+
+% \begin{frame}{データフロー方程式の計算}
+
+% 到達可能性解析：
+
+% {\small
+% {XXXX XXX}:$d_1,d_2,\cdots,d_7$が集合に入っているとき$1$、入ってないとき$0$
+% }
+
+% \vspace*{10pt}
+
+% {\footnotesize
+% \begin{tabular}{c|c|c|c|c|c}\hline
+% Block $B$ & OUT[$B$]$^0$ & IN[$B$]$^1$ & OUT[$B$]$^1$ & IN[$B$]$^2$ & OUT[$B$]$^2$\\\hline
+% $B_1$ & 000 0000 & 000 0000 & 111 0000 & 000 0000 & 111 0000\\
+% $B_2$ & 000 0000 & 111 0000 & 001 1100 & 111 0111 & 001 1110\\
+% $B_3$ & 000 0000 & 001 1100 & 000 1110 & 001 1110 & 000 1110\\
+% $B_4$ & 000 0000 & 001 1110 & 001 0111 & 001 1110 & 001 0111\\
+% EXIT  & 000 0000 & 001 0111 & 001 0111 & 001 0111 & 001 0111\\\hline
+% \end{tabular}
+% }
+
+% \vspace*{10pt}
+
+% \greentext{変化しなくなるまでくりかえす。}
+
+
+% OUT[EXIT]=001 0111:\\
+% \greentext{本ブロックでは$d_3$,$d_5$,$d_6$,$d_7$がEXITが到達する}
+
+% \end{frame}
+
 
 \end{document}

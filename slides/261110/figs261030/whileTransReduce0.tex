@@ -1,0 +1,17 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\begin{document}
+\[
+ \begin{array}{rcll}
+  \mbox{文} & \rightarrow & I2\ \mbox{文}^{(1)}&
+       \{\mathsf{generate}(\mathsf{goto},\mbox{文}.label_1);\\
+ & & & \mathsf{generate}(\mbox{文}.label_2:);\}\\
+  I2 & \rightarrow & I1\ \mbox{式}\ \verb|')'| &
+   \{\mathsf{newLabel}(\&\mbox{文}.label_2);\\
+  & & &\mathsf{generate}(\mathsf{if\
+  not},\mbox{式}.var,\mathsf{goto},\mbox{文}.label_2);\}\\
+  I1 & \rightarrow &    \verb|WHILE|\ \verb|'('|\ & \{\mathsf{newLabel}(\&\mbox{文}.label_1);\\
+ & & & \mathsf{generate}(\mbox{文}.label_1:)\}\\
+ \end{array}
+\]
+\end{document}

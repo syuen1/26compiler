@@ -335,25 +335,60 @@ $\mathsf{push}$命令で参照することによって計算することがで�
 
 条件文のコード生成は以下のようになる．
 
-\[\begin{array}{lcl}
-        \multirow{4}{*}
-        {$S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}$}
-         & \multirow{4}{*}{$\Rightarrow$} & \mbox{$E$のコードを生成 $E.var=t1$}                     \\
-         &                                & \texttt{if}\ \texttt{not}\ t1\ \texttt{goto}\ L1 \\
-         &                                & \mbox{$S^{(1)}$のコードを生成}                          \\
-         &                                & L1
-    \end{array}\]
+$S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}$ $\Rightarrow$
 
-\[\begin{array}{lcl}
-        \multirow{4}{*}
-        {$S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}\ \texttt{else}\ S^{(2)}$}
-         & \multirow{4}{*}{$\Rightarrow$} & \mbox{$E$のコードを生成 $E.var=t1$}                     \\
-         &                                & \texttt{if}\ \texttt{not}\ t1\ \texttt{goto}\ L1 \\
-         &                                & \mbox{$S^{(1)}$のコードを生成}                          \\
-         &                                & \texttt{goto}\ L2                                \\
-         &                                & L1: \mbox{$S^{(2)}$のコードを生成}                      \\
-         &                                & L2:
-    \end{array}\]
+\begin{tabularx}{\linewidth}{m{.4\linewidth}m{.6\linewidth}}
+$\begin{array}{rl}
+         1: & \mbox{$E$のコードを生成 $E.var=t1$}                     \\
+         2: & \texttt{if}\ \texttt{not}\ t1\ \texttt{goto}\ L1 \\
+         3: & \mbox{$S^{(1)}$のコードを生成}                          \\
+         4: & L1
+    \end{array}$
+    &
+    \begin{tikzpicture}
+    \coordinate (N0) at (0,0);
+    \node[diamond,draw,aspect=2] (N1) at (0,-1) {$E$};
+    \node[draw] (N2) at (0,-2.25) {\hbox to 4em{\hfill$S^{(1)}$\hfill}};
+    \coordinate (N3) at (0,-3.5);
+    \node at ($(N3)+(-0.5,0.5)$) {$L1$};
+    \path[-{Stealth[scale=1.5]}] (N0) edge (N1) (N1) edge (N2) (N2) edge (N3);
+    \path[-] (N1) edge ($(N1)+(1.5,0)$) ($(N1)+(1.5,0)$) edge ($(N3)+(1.5,0.5)$);
+    \path[-{Stealth[scale=1.5]}] ($(N3)+(1.5,0.5)$) edge ($(N3)+(0,0.5)$);
+    \end{tikzpicture}
+\end{tabularx}
+
+\vspace*{10pt}
+
+{$S\rightarrow\texttt{if}\ \texttt{(}\ E\ \texttt{)}\ S^{(1)}\ \texttt{else}\ S^{(2)}$} {$\Rightarrow$}
+
+\begin{tabularx}{\linewidth}{m{.4\linewidth}m{.6\linewidth}}
+$\begin{array}{l}
+1:\ \mbox{$E$のコードを生成 $E.var=t1$}                     \\
+2:\ \texttt{if}\ \texttt{not}\ t1\ \texttt{goto}\ L1 \\
+3:\ \mbox{$S^{(1)}$のコードを生成}                          \\
+4:\ \texttt{goto}\ L2                                \\
+5:\ L1: \mbox{$S^{(2)}$のコードを生成}                      \\
+6:\ L2:
+    \end{array}$
+    &
+\begin{tikzpicture}
+    \coordinate (N0) at (0,0);
+    \node[diamond,draw,aspect=2] (N1) at (0,-1) {$E$};
+    \node[draw] (N2) at (0,-2.25) {\hbox to 4em{\hfill$S^{(1)}$\hfill}};
+    \coordinate (N3) at (0,-3.5);
+    \node at ($(N3)+(-0.5,0)$) {$L1$};
+    \node[draw] (N4) at ($(N3)+(0,-0.5)$) {\hbox to 4em{\hfill$S^{(2)}$\hfill}};
+    \coordinate (N5) at ($(N4)+(0,-1)$);
+    \node at ($(N5)+(0.5,0.5)$) {$L2$};
+    \path[-{Stealth[scale=1.5]}] (N0) edge (N1) (N1) edge (N2);
+    \path[-] (N1) edge ($(N1)+(1.5,0)$) ($(N1)+(1.5,0)$) edge ($(N3)+(1.5,0.25)$);
+    \path[-] ($(N3)+(1.5,0.25)$) edge ($(N3)+(0,0.25)$);
+    \path[-{Stealth[scale=1.5]}] ($(N3)+(0,0.25)$) edge (N4);
+    \path[-] (N2) edge ($(N2)+(0,-0.75)$) ($(N2)+(0,-0.75)$) edge ($(N2)+(-1.5,-0.75)$) ($(N2)+(-1.5,-0.75)$) edge ($(N5)+(-1.5,0.5)$);
+    \path[-{Stealth[scale=1.5]}] (N4) edge (N5);
+    \path[-{Stealth[scale=1.5]}] ($(N5)+(-1.5,0.5)$) edge ($(N5)+(0,0.5)$);
+\end{tikzpicture}
+\end{tabularx}
 
 構文解析を生成規則に沿って進めるためには，条件文の生成規則が適用されたときに
 全体のコードを生成するのではなく，条件式$E$が還元されたときに，$E$のコードを
@@ -440,41 +475,41 @@ LRパーザーにコード生成ルーチンを組み込む場合，コード生
 
 についてはフローチャートに沿って以下のような生成ルーチンを付加することになる．
 
-\begin{center}
-    \begin{tabular}{cc}
-        \multicolumn{1}{m{.7\textwidth}}{
-            \vspace*{-20pt}
-            $\begin{array}{rcll}
-                     S & \rightarrow & \texttt{if}\ \texttt{(}\ E\ \texttt{)} & \{S.label1=\newLabelnull();    \\
-                       &             &                                        & \generateifnot{E.var}{S.label1} \\
-                       &             & S^{(1)}                                & \{S.label2=\newLabelnull();    \\
-                       &             &                                        & \generategoto{S.label2};        \\
-                       &             &                                        & \generatelabel{S.label1}\}      \\
-                       &             & \texttt{else}\ S^{(2)}                 & \{\generatelabel{S.label2}\}
-                 \end{array}$}
-         &
-        \multicolumn{1}{m{.3\textwidth}}{
-            \begin{tikzpicture}
-                \coordinate (N0) at (0,0);
-                \node[diamond,draw,aspect=3,inner sep=0pt,label={5:{\scriptsize$\mathsf{F}$}}]
-                (N1) at (0,-1) {\hbox{\quad E\quad}};
-                \node[draw,rectangle] (N2) at (0,-2) {\hbox{\quad $S^{(1)}$\quad}};
-                \node[draw,rectangle] (N3) at (0,-3.5) {\hbox{\quad $S^{(2)}$\quad}};
-                \node[draw,rectangle] (N4) at (0,-4.5) {\scriptsize $S.label2:$};
-                \path[->] (N0) edge (N1);
-                \path[->] (N1) edge [right] node {\scriptsize$\mathsf{T}$} (N2);
-                \path[-] (N2) edge +(0,-0.5) ($(N2)+(0,-0.5)$) edge +(-1,0)
-                ($(N2)+(-1,-0.5)$) edge +(0,-1.5);
-                \path[->] ($(N2)+(-1,-2)$) edge +(1,0);
-                \path[-] (N1) edge +(1.5,0) ($(N1)+(1.5,0)$) edge +(0,-1.75)
-                ($(N1)+(1.5,-1.75)$) edge +(-1.5,0);
-                \node at ($(N3)+(.75,0.5)$) {\scriptsize $S.label1:$};
-                \path[->] ($(N1)+(0,-1.75)$) edge (N3);
-                \path[->] (N3) edge (N4);
-            \end{tikzpicture}
-        }
-    \end{tabular}
-\end{center}
+% \begin{center}
+%     \begin{tabular}{cc}
+%         \multicolumn{1}{m{.7\textwidth}}{
+%             \vspace*{-20pt}
+%             $\begin{array}{rcll}
+%                      S & \rightarrow & \texttt{if}\ \texttt{(}\ E\ \texttt{)} & \{S.label1=\newLabelnull();    \\
+%                        &             &                                        & \generateifnot{E.var}{S.label1} \\
+%                        &             & S^{(1)}                                & \{S.label2=\newLabelnull();    \\
+%                        &             &                                        & \generategoto{S.label2};        \\
+%                        &             &                                        & \generatelabel{S.label1}\}      \\
+%                        &             & \texttt{else}\ S^{(2)}                 & \{\generatelabel{S.label2}\}
+%                  \end{array}$}
+%          &
+%         \multicolumn{1}{m{.3\textwidth}}{
+%             \begin{tikzpicture}
+%                 \coordinate (N0) at (0,0);
+%                 \node[diamond,draw,aspect=3,inner sep=0pt,label={5:{\scriptsize$\mathsf{F}$}}]
+%                 (N1) at (0,-1) {\hbox{\quad E\quad}};
+%                 \node[draw,rectangle] (N2) at (0,-2) {\hbox{\quad $S^{(1)}$\quad}};
+%                 \node[draw,rectangle] (N3) at (0,-3.5) {\hbox{\quad $S^{(2)}$\quad}};
+%                 \node[draw,rectangle] (N4) at (0,-4.5) {\scriptsize $S.label2:$};
+%                 \path[->] (N0) edge (N1);
+%                 \path[->] (N1) edge [right] node {\scriptsize$\mathsf{T}$} (N2);
+%                 \path[-] (N2) edge +(0,-0.5) ($(N2)+(0,-0.5)$) edge +(-1,0)
+%                 ($(N2)+(-1,-0.5)$) edge +(0,-1.5);
+%                 \path[->] ($(N2)+(-1,-2)$) edge +(1,0);
+%                 \path[-] (N1) edge +(1.5,0) ($(N1)+(1.5,0)$) edge +(0,-1.75)
+%                 ($(N1)+(1.5,-1.75)$) edge +(-1.5,0);
+%                 \node at ($(N3)+(.75,0.5)$) {\scriptsize $S.label1:$};
+%                 \path[->] ($(N1)+(0,-1.75)$) edge (N3);
+%                 \path[->] (N3) edge (N4);
+%             \end{tikzpicture}
+%         }
+%     \end{tabular}
+% \end{center}
 
 この生成規則に対して，コード生成が規則を還元する場合にのみ発生する等価な生成規則を
 以下のように構成する．
@@ -520,6 +555,19 @@ LRパーザーにコード生成ルーチンを組み込む場合，コード生
 %   M_1 & \rightarrow & \varepsilon & \{M_1.label=\newLabelnull();\\
 %       &             &             & \generate
 
+以上のような方法の他にコードを生成のタイミングに$\varepsilon$を生成する非終端記号を
+導入する方法も可能である．
+
+\[\begin{array}{rcll}
+S & \rightarrow & \texttt{if} \ttlp\ E\ M_1\ \ttrp\ S^{(1)}\ M_2\ N\ \ttelse\ \ S^{(2)}
+& \{;\\
+& & & M_1.label = \mathsf{newlabel}();S.label = \mathsf{newlabel}();\\
+M_1 & \rightarrow & \varepsilon & \{\\
+   & & & M1.label=\mathsf{newlabel}()\}\\
+M_2 & \rightarrow & \varepsilon &\\
+N & \rightarrow & \varepsilon & \{\mathsf{generate}(\texttt{goto} \mathsf{newlabel()}\\
+\end{array}\]
+
 \subsection{下降型構文主導型変換}
 
 LL(1)下降型構文解析にコード生成に組み込む場合は，より直観的にコード生成する
@@ -528,75 +576,75 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
 
 構文図をたどる際に構文要素の項目に応じてコードを生成する．
 
-\begin{Exmp}
-    以下の拡張BNFで定義されるプログラム$P$を考える．
-    \[\begin{array}{crl}
-            P & := & S\ (\ttsc S)^\ast                                                                                                           \\
-            S & := & \mathsf{ID}\ \ttassgn\ E\ |\ \ttif B\ \ttthen\ S\ \ttelse S\ \ttfi\ |\ \ttwhile\ B\ \ttdo\ S\ \ttod                         \\
-            E & := & T((\ttpl|\ttsb)T)^\ast                                                                                                      \\
-            T & := & F((\ttmu|\ttdv)F)^\ast                                                                                                      \\
-            F & := & \ttlp\ E\ \ttrp\ |\ \mathsf{ID}\ |\ \mathsf{NUM}                                                                            \\
-            B & := & A(\ttor A)^\ast                                                                                                             \\
-            A & := & N(\ttand N)^\ast                                                                                                            \\
-            N & := & C\ |\ \ttneg\,C                                                                                                             \\
-            C & := & \ttlp\ B\ttrp\ |\ \mathsf{ID}\,\ttlt\,\mathsf{ID}\ |\ \mathsf{ID}\,\ttlt\,\mathsf{NUM}\ |\ \mathsf{NUM}\,\ttlt\,\mathsf{ID}
-        \end{array}\]
-    これらの構文図式は図\ref{SynDiagramExample}のようになる．
+% \begin{Exmp}
+%     以下の拡張BNFで定義されるプログラム$P$を考える．
+%     \[\begin{array}{crl}
+%             P & := & S\ (\ttsc S)^\ast                                                                                                           \\
+%             S & := & \mathsf{ID}\ \ttassgn\ E\ |\ \ttif B\ \ttthen\ S\ \ttelse S\ \ttfi\ |\ \ttwhile\ B\ \ttdo\ S\ \ttod                         \\
+%             E & := & T((\ttpl|\ttsb)T)^\ast                                                                                                      \\
+%             T & := & F((\ttmu|\ttdv)F)^\ast                                                                                                      \\
+%             F & := & \ttlp\ E\ \ttrp\ |\ \mathsf{ID}\ |\ \mathsf{NUM}                                                                            \\
+%             B & := & A(\ttor A)^\ast                                                                                                             \\
+%             A & := & N(\ttand N)^\ast                                                                                                            \\
+%             N & := & C\ |\ \ttneg\,C                                                                                                             \\
+%             C & := & \ttlp\ B\ttrp\ |\ \mathsf{ID}\,\ttlt\,\mathsf{ID}\ |\ \mathsf{ID}\,\ttlt\,\mathsf{NUM}\ |\ \mathsf{NUM}\,\ttlt\,\mathsf{ID}
+%         \end{array}\]
+%     これらの構文図式は図\ref{SynDiagramExample}のようになる．
 
-    \begin{figure}[H]\centering
-        \includegraphics[scale=0.85]{SynDiag-fig-crop.pdf}
-        \caption{$P$の構文図式}\label{SynDiagramExample}
-    \end{figure}
+%     \begin{figure}[H]\centering
+%         \includegraphics[scale=0.85]{SynDiag-fig-crop.pdf}
+%         \caption{$P$の構文図式}\label{SynDiagramExample}
+%     \end{figure}
 
-    例えば，$S$については，解析の経路をたどりながら
-    以下のように中間コードを生成する．\verb|nextsym|に先読みトークンの
-    情報が格納されており，\verb|getNextsym()|で次のトークンを読む．
-    \begin{center}
-        \begin{mdframed}[userdefinedwidth=.8\linewidth]
-            \begin{tabbing}
-                \qquad\=\qquad\=\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\= \kill
-                // \verb|nextsym|には先読みトークンがあらかじめ格納されている\\
-                {\rm\bf If} \verb|nexsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
-                \> \verb|getNextsym()|\\
-                \>{\rm\bf If} \verb|nextsym|.kind = `{\sf =}' {\rm\bf then}\>\>// 代入記号\\
-                \>\> Eのコードを生成(\verb|$tempE|に結果を格納)\>// $E$\\
-                \>\> $\mathsf{generate}$(`$\mathsf{var}$({\sf ID}.val) = \verb|$tempE|')\>// 代入本体\\
-                \>{\rm\bf else} \verb|error()|\\
-                {\rm\bf else if} \verb|nextsym|.kind = {\sf if} {\rm\bf then}\>\>\>// 条件文\\
-                \> \verb|getNextsym()|\\
-                \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
-                \> $L_1=\mathsf{newlabel}$()\>\>// 偽の場合の飛び先\\
-                \> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_1$')\>\>// 分岐命令本体\\
-                \> Sのコードを生成\>\>// 条件が真の場合の$S$\\
-                \> $L_2=\mathsf{newlabel}$()\>\>// 偽の命令の後への飛び先\\
-                \> $\mathsf{generate}$(`\verb|goto| $L_2$')\\
-                \> $\mathsf{generate}$(`\verb|label| $L_1$')\\
-                \> Sのコードを生成\>\>// 条件が偽の場合の$S$\\
-                \> $\mathsf{generate}$(`\verb|label| $L_2$')\>\>// 真の$S$のジャンプ先\\
-                {\rm\bf else if} \verb|nextsym|.kind = {\sf while} {\rm\bf then}\>\>\>// 繰り返し文\\
-                \> \verb|getNextsym()|\\
-                \> $L_1=\mathsf{newlabel}$()\\
-                \> $\mathsf{generate}$(`\verb|label| $L_1$')\>\>// 繰り返しで戻るラベル\\
-                \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
-                \> {\rm\bf If} \verb|nextSym|.kind = {\sf do} {\rm\bf then}\\
-                \>\> $L_2=\mathsf{newlabel}$()\\
-                \>\> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_2$')\\
-                \>\> Sのコードを生成\>// 繰り返し本体の$S$\\
-                \>\> $\mathsf{generate}$(`\verb|goto| $L_1$')\>// 繰り返しに戻る\\
-                \>\> $\mathsf{generate}$(`\verb|label| $L_2$')\>// 脱出先のラベル\\
-                \> {\rm\bf else} \verb|error()|\\
-                {\rm\bf else}\\
-                \>\verb|error()|
-            \end{tabbing}
-        \end{mdframed}
-    \end{center}
-\end{Exmp}
+%     例えば，$S$については，解析の経路をたどりながら
+%     以下のように中間コードを生成する．\verb|nextsym|に先読みトークンの
+%     情報が格納されており，\verb|getNextsym()|で次のトークンを読む．
+%     \begin{center}
+%         \begin{mdframed}[userdefinedwidth=.8\linewidth]
+%             \begin{tabbing}
+%                 \qquad\=\qquad\=\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\= \kill
+%                 // \verb|nextsym|には先読みトークンがあらかじめ格納されている\\
+%                 {\rm\bf If} \verb|nexsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
+%                 \> \verb|getNextsym()|\\
+%                 \>{\rm\bf If} \verb|nextsym|.kind = `{\sf =}' {\rm\bf then}\>\>// 代入記号\\
+%                 \>\> Eのコードを生成(\verb|$tempE|に結果を格納)\>// $E$\\
+%                 \>\> $\mathsf{generate}$(`$\mathsf{var}$({\sf ID}.val) = \verb|$tempE|')\>// 代入本体\\
+%                 \>{\rm\bf else} \verb|error()|\\
+%                 {\rm\bf else if} \verb|nextsym|.kind = {\sf if} {\rm\bf then}\>\>\>// 条件文\\
+%                 \> \verb|getNextsym()|\\
+%                 \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
+%                 \> $L_1=\mathsf{newlabel}$()\>\>// 偽の場合の飛び先\\
+%                 \> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_1$')\>\>// 分岐命令本体\\
+%                 \> Sのコードを生成\>\>// 条件が真の場合の$S$\\
+%                 \> $L_2=\mathsf{newlabel}$()\>\>// 偽の命令の後への飛び先\\
+%                 \> $\mathsf{generate}$(`\verb|goto| $L_2$')\\
+%                 \> $\mathsf{generate}$(`\verb|label| $L_1$')\\
+%                 \> Sのコードを生成\>\>// 条件が偽の場合の$S$\\
+%                 \> $\mathsf{generate}$(`\verb|label| $L_2$')\>\>// 真の$S$のジャンプ先\\
+%                 {\rm\bf else if} \verb|nextsym|.kind = {\sf while} {\rm\bf then}\>\>\>// 繰り返し文\\
+%                 \> \verb|getNextsym()|\\
+%                 \> $L_1=\mathsf{newlabel}$()\\
+%                 \> $\mathsf{generate}$(`\verb|label| $L_1$')\>\>// 繰り返しで戻るラベル\\
+%                 \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
+%                 \> {\rm\bf If} \verb|nextSym|.kind = {\sf do} {\rm\bf then}\\
+%                 \>\> $L_2=\mathsf{newlabel}$()\\
+%                 \>\> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_2$')\\
+%                 \>\> Sのコードを生成\>// 繰り返し本体の$S$\\
+%                 \>\> $\mathsf{generate}$(`\verb|goto| $L_1$')\>// 繰り返しに戻る\\
+%                 \>\> $\mathsf{generate}$(`\verb|label| $L_2$')\>// 脱出先のラベル\\
+%                 \> {\rm\bf else} \verb|error()|\\
+%                 {\rm\bf else}\\
+%                 \>\verb|error()|
+%             \end{tabbing}
+%         \end{mdframed}
+%     \end{center}
+% \end{Exmp}
 
-ここで，\verb|nextsym|.{\it kind} はトークンの種類，\verb|nextsym|.{\it val} はトークン
-の値を表す．{\sf var}($s$)は文字列$s$を持つ識別子が変数であるとき，記号表を
-参照してメモリ内の番地を与える．
+% ここで，\verb|nextsym|.{\it kind} はトークンの種類，\verb|nextsym|.{\it val} はトークン
+% の値を表す．{\sf var}($s$)は文字列$s$を持つ識別子が変数であるとき，記号表を
+% 参照してメモリ内の番地を与える．
 
-他の非終端記号の構文グラフについても同様に３番地コードを生成することができる．
+% 他の非終端記号の構文グラフについても同様に３番地コードを生成することができる．
 
 \subsection{構文主導定義による意味定義}
 
@@ -701,8 +749,8 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
               副作用を持たない．
         \item
               意味規則の等式において，$X_{i_1}$が$p$の左辺の非終点記号であるとき，
-              $X_{i_1}.a_{j_1}$を合成属性(syntheiszed attribute)とよび，
-              そうでないとき相続属性(inherited attribute)とよぶ．$X\in N\cup\Sigma$
+              $X_{i_1}.a_{j_1}$を{\bf 合成属性(syntheiszed attribute)}とよび，
+              そうでないとき{\bf 相続属性(inherited attribute)}とよぶ．$X\in N\cup\Sigma$
               に対して，合成属性の集合を$S(X)$, 相続属性の集合を$I(X)$と書く．
               $X\in\Sigma$に対して$I(X)=\varnothing$であり，すべての属性$X.a$は，
               字句解析時に決定している．
@@ -798,7 +846,7 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
 \subsubsection{ソースプログラムの仕様}
 
 ブロック構造とループ構造を持つ単純なプログラミング言語PL-Simpleを以下のように
-定義する．
+定義する．(手続き・関数呼び出しは含まない)
 
 \begin{align*}
 \bnfnts{program} & \bnfarr \bnfts{program}\ \bnfts{IDENT}\ \bnfts{;}\ \bnfnts{outblock}\ \bnfts{.}\\
@@ -848,5 +896,144 @@ LL(1)下降型構文解析にコード生成に組み込む場合は，より直
 
 ここで，識別子トークン$\texttt{IDENT}$は\verb|[a-zA-Z][a-zA-Z_0-9]*|, 数値トークン$\texttt{NUMBER}$は\verb|(+|-|)?[0-9]+|で定義されるとする．ここで\verb|?|は０回または１回にマッチする文字列，\verb|+|は１回以上の繰り返しに
 マッチする文字列を表す．
+
+\subsection{３番地コード生成規則の挿入}
+
+\subsubsection{基本構造・宣言}
+
+$\mathsf{declare}(\mbox{識別子名})$は識別子名を記号表に登録する手続き，
+$\mathsf{lookup}(\mbox{識別子名})$は記号表を参照して識別子名が格納されている
+番地を返す手続きであり，記号表に登録がない場合はエラーを返す．
+$\mathsf{generate}(s)$は３番地コードを１行出力する．
+
+$\texttt{IDENT.lexme}$は識別子トークン$\texttt{IDENT}$に格納されている識別子名の文字列を示す．$N.attr$は，非終端記号$N$が属性$attr$として保持する値である．(例えば，$\texttt{E.var}$には，$\texttt{E}$が属性$\texttt{var}$として保持する値である．)
+
+\begin{lstlisting}
+P  (*@$\rightarrow$@*) 'program' IDENT ';' D S '.'
+
+D  (*@$\rightarrow$@*) DL ';' | (*@$\varepsilon$@*)
+DL (*@$\rightarrow$@*) DL ';' V | V
+V  (*@$\rightarrow$@*) 'var' I
+I  (*@$\rightarrow$@*) IDENT
+       { declare(IDENT.lexeme); }
+     | I ',' IDENT
+       { declare(IDENT.lexeme); }
+
+SL (*@$\rightarrow$@*) SL ';' S | S
+S  (*@$\rightarrow$@*) A | IF | WHILE | FOR | N | B | READ | WRITE
+N  (*@$\rightarrow$@*) (*@$\varepsilon$@*)
+B  (*@$\rightarrow$@*) 'begin' SL 'end'
+
+A  (*@$\rightarrow$@*) IDENT ':='
+       { A.target := lookup(IDENT.lexeme); }
+       E
+       { generate(A.target " := " E.var); }
+
+READ (*@$\rightarrow$@*) 'read' '(' IDENT ')'
+         { generate("read " lookup(IDENT.lexeme)); }
+
+WRITE (*@$\rightarrow$@*) 'write' '(' E ')'
+          { generate("write " E.var); }
+\end{lstlisting}
+
+\subsubsection{算術式・条件式}
+
+\begin{lstlisting}
+E (*@$\rightarrow$@*) T
+      { E.var := T.var; }
+    | '+' T
+      { E.var := T.var; }
+    | '-' T
+      { E.var := newtemp();
+        generate(E.var " := 0 - " T.var); }
+    | E1 '+' T
+      { E.var := newtemp();
+        generate(E.var " := " E1.var " + " T.var); }
+    | E1 '-' T
+      { E.var := newtemp();
+        generate(E.var " := " E1.var " - " T.var); }
+
+T (*@$\rightarrow$@*) F
+      { T.var := F.var; }
+    | T1 '*' F
+      { T.var := newtemp();
+        generate(T.var " := " T1.var " * " F.var); }
+    | T1 'div' F
+      { T.var := newtemp();
+        generate(T.var " := " T1.var " div " F.var); }
+
+F (*@$\rightarrow$@*) X                 { F.var := X.var; }
+    | NUMBER            { F.var := NUMBER.value; }
+    | '(' E ')'         { F.var := E.var; }
+X (*@$\rightarrow$@*) IDENT             { X.var := lookup(IDENT.lexeme); }
+
+C (*@$\rightarrow$@*) E1 R E2
+      { C.var := newtemp();
+        generate(C.var " := " E1.var " " R.op " " E2.var); }
+R (*@$\rightarrow$@*) '='  { R.op := "="; }  | '<>' { R.op := "<>"; }
+    | '<'  { R.op := "<"; }  | '<=' { R.op := "<="; }
+    | '>'  { R.op := ">"; }  | '>=' { R.op := ">="; }
+\end{lstlisting}
+
+\subsubsection{条件文}
+
+\begin{lstlisting}
+IF (*@$\rightarrow$@*) 'if' C 'then'
+       { IF.false := newlabel();
+         generate("if not " C.var " goto " IF.false); }
+       S
+       { generate("label " IF.false); }
+\end{lstlisting}
+
+\begin{lstlisting}
+IF (*@$\rightarrow$@*) 'if' C 'then'
+       { IF.false := newlabel();
+         IF.end := newlabel();
+         generate("if not " C.var " goto " IF.false); }
+       S1
+       { generate("goto " IF.end); }
+       'else'
+       { generate("label " IF.false); }
+       S2
+       { generate("label " IF.end); }
+\end{lstlisting}
+
+\subsubsection{While文}
+
+\begin{lstlisting}
+WHILE (*@$\rightarrow$@*) 'while'
+          { WHILE.start := newlabel();
+            generate("label " WHILE.start); }
+          C 'do'
+          { WHILE.end := newlabel();
+            generate("if not " C.var " goto " WHILE.end); }
+          S
+          { generate("goto " WHILE.start);
+            generate("label " WHILE.end); }
+\end{lstlisting}
+
+\subsubsection{For文}
+
+\begin{lstlisting}
+FOR (*@$\rightarrow$@*) 'for' IDENT ':='
+        { FOR.target := lookup(IDENT.lexeme); }
+        E1 'to'
+        { generate(FOR.target " := " E1.var); }
+        E2 'do'
+        { FOR.bound := newtemp();
+          generate(FOR.bound " := " E2.var);
+          FOR.start := newlabel();
+          FOR.end := newlabel();
+          FOR.test := newtemp();
+          generate("label " FOR.start);
+          generate(FOR.test " := " FOR.target " <= " FOR.bound);
+          generate("if not " FOR.test " goto " FOR.end); }
+        S
+        { FOR.next := newtemp();
+          generate(FOR.next " := " FOR.target " + 1");
+          generate(FOR.target " := " FOR.next);
+          generate("goto " FOR.start);
+          generate("label " FOR.end); }
+\end{lstlisting}
 
 \end{document}

@@ -1,0 +1,23 @@
+\newcommand{\ttdo}{\texttt{do}}
+\newcommand{\ttwhile}{\texttt{while}}
+\newcommand{\ttlp}{\texttt{(}}
+\newcommand{\ttrp}{\texttt{)}}
+\newcommand{\ttsc}{\texttt{;}}
+\newcommand{\tteq}{\texttt{=}}
+\newcommand{\ttif}{\texttt{if}}
+\newcommand{\ttelse}{\texttt{else}}
+\newcommand{\ttand}{\texttt{\&\&}}
+\newcommand{\ttlt}{\texttt{<}}
+\newcommand{\ttsub}{\texttt{-}}
+
+\newcommand{\newLabel}[1]{\texttt{newLabel}({#1})}
+\newcommand{\newTemp}[1]{\texttt{newTemp}({#1})}
+
+\newcommand{\makenewtemp}{{\tt newTemp()}}
+\newcommand{\makenewlabel}{{\tt newLabel()}}
+\newcommand{\gengoto}[1]{{\tt generate(`goto }{#1}{\tt ')}}
+\newcommand{\genlabel}[1]{{\tt generate(`label }{#1}{\tt ')}}
+\newcommand{\genifnot}[2]{{\tt generate(`if\_not}\ {#1}\ {\tt goto}\ {#2}\ {\tt ')}}
+\newcommand{\genassign}[2]{{\tt generate(`}{#1}{\tt :=}{#2}{\tt ')}}
+
+\newcommand{\redtext}[1]{{\color{red}{#1}}}

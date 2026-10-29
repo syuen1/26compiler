@@ -1,4 +1,4 @@
-\documentclass{jarticle}
+\documentclass[dvipdfmx]{jarticle}
 \pagestyle{empty}
 \usepackage{tikz}
 \usepackage{fancyvrb}
@@ -20,7 +20,7 @@ end;
 };
 
 
- \node[above] (N0) at (7,8) {
+\node[above] (N0) at (7,8) {
  \begin{minipage}{.4\textwidth}
   \begin{Verbatim}
    prod = 0
@@ -28,14 +28,14 @@ end;
   \end{Verbatim}
  \end{minipage}
  };
- \node[above] (N1) at (7,7) {
+\node[above] (N1) at (7,7) {
  \begin{minipage}{.4\textwidth}
   \begin{Verbatim}
 L1: if not i<20 goto L2
   \end{Verbatim}
  \end{minipage}
  };
- \node[above] (N2) at (7,1) {
+\node[above] (N2) at (7,1) {
  \begin{minipage}{.4\textwidth}
   \begin{Verbatim}
   t1 = 4 * i
@@ -51,7 +51,7 @@ L1: if not i<20 goto L2
   \end{Verbatim}
  \end{minipage}
 };
- \node[above] (N3) at (7,0) {
+\node[above] (N3) at (7,0) {
  \begin{minipage}{.4\textwidth}
   \begin{Verbatim}
 L2:
