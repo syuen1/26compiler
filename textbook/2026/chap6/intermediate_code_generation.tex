@@ -555,18 +555,18 @@ LRパーザーにコード生成ルーチンを組み込む場合，コード生
 %   M_1 & \rightarrow & \varepsilon & \{M_1.label=\newLabelnull();\\
 %       &             &             & \generate
 
-以上のような方法の他にコードを生成のタイミングに$\varepsilon$を生成する非終端記号を
-導入する方法も可能である．
+% 以上のような方法の他にコードを生成のタイミングに$\varepsilon$を生成する非終端記号を
+% 導入する方法も可能である．
 
-\[\begin{array}{rcll}
-S & \rightarrow & \texttt{if} \ttlp\ E\ M_1\ \ttrp\ S^{(1)}\ M_2\ N\ \ttelse\ \ S^{(2)}
-& \{;\\
-& & & M_1.label = \mathsf{newlabel}();S.label = \mathsf{newlabel}();\\
-M_1 & \rightarrow & \varepsilon & \{\\
-   & & & M1.label=\mathsf{newlabel}()\}\\
-M_2 & \rightarrow & \varepsilon &\\
-N & \rightarrow & \varepsilon & \{\mathsf{generate}(\texttt{goto} \mathsf{newlabel()}\\
-\end{array}\]
+% \[\begin{array}{rcll}
+% S & \rightarrow & \texttt{if} \ttlp\ E\ M_1\ \ttrp\ S^{(1)}\ M_2\ N\ \ttelse\ \ S^{(2)}
+% & \{;\\
+% & & & M_1.label = \mathsf{newlabel}();S.label = \mathsf{newlabel}();\\
+% M_1 & \rightarrow & \varepsilon & \{\\
+%    & & & M1.label=\mathsf{newlabel}()\}\\
+% M_2 & \rightarrow & \varepsilon &\\
+% N & \rightarrow & \varepsilon & \{\mathsf{generate}(\texttt{goto} \mathsf{newlabel()}\\
+% \end{array}\]
 
 \subsection{下降型構文主導型変換}
 
@@ -1035,5 +1035,137 @@ FOR (*@$\rightarrow$@*) 'for' IDENT ':='
           generate("goto " FOR.start);
           generate("label " FOR.end); }
 \end{lstlisting}
+
+\subsection{例}
+
+以下にコンパイル例を示す．
+
+% \begin{tabularx}{.7\linewidth}{m{.35\linewidth}m{.35\linewidth}}
+\begin{tabular}{lll}
+\begin{minipage}{.3\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0A;
+var n, sum;
+begin
+  n := 10;
+  sum := 0;
+  while n > 0 do
+  begin
+    sum := sum + n;
+    n := n - 1;
+  end;
+  write(sum)
+end.
+\end{Verbatim}
+\end{minipage}
+& \hspace*{2cm} & 
+\begin{minipage}{.4\linewidth}
+\begin{Verbatim}[numbers=left]
+n := 10
+sum := 0
+label l1
+t1 := n > 0
+if not t1 goto l2
+t2 := sum + n
+sum := t2
+t3 := n - 1
+n := t3
+goto l1
+label l2
+write sum
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+
+\begin{tabular}{lll}
+\begin{minipage}{.5\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0B;
+var m, n, x;
+begin
+  read(n);
+  while 1 < n do
+    begin
+      x := n;
+      begin
+        m := x div 2;
+        while x <> (x div m) * m do
+          m := m - 1;
+        if m = 1 then
+          write(x)
+      end;
+      n := n - 1
+    end
+end.
+\end{Verbatim}
+\end{minipage}
+& \hspace*{1cm} &
+\begin{minipage}{.4\linewidth}
+\begin{Verbatim}[numbers=left]
+read n
+label l1
+t1 := 1 < n
+if not t1 goto l2
+x := n
+t2 := x div 2
+m := t2
+label l3
+t3 := x div m
+t4 := t3 * m
+t5 := x <> t4
+if not t5 goto l4
+t6 := m - 1
+m := t6
+goto l3
+label l4
+t7 := m = 1
+if not t7 goto l5
+write x
+label l5
+t8 := n - 1
+n := t8
+goto l1
+label l2
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+
+\vspace*{10pt}
+
+\begin{tabular}{lll}
+    \begin{minipage}{.3\linewidth}
+\begin{Verbatim}[frame=single]
+program PL0C;
+var i,r;
+begin
+  for i:=1 to 10 do
+    r:=r+i*i;
+  write(r);
+end.
+\end{Verbatim}
+    \end{minipage}
+    & \hspace*{1cm} &
+\begin{minipage}{.3\linewidth}
+\begin{Verbatim}[numbers=left]
+i := 1
+t1 := 10
+label l1
+t2 := i <= t1
+if not t2 goto l2
+t3 := i * i
+t4 := r + t3
+r := t4
+t5 := i + 1
+i := t5
+goto l1
+label l2
+write r
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+
+\vspace*{20pt}
+
+コンパイラおよび３番地コードのインタープリタについては講義ページを参照．
 
 \end{document}
