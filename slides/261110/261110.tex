@@ -13,6 +13,7 @@
 %\usetheme{Pittsburgh}
 \usepackage{graphicx}
 \usepackage{latexsym,amssymb}
+\usepackage{amsthm}
 %\usepackage{epsbox}
 %\usepackage{multirow}
 \usepackage{fancybox}
@@ -33,7 +34,7 @@
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\familydefault}{\sfdefault}
 
-\graphicspath{{figs261030/}}
+\graphicspath{{figs261110/}}
 
 %\include{cmacros}
 
@@ -42,7 +43,7 @@
 %\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
 %\newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
 
-\newcommand{\lecturedate}{2026/10/30}
+\newcommand{\lecturedate}{2026/11/10}
 
 \cornersize{0.25}
 
@@ -52,7 +53,7 @@
 \hfill\insertframenumber/\inserttotalframenumber\hspace*{1zw}}
 \newcounter{coffee}
 \setbeamercovered{transparent=10}
-\title{コンパイラ(9)}
+\title{コンパイラ(11)}
 \date{\lecturedate}
 \begin{document}
 
@@ -103,13 +104,25 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{$\phi$関数の挿入}
+  \frametitle{$\varphi$関数の挿入}
 
-  根つきグラフ：$(V,E)$ 先行頂点を持たない唯一の接点$v_o$(根)が存在
+  フローグラフ$(V,E,v_{init})$：$v\in V$は，$v_{init}$から到達可能．
 
-  \begin{center}
-    \includegraphics[width=\textwidth]{def6_22.pdf}
-  \end{center}
+  % \begin{center}
+  %   \includegraphics[width=\textwidth]{def6_22.pdf}
+  % \end{center}
+
+  \begin{CustomDef}{7.1}{定義合流条件}\label{def:definitionConfluence}
+    変数$x$に対する$\varphi$関数が頂点$v$に挿入$\Leftrightarrow$ 以下に示す条件(1)$\sim$(4)を満たす
+    コントロールグラフ上の路$p:v_0\rightarrow v_1\rightarrow\cdots\rightarrow v_k$,
+    $q:u_0\rightarrow u_1\rightarrow\cdots\rightarrow u_\ell$が存在．
+    \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
+        \item 路の長さが1以上である．($k>0$,$\ell>0$);
+        \item $v_1$と$u_1$の両方に$x$の定義が存在する．;
+        \item 路の終点$v$が一致している．($v_k=v_\ell=v$);
+        \item 路の途中で交わることがない．($\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,v_{\ell-1}\}=\varnothing$)
+    \end{list}
+  \end{CustomDef}
 
   パス$p$上の$x$の定義=$x_1$,$q$上の$x$の定義=$x_2$
   定義合流条件の$v$に、$x_3=\phi(x_1,x_2)$
@@ -117,6 +130,7 @@
 
 \begin{frame}
   \frametitle{定義合流条件}
+
   \begin{center}
     \includegraphics[width=.5\textwidth]{confluenceCondition.pdf}
   \end{center}
@@ -128,13 +142,33 @@
   支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
 
   \only<1>{
-    \begin{center}
-      \includegraphics[width=.7\textwidth]{def6_23.pdf}
-    \end{center}
+    % \begin{center}
+    %   \includegraphics[width=.7\textwidth]{def6_23.pdf}
+    % \end{center}
 
-    $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 (図6.7)
+    \begin{CustomDef}{7.2}{支配関係}
+    フローグラフを$(V,E,v_{init})$とする．
+    頂点$v,u$に対して，$v_{init}$から$u$へのすべての路に
+    おいて$v$が出現するとき，$v$は$u$の{\bf 支配頂点(dominator)}であると呼び，$u\domll v$と書く．
+    $u\not= v$かつ$u\domll v$であるとき，$u\ll v$と書く．
+    $u$の支配頂点の集合$\domv{u}=\{v\;|\;u\domll v\}$で定義する．
+    \end{CustomDef}
+
+    $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 %(図6.7)
   }
   \only<2>{
+    どの頂点$v$についても$v_{init}\in\domv{v}$かつ$v\in\domv{v}$である．$\domll$は半順序である．
+\begin{itemize}
+    \item (反射律) $v\domll v$
+    \item (反対称律) $v\domll u$かつ$u\domll v$ならば$u=v$
+    \item (推移律) $v\domll u$かつ$u\domll w$ならば$v\domll w$
+\end{itemize}
+
+\vspace*{10pt}
+
+$u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で最小の頂点が一つ存在する．
+  }
+  \only<3>{
     \begin{center}
       \begin{tabular}{cc}
 
@@ -245,21 +279,21 @@
   \quad\greentext{値が同じの共通部分式が判別できる=式として一致}
 
   %  変換例：例6.20、6.21\\
-  定義ごとに変数に添字をつける。合流する場合は、$\phi$関数で表現
+  定義ごとに変数に添字をつける。合流する場合は、$\varphi$関数で表現
 
   いかにして、SSA形式を得るか？
 
   \vspace*{5pt}
 
   \begin{list}{}{}
-    \item [(1)] $\phi$関数の挿入
+    \item [(1)] $\varphi$関数の挿入
     \item [(2)] 変数の添字の決定
   \end{list}
   \par\vspace*{3pt}\par
   \qquad\redtext{SSA形式において最適化}
   \par\vspace*{3pt}\par
   \begin{list}{}{}
-    \item [(3)] SSAから逆変換する。($\phi$関数の消去)
+    \item [(3)] SSAから逆変換する。($\varphi$関数の消去)
   \end{list}
 
   \greentext{近年のコンパイラでよく用いられる手法}
@@ -278,25 +312,35 @@
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{$\phi$関数の挿入}
+\begin{frame}[fragile]
+  \frametitle{$\varphi$関数の挿入}
 
-  根つきグラフ：$(V,E)$\\
-  先行頂点を持たない唯一の接点$v_o$(根)が存在
+%  フローグラフ：$(V,E,v_{init})$
 
-  % {\scriptsize
-  \begin{itembox}[l]{定義 ({\bf 定義合流条件})}
-    変数$x$の$\phi$関数が頂点$v$に挿入されるための必要十分
-    条件は，次の条件(1)$\sim$(4)を満たす２つのパス$p$:$V_1,\ldots,v_k$および
-    $q$:$u_1,\ldots,u_\ell$が存在することである．
-    \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-      \item $k>1$, $\ell>1$
-      \item $v_1$,$u_1$の両方に$x$の定義が存在
-      \item $v_k=u_\ell=v$
-      \item $\{v_1,\ldots,v_{k-1}\}\cap\{u_1,\ldots,u_{\ell-1}\}=\varnothing$
-    \end{list}
-  \end{itembox}
-  % }
+  $\texttt{x=}\varphi(\texttt{x},\cdots,\texttt{x})$の挿入：
+
+  \vspace*{10pt}
+
+  \begin{quote}
+    \begin{trivlist}
+    \item[$\cdot$] 変数\verb|x|に対して定義7.1の条件を満たす$v_0$, $u_0$, $v$がフローグラフに存在し，頂点$v$の基本ブロックに$\varphi$関数が含まれていないならば，$v$に\verb|x=|$\varphi$\verb|(x,...,x)|を挿入する．\\[10pt]
+    \item[$\cdot$] 定義合流条件を満たす$v_0$, $u_0$, $v$ がなくなるまで，上記を繰り返す．
+        \end{trivlist}
+  \end{quote}
+
+  % % {\scriptsize
+  % \begin{itembox}[l]{定義 ({\bf 定義合流条件})}
+  %   変数$x$の$\varphi$関数が頂点$v$に挿入されるための必要十分
+  %   条件は，次の条件(1)$\sim$(4)を満たす２つのパス$p$:$V_1,\ldots,v_k$および
+  %   $q$:$u_1,\ldots,u_\ell$が存在することである．
+  %   \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
+  %     \item $k>1$, $\ell>1$
+  %     \item $v_1$,$u_1$の両方に$x$の定義が存在
+  %     \item $v_k=u_\ell=v$
+  %     \item $\{v_1,\ldots,v_{k-1}\}\cap\{u_1,\ldots,u_{\ell-1}\}=\varnothing$
+  %   \end{list}
+  % \end{itembox}
+  % % }
 
   %   \begin{center}
   %    \includegraphics[width=\textwidth]{def6_22.pdf}
@@ -306,60 +350,60 @@
   %  定義合流条件の$v$に、$x_3=\phi(x_1,x_2)$
 \end{frame}
 
-\begin{frame}
-  \frametitle{定義合流条件}
-  \begin{center}
-    \includegraphics[width=.5\textwidth]{confluenceCondition.pdf}
-  \end{center}
-\end{frame}
+% \begin{frame}
+%   \frametitle{定義合流条件}
+%   \begin{center}
+%     \includegraphics[width=.5\textwidth]{confluenceCondition.pdf}
+%   \end{center}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{支配関係}
+% \begin{frame}
+%   \frametitle{支配関係}
 
-  {\small
-    \begin{itembox}[l]{定義 (頂点間の支配関係)}
-      フローグラフ$G=(V,E)$が与えられたとき，$u,v\in V$に対して，
-      開始頂点$v_0$から$v$に至るすべてのパス$p:v_0,\ldots,v_k$(ここで
-      $v=v_k$)において，$u\in\{v_0,\ldots,v_k\}$であるとき，
-      $u$は$v$を支配するといい，$u\vdom v$と書く．
-    \end{itembox}}
+%   {\small
+%     \begin{itembox}[l]{定義 (頂点間の支配関係)}
+%       フローグラフ$G=(V,E)$が与えられたとき，$u,v\in V$に対して，
+%       開始頂点$v_0$から$v$に至るすべてのパス$p:v_0,\ldots,v_k$(ここで
+%       $v=v_k$)において，$u\in\{v_0,\ldots,v_k\}$であるとき，
+%       $u$は$v$を支配するといい，$u\vdom v$と書く．
+%     \end{itembox}}
 
-  {\small
-    \begin{itembox}[l]{命題}
-      $\vdom$は，反射率($u\vdom u$)および
-      推移律($u\vdom v$かつ$v\vdom w$ならば$u\vdom w$)
-      を満たす．
-    \end{itembox}}
+%   {\small
+%     \begin{itembox}[l]{命題}
+%       $\vdom$は，反射率($u\vdom u$)および
+%       推移律($u\vdom v$かつ$v\vdom w$ならば$u\vdom w$)
+%       を満たす．
+%     \end{itembox}}
 
-  {\small
-    \begin{trivlist}
-      \item $u\vdom v$かつ$u\not= v$のとき，$u$は$v$を強く支配するといい，$u\svdom v$
-      と書く．
-      \item $Dom(v)=\{u\,|\,u\vdom v\}$を$v$は支配頂点の集合を表す．
-    \end{trivlist}
-  }
-\end{frame}
+%   {\small
+%     \begin{trivlist}
+%       \item $u\vdom v$かつ$u\not= v$のとき，$u$は$v$を強く支配するといい，$u\svdom v$
+%       と書く．
+%       \item $Dom(v)=\{u\,|\,u\vdom v\}$を$v$は支配頂点の集合を表す．
+%     \end{trivlist}
+%   }
+% \end{frame}
 
 
-\begin{frame}
-  \frametitle{支配関係}
+% \begin{frame}
+%   \frametitle{支配関係}
 
-  \begin{itemize}
-    \item $Dom(v)\not=\varnothing$
-    \item $Dom(v)\backslash\{v\}\not=\varnothing$のとき，
-          唯一の$u\in Dom(v)\backslash\{v\}$が存在して，
-          すべての$w\in Dom(v)\backslash\{v\}$に対して，$w\vdom u$である．\\
-          （唯一性の証明）$u_1,u_2\in Dom(v)\backslash\{v\}$であるならば，開始頂点から$v$へすべてのパス上に$u_1,u_2$が存在する．よって，$u_1\vdom u_2$または
-          $u_2\vdom u_1$である．したがって，$u_1=u_2$となる．\\
-          このような$u$を$idom(v)$と書く．
-  \end{itemize}
+%   \begin{itemize}
+%     \item $Dom(v)\not=\varnothing$
+%     \item $Dom(v)\backslash\{v\}\not=\varnothing$のとき，
+%           唯一の$u\in Dom(v)\backslash\{v\}$が存在して，
+%           すべての$w\in Dom(v)\backslash\{v\}$に対して，$w\vdom u$である．\\
+%           （唯一性の証明）$u_1,u_2\in Dom(v)\backslash\{v\}$であるならば，開始頂点から$v$へすべてのパス上に$u_1,u_2$が存在する．よって，$u_1\vdom u_2$または
+%           $u_2\vdom u_1$である．したがって，$u_1=u_2$となる．\\
+%           このような$u$を$idom(v)$と書く．
+%   \end{itemize}
 
-  \begin{itembox}[l]{(支配木)}
-    有向グラフ$(V,E')$:$E=\{(idom(v),v)\,|\,v\in V\}$は，木構造となり，
-    これを支配木とよぶ．
-  \end{itembox}
-  %支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
-\end{frame}
+%   \begin{itembox}[l]{(支配木)}
+%     有向グラフ$(V,E')$:$E=\{(idom(v),v)\,|\,v\in V\}$は，木構造となり，
+%     これを支配木とよぶ．
+%   \end{itembox}
+%   %支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
+% \end{frame}
 %   \only<1>{
 %   \begin{center}
 %    \includegraphics[width=.7\textwidth]{def6_23.pdf}
@@ -368,104 +412,104 @@
 %   $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 (図6.7)
 %  }
 %   \only<2>{
-\begin{frame}
-  \frametitle{支配関係，支配木}
-  \begin{center}
-    \begin{tabular}{cc}
+% \begin{frame}
+%   \frametitle{支配関係，支配木}
+%   \begin{center}
+%     \begin{tabular}{cc}
 
-      \begin{tikzpicture}
-        \node[draw,circle] (v0) at (0,3) {$v_0$};
-        \node[draw,circle] (u) at (0,1.5) {$u$};
-        \node[draw,circle] (v) at (0,0) {$v$};
-        \node at (0,2.25) {$\cdots$};
-        \node at (0,0.75) {$\cdots$};
-        \path[->] (v0) [out=-30,in=30] edge (u);
-        \path[->] (v0) [out=-60, in=60] edge (u);
-        \path[->] (v0) [out=240,in=120] edge (u);
-        \path[->] (v0) [out=210, in=150] edge (u);
-        \path[->] (u) [out=-30,in=30] edge (v);
-        \path[->] (u) [out=-60, in=60] edge (v);
-        \path[->] (u) [out=240,in=120] edge (v);
-        \path[->] (u) [out=210, in=150] edge (v);
-      \end{tikzpicture}
+%       \begin{tikzpicture}
+%         \node[draw,circle] (v0) at (0,3) {$v_0$};
+%         \node[draw,circle] (u) at (0,1.5) {$u$};
+%         \node[draw,circle] (v) at (0,0) {$v$};
+%         \node at (0,2.25) {$\cdots$};
+%         \node at (0,0.75) {$\cdots$};
+%         \path[->] (v0) [out=-30,in=30] edge (u);
+%         \path[->] (v0) [out=-60, in=60] edge (u);
+%         \path[->] (v0) [out=240,in=120] edge (u);
+%         \path[->] (v0) [out=210, in=150] edge (u);
+%         \path[->] (u) [out=-30,in=30] edge (v);
+%         \path[->] (u) [out=-60, in=60] edge (v);
+%         \path[->] (u) [out=240,in=120] edge (v);
+%         \path[->] (u) [out=210, in=150] edge (v);
+%       \end{tikzpicture}
 
-       &
-      \begin{tabular}{c}                                                         \\[-12zw]
-        $u\underline{\gg}v$                                         \\[1zw]
-        $u\underline{\gg}u$                                         \\
-        $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
-        $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
-        $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
-        $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
-      \end{tabular}
-    \end{tabular}
-  \end{center}
-\end{frame}
+%        &
+%       \begin{tabular}{c}                                                         \\[-12zw]
+%         $u\underline{\gg}v$                                         \\[1zw]
+%         $u\underline{\gg}u$                                         \\
+%         $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
+%         $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
+%         $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
+%         $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
+%       \end{tabular}
+%     \end{tabular}
+%   \end{center}
+% \end{frame}
 
-\begin{frame}{フローグラフ$\rightarrow$支配木}
-  \begin{tabular}{cc}
-    \begin{minipage}{.4\textwidth}
-      \scalebox{0.6}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6)
-          {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-                               & \mathtt{j=1}                               \\[-2pt]
-                               & \mathtt{k=1}                               \\[-2pt]
-                               & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4)
-          {\small $\begin{array}{ll}
-                L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-              \end{array}$};
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i=i+1}   \\
-                              & \mathtt{goto L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j=i+k} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,0)
-          {\small $\begin{array}{ll}
-                L2: & \mathtt{k=i+j} \\
-              \end{array}$};
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     &
-    \begin{minipage}{.5\textwidth}
-      \scalebox{0.6}{
-        \begin{tikzpicture}
-          \node[draw,circle] (v0) at (0,3) {$v_0$};
-          \node[draw,circle] (v1) at (0,1.5) {$v_1$};
-          \node[draw,circle] (v2) at (0,0) {$v_2$};
-          \node[draw,circle] (v3) at (1.5,1.5) {$v_3$};
-          \node[draw,circle] (v4) at (1.5,0) {$v_4$};
-          \path[->] (v0) edge (v1)  (v0) edge (v3)  (v1) edge (v2)  (v1) edge (v4) (v3) edge (v4) (v2) [out=225,in=135] edge (v1);
-          \node at (0.75,-1) {\small フローグラフ};
+% \begin{frame}{フローグラフ$\rightarrow$支配木}
+%   \begin{tabular}{cc}
+%     \begin{minipage}{.4\textwidth}
+%       \scalebox{0.6}{
+%         \begin{tikzpicture}
+%           \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6)
+%           {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
+%                                & \mathtt{j=1}                               \\[-2pt]
+%                                & \mathtt{k=1}                               \\[-2pt]
+%                                & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
+%           \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4)
+%           {\small $\begin{array}{ll}
+%                 L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
+%               \end{array}$};
+%           \node at ($(v1)+(-2.2,0)$) {$v_1$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
+%           {\small $\begin{array}{ll}
+%                 \hspace*{1zw} & \mathtt{i=i+1}   \\
+%                               & \mathtt{goto L3}
+%               \end{array}$};
+%           \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
+%           {\small $\begin{array}{ll}
+%                 L1: & \mathtt{j=i+k} \\
+%               \end{array}$};
+%           \node at ($(v3)+(-2.2,0)$) {$v_3$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,0)
+%           {\small $\begin{array}{ll}
+%                 L2: & \mathtt{k=i+j} \\
+%               \end{array}$};
+%           \node at ($(v4)+(-2.2,0)$) {$v_4$};
+%           \path[->] (v0) edge (v1);
+%           \path[->] (v1) edge (v2);
+%           \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
+%           \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
+%           \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
+%         \end{tikzpicture}
+%       }
+%     \end{minipage}
+%      &
+%     \begin{minipage}{.5\textwidth}
+%       \scalebox{0.6}{
+%         \begin{tikzpicture}
+%           \node[draw,circle] (v0) at (0,3) {$v_0$};
+%           \node[draw,circle] (v1) at (0,1.5) {$v_1$};
+%           \node[draw,circle] (v2) at (0,0) {$v_2$};
+%           \node[draw,circle] (v3) at (1.5,1.5) {$v_3$};
+%           \node[draw,circle] (v4) at (1.5,0) {$v_4$};
+%           \path[->] (v0) edge (v1)  (v0) edge (v3)  (v1) edge (v2)  (v1) edge (v4) (v3) edge (v4) (v2) [out=225,in=135] edge (v1);
+%           \node at (0.75,-1) {\small フローグラフ};
 
-          \node[draw,circle] (w0) at (4.5,3) {$v_0$};
-          \node[draw,circle] (w1) at (3,1.5) {$v_1$};
-          \node[draw,circle] (w2) at (3,0) {$v_2$};
-          \node[draw,circle] (w3) at (4.5,1.5) {$v_3$};
-          \node[draw,circle] (w4) at (6,1.5) {$v_4$};
-          \path[->] (w0) edge (w1) (w0) edge (w3) (w0) edge (w4) (w1) edge (w2);
-          \node at (4.5,-1) {\small 支配木};
-        \end{tikzpicture}
-      }
-    \end{minipage}
-  \end{tabular}
-\end{frame}
+%           \node[draw,circle] (w0) at (4.5,3) {$v_0$};
+%           \node[draw,circle] (w1) at (3,1.5) {$v_1$};
+%           \node[draw,circle] (w2) at (3,0) {$v_2$};
+%           \node[draw,circle] (w3) at (4.5,1.5) {$v_3$};
+%           \node[draw,circle] (w4) at (6,1.5) {$v_4$};
+%           \path[->] (w0) edge (w1) (w0) edge (w3) (w0) edge (w4) (w1) edge (w2);
+%           \node at (4.5,-1) {\small 支配木};
+%         \end{tikzpicture}
+%       }
+%     \end{minipage}
+%   \end{tabular}
+% \end{frame}
 
 \begin{frame}
   \frametitle{支配辺境}
@@ -516,7 +560,7 @@
 \begin{frame}
   \frametitle{支配辺境の計算}
 
-  フローグラフ$G=(V,E)$
+  フローグラフ$G=(V,E,v_{init})$
 
   \begin{Lem}
     \[
@@ -547,7 +591,7 @@
   \frametitle{定義合流条件の計算}
 
   \begin{list}{}{}
-    \item [定義合流条件($\mathscr{S}$)]
+    \item [定義合流条件'($S$)]
           二つのパス $p(=v_1,\cdots,v_k)$, $q(=u_1,\cdots,u_l)$
           \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
             \item $k\ge 2$, $l\ge 2$
@@ -933,9 +977,10 @@
 
   $z<0$の評価は同じ方向にしかブランチしない\\
   $\Rightarrow$ $z<0$ならば3の$\phi$関数はいつも$x_1$を$x_2$へ代入\\
-  5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\
-  (支配関係を壊すと一般にはデータフローが保証されない)\\
-  \greentext{静的と動的のギャップを$\phi$関数で埋めているため}
+  5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\[5pt]
+  %(支配関係を壊すと一般にはデータフローが保証されない)\\
+  厳密SSA形式：\redtext{定義が一意的＋支配関係}
+  %\greentext{静的と動的のギャップを$\phi$関数で埋めているため}
 \end{frame}
 
 % \begin{frame}

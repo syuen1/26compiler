@@ -1,0 +1,37 @@
+\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
+\newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
+\newcommand{\bluetext}[1]{{\color[rgb]{0,0,0.8}{#1}}}
+
+\newcommand{\tuple}[1]{\langle{#1}\rangle}
+
+\newcommand{\First}{\mathsf{First}_1}
+\newcommand{\Follow}{\mathsf{Follow}_1}
+
+%%pdt simulation
+
+\newcommand{\pdtline}[6]{%
+    \uncover<#6->{
+    \node at (${#5}*(0,-.3)+(0,.3)$) {$\vdash$};%
+    \node at (${#5}*(0,-.3)+(1.5,.3)$) {\parbox{12em}{(#1,}};%
+    \node at (${#5}*(0,-.3)+(4.5,.3)$) {\parbox{10em}{#2,}};%
+    \node at (${#5}*(0,-.3)+(5.7,.3)$) {\parbox{10em}{#3)}};%
+    \node at (${#5}*(0,-.3)+(8,.3)$) {\parbox{20em}{#4}};%
+    }
+}
+
+\newcommand{\initpdtline}[6]{%
+    \uncover<#6->{
+    \node at (${#5}*(0,-.3)+(1.5,.3)$) {\parbox{12em}{(#1,}};%
+    \node at (${#5}*(0,-.3)+(4.5,.3)$) {\parbox{10em}{#2,}};%
+    \node at (${#5}*(0,-.3)+(5.7,.3)$) {\parbox{10em}{#3)}};%
+    \node at (${#5}*(0,-.3)+(8,.3)$) {\parbox{20em}{#4}};%
+    }
+}
+
+\newtheorem{Def}{定義}
+\newtheorem{Lem}{補題}
+\newtheorem{Thm}{定理}
+\newtheorem{Prop}{命題}
+
+\definecolor{lightlightgrey}{rgb}{0.95,0.95,0.95}
+
