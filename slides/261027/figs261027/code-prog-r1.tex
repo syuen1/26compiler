@@ -10,7 +10,7 @@
 \begin{document}
 \begin{tabular}{ll}
   $E\rightarrow\texttt{NUM}$ & \{$E.var$:=\newTempnull();\\
-  & \ \genassign{$E.var$}{\texttt{NUM}$.val$}\\
+  & \ \genassign{$E.var$}{\texttt{NUM}$.val$}\}\\
   $E\rightarrow E^{(1)}$\,\texttt{+}\,\texttt{NUM}
   & \{{$E.var$:=\texttt{newTemp()};}\\
   & \ \genassign{$E.var$}{$E^{(1)}.var+\texttt{NUM}.val$}\}\\

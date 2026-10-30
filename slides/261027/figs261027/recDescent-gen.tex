@@ -5,7 +5,7 @@
 \begin{tabbing}
 \qquad\=\qquad\=\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\= \kill
 // \verb|nextsym|には先読みトークンがあらかじめ格納されている\\
-{\rm\bf If} \verb|nexsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
+{\rm\bf If} \verb|nextsym|.kind = {\sf ID} {\rm\bf then}\>\>\>// 代入文\\
 \> \verb|getNextsym()|\\
 \>{\rm\bf If} \verb|nextsym|.kind = `{\sf :=}' {\rm\bf then}\>\>// 代入記号\\
 \>\> Eのコードを生成(\verb|$tempE|に結果を格納)\>// $E$\\
@@ -27,7 +27,7 @@
 \> $L_1=\mathsf{newlabel}$()\\
 \> $\mathsf{generate}$(`\verb|label| $L_1$')\>\>// 繰り返しで戻るラベル\\
 \> Bのコードを生成(\verb|$tempB|に結果を格納)\>\>// $B$\\
-\> {\rm\bf If} \verb|nextSym|.kind = {\sf do} {\rm\bf then}\\
+\> {\rm\bf If} \verb|nextsym|.kind = {\sf do} {\rm\bf then}\\
 \>\> $L_2=\mathsf{newlabel}$()\\
 \>\> $\mathsf{generate}$(`\verb|if_not|\ \verb|$tempB|\ \verb|goto| $L_2$')\\
 \>\> Sのコードを生成\>// 繰り返し本体の$S$\\
