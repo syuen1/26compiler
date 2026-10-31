@@ -299,207 +299,283 @@ $\texttt{a=b}$のような変数のコピーがある場合，$a$と$b$は同じ
 
 \subsubsection{ループ最適化}
 
-\paragraph{ループ不変コードの移動}
+\paragraph{ループ不変式:}
+    ループ内で評価が変わらない式である．
+    \begin{trivlist}
+        \item[ループ不変式の移動:]
+        ループ内に $\texttt{t :=}\ a_1 \oplus a_2$という式があり，この定義式を$d$とする．\\ ($\oplus$は任意の２項演算子)
+        $a_i$に対して以下の少なくとも１つの条件がなりたつとき，ループ不変式である．
+        \begin{enumerate}
+        \item $a_i$は定数
+        \item $a_i$のすべての定義はループの外
+        \item $a_i$のうちの１つだけが，$d$に到達し，それはループ不変式の定義
+        \end{enumerate}
+    \end{trivlist}
 
-ループ内で値が変化しない変数をループの外に移動し，計算に影響しない命令が何度も実行されずに
+ループ不変式をループの前に移動し，計算に影響しない命令が何度も実行されずに
 同じ意味を表現するようにする．
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                i=1;
-                do {
-                        c=a/b;x=i*c; .... i++;
-                    } while(i<n);
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                i=1;t=a/b;
-                do {
-                        c=t;x=i*c;...i++;
-                    } while(i<n);
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+\begin{Exmp}\ \\[10pt]
+\begin{tabular}{ccc}
+\begin{minipage}{.35\linewidth}
+\begin{Verbatim}
+i=1;
+do {
+    c=a/b;x=i*c; .... i++;
+} while(i<n);
+\end{Verbatim}
+\end{minipage}
+ &
+$\Rightarrow$
+&
+\begin{minipage}{.35\linewidth}
+\begin{Verbatim}
+i=1;t=a/b;
+do {
+    c=t;x=i*c;...i++;
+} while(i<n);
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
+\end{Exmp}
+
+\vspace*{10pt}
+
+副作用がある場合は，条件分岐によって副作用を考慮して不変式を移動する．
 
 $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれも
 更新されないとき，$\texttt{c}$はループ実行で変化しないため，ループ外で値を一度代入する
 同じ計算となる．
 
+\begin{Exmp}\ 
 \begin{center}
     \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++) {
-                        c=a/b;x=i*c;...
-                    }
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                if(n>1) {
-                        t=a/b;
-                        for(i=1;i<n;i++) {
-                                c=t;x=i*c;...
-                            }
-                    }
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
+\begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+for(i=1;i<n;i++) {
+    c=a/b;x=i*c;...
+}
+\end{Verbatim}
+\end{minipage}
+& $\Rightarrow$ &
+\begin{minipage}{.3\linewidth}
+\begin{Verbatim}
+if(n>1) {
+    t=a/b;
+    for(i=1;i<n;i++) {
+        c=t;x=i*c;...
+    }
+}
+\end{Verbatim}
+\end{minipage}
+\end{tabular}
 \end{center}
+\end{Exmp}
+
 一般的な{\tt for}ループでは，条件によってループの内容が実行されないこともあるため，
 不変コードはループが実行された場合だけ，実行されるように変換する必要がある．
 
+\paragraph{帰納変数：}
+帰納変数はループの実行ごとに一定のパターンで値が更新される変数である．
+{\bf 基本帰納変数}はループが一回実行されるごとに1加算されるか減算される変数である．
+$i$が基本帰納変数であるとき，$i$の{\bf 派生帰納関数}は，$j=a_j+i\times b_j$の
+形をもち，$(i,a,b)$と書く．ここで，$a$, $b$はループ不変式である．例\ref{example:indVar}(a)において，
+$\texttt{i}$は，L1のループで，$\texttt{i}$は，$(i,0,b)$であり，$\texttt{j}$
+は，$(i,0,4b)$である．より効率的にするために$j'$を$(i,0,4b)$として導入する．
+
+
+\begin{SaveVerbatim}{ex7_4_a}
+    s = 0
+L1: if s > 0 goto L2
+    i = i + b
+    j = i * 4
+    x = M[j]
+    s = s - x
+    goto L1
+L2: i = i + 1
+    s = s + j
+    if i < n got L1
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex7_4_b}
+    s = 0
+    j'= i * 4
+    b'= b * 4
+    n'= n * 4
+L1: if s > 0 goto L2
+    j'= j'+b'
+    j = j'
+    x = M[j]
+    s = s - x
+    got Ll
+L2: j'= j' + 4
+    s = s + j
+    if j'<n' goto L1
+\end{SaveVerbatim}
+\begin{Exmp}\label{example:indVar}\ \\
+    \begin{tabularx}{\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+        \UseVerbatim{ex7_4_a}
+        & $\Rightarrow$ &
+        \UseVerbatim{ex7_4_b}\\
+        \multicolumn{1}{c}{(a)最適化前} & & \multicolumn{1}{c}{(b)最適化後}
+    \end{tabularx}
+\end{Exmp}
+
+\paragraph{帰納変数の消去}\ 
+直接参照されない$\texttt{i}$を$\texttt{t}$で置き換える．
+\begin{SaveVerbatim}{ex_7_5a}
+t=b;
+for(i=1;i<n;i++) {
+    a=a+t;t=t+b;
+}
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex_7_5b}
+m=n*b;
+for(t=b;t<m;t=t+b)
+    a=a+t;
+\end{SaveVerbatim}
+
+\begin{Exmp}\ \\
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_5a} & $\Rightarrow$&
+    \UseVerbatim{ex_7_5b}
+\end{tabularx}
+\end{Exmp}
+
 \paragraph{ループ内演算の強さ軽減}
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++)
-                a=a+b*i;
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                t=0;
-                for(i=1;i<n;i++) {
-                        t=t+b;a=a+t;
-                    }
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+帰納変数に対する演算を乗算から加算に置き換える．$(j',0,c\cdot b)$の帰納変数で，$c$,$b$が
+ループ不変式である場合は，$j'$を$(k,0,m)$, $m=c\cdot b$となる新たな帰納変数におきかえる．
 
-\paragraph{帰納変数の消去}
+\begin{SaveVerbatim}{ex_7_6a}
+for(i=1;i<n;i++)
+    a=a+b*i;
+\end{SaveVerbatim}
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                t=b;
-                for(i=1;i<n;i++) {
-                        a=a+t;t=t+b;
-                    }
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                m=n*b;
-                for(t=b;t<m;t=t+b)
-                a=a+t;
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+\begin{SaveVerbatim}{ex_7_6b}
+t=0;
+for(i=1;i<n;i++) {
+    t=t+b;a=a+t;
+}
+\end{SaveVerbatim}
+
+\begin{Exmp}\ \\
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_6a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_6b}
+\end{tabularx}
+\end{Exmp}
 
 \paragraph{ループ融合}
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++)
-                a[i+1]=a[i]+i;
-                for(i=1;i<n;i++)
-                b[i]=a[i]+i;
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++) {
-                        a[i+1]=a[i]+i;
-                        b[i]=a[i]+i;
-                    }
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+同じ帰納変数によって一度のループで計算する．個別のループで共通な変数がある場合，
+基本ブロックの数が減ることによって，局所最適化の可能性が高まる．
+
+\begin{SaveVerbatim}{ex_7_7a}
+for(i=1;i<n;i++)
+    a[i+1]=a[i]+i;
+for(i=1;i<n;i++)
+    b[i]=a[i]+i;
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex_7_7b}
+for(i=1;i<n;i++) {
+    a[i+1]=a[i]+i;
+    b[i]=a[i]+i;
+}
+\end{SaveVerbatim}
+\begin{Exmp}\ \\
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_7a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_7b}
+\end{tabularx}
+\end{Exmp}
 
 \paragraph{ループ分解}
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++) {
-                        a[i+1]=a[i]+i;
-                        b[i]=a[i]+i;
-                    }
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++)
-                a[i+1]=a[i]+i;
-                for(i=1;i<n;i++)
-                b[i]=a[i]+i;
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+ループ分解はループ融合と逆の操作である．ループを分解して得られるメリットは，
+２つのループが独立していて並列性を高められる可能性がある．例\ref{example:loopSplit}では，
+ループが一つの場合には，逐次的にループが実行される．ループを分解すると，２つのループが$\texttt{a[i]}$の値の順番が変わらない限り並列に実行できる．２つのスレッドで計算できれば高速化できる余地が生まれる．
+
+\begin{SaveVerbatim}{ex_7_8a}
+for(i=1;i<n;i++) {
+    a[i+1]=a[i]+i;
+    b[i]=a[i]+i;
+}
+\end{SaveVerbatim}
+\begin{SaveVerbatim}{ex_7_8b}
+for(i=1;i<n;i++)
+    a[i+1]=a[i]+i;
+for(i=1;i<n;i++)
+    b[i]=a[i]+i;
+\end{SaveVerbatim}
+\begin{Exmp}\ \\
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_8a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_8b}
+\end{tabularx}
+\end{Exmp}
+
+
 
 \paragraph{ループ展開}
+複数回の繰り返しを帰納変数をずらして展開して，基本ブロックを大きくして最適化の
+可能性を大きくする．
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++) {
-                        a[i+1]=a[i]+i;
-                        b[i]=a[i]+b[i-1];
-                    }
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<n;i++) {
-                        a[i]=a[i-1]+i;
-                        b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
-                        b[i+1]=a[i+1]+b[i];
-                    }
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+\begin{SaveVerbatim}{ex_7_9a}
+for(i=1;i<n;i++) {
+    a[i+1]=a[i]+i;
+    b[i]=a[i]+b[i-1];
+}
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex_7_9b}
+for(i=1;i<n;i++) {
+    a[i]=a[i-1]+i;
+    b[i]=a[i]+b[i-1];a[i+1]=a[i]+1;
+    b[i+1]=a[i+1]+b[i];
+}
+\end{SaveVerbatim}
+
+\begin{Exmp}\ \\
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_9a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_9b}
+\end{tabularx}
+\end{Exmp}
 
 \paragraph{ソフトウェアパイプライン}
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                for(i=1;i<1000;i++) {
-                        a[i]=a[i-1]+1; // Ai
-                        b[i]=a[i]+b[i-1]; // Bi
-                        c[i]=b[i]+2; // Ci
-                    }
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                A1;
-                B1; A2;
-                for(i=3;i<1000;i++) {
-                        Ci-2;Bi-1;Ai;
-                    }
-                C998;B999;
-                C999;
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+\begin{SaveVerbatim}{ex_7_10a}
+for(i=1;i<1000;i++) {
+    a[i]=a[i-1]+1; // Ai
+    b[i]=a[i]+b[i-1]; // Bi
+    c[i]=b[i]+2; // Ci
+}
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex_7_10b}
+A1;
+B1; A2;
+for(i=3;i<1000;i++) {
+    Ci-2;Bi-1;Ai;
+}
+C998;B999;
+C999;
+\end{SaveVerbatim}
+
+\begin{Exmp}\ 配列の依存に応じてループを展開して，帰納変数をずらして並列性が向上するようにする．$\texttt{a[i]}$は$\texttt{a[i-1]}$に依存，$\texttt{b[i]}$は$\texttt{a[i]}$と$\texttt{b[i-1]}$に依存，$\texttt{c[i]}$は$\texttt{b[i]}$に依存する．$a$,$b$,$c$の帰納変数をひとつずつずらせば，計算の待ちがなくなり高速に計算できる可能性がある．
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_10a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_10b}
+\end{tabularx}
+\end{Exmp}
 
 \subsubsection{手続き呼び出し最適化}
 
@@ -509,24 +585,24 @@ $\texttt{do}$ ... $\texttt{while}$で，$\texttt{a}$, $\texttt{b}$のいずれ�
 必要がある．局所環境を作成するほどでもない単純な手続き呼び出しでは，スタック操作を行わなくても
 よい場合もあり，ループ構造内では大きな高速化の効果が期待できる．
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                int square(int x) {
-                        return x*x;
-                    }
-                y = square(a);
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.3\linewidth}
-            \begin{Verbatim}
-                y = a * a;
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+\begin{SaveVerbatim}{ex_7_11a}
+int square(int x) {
+    return x*x;
+}
+y = square(a);
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex_7_11b}
+y = a * a;
+\end{SaveVerbatim}
+
+\begin{Exmp}
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_11a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_11b}
+\end{tabularx}
+\end{Exmp}
 
 c言語では，関数の前に{\tt inline}を付加することでスタックを用いずに呼び出しを
 行う．ただし，{\tt inline}をつけた場合は，実際にインライン展開するかどうかは
@@ -542,46 +618,43 @@ c言語では，関数の前に{\tt inline}を付加することでスタック�
 必要がなく，最初の１回目の呼び出しで作成した領域を上書きすればよい．
 変換としては，再帰呼び出しをgotoに置き換えることで高速化が可能である．
 
-\begin{center}
-    \begin{tabular}{ccc}
-        \begin{minipage}{.4\linewidth}
-            \begin{Verbatim}
-                int sum_tail(int n, int acc) {
-                        if (n == 0) {
-                                return acc;
-                            }
-                        return sum_tail(n-1,acc+n);
-                    }
-            \end{Verbatim}
-        \end{minipage}
-         & $\Rightarrow$ &
-        \begin{minipage}{.4\linewidth}
-            \begin{Verbatim}
-                int sum_tail(int n, int acc) {
-                        L:  if (n == 0) {
-                                return acc;
-                            }
-                        acc+=n; n--;
-                        goto L;
-                    }
-            \end{Verbatim}
-        \end{minipage}
-    \end{tabular}
-\end{center}
+\begin{SaveVerbatim}{ex_7_12a}
+int sum_tail(int n, int acc) {
+if (n == 0) {
+    return acc;
+}
+return sum_tail(n-1,acc+n);
+}
+\end{SaveVerbatim}
+
+\begin{SaveVerbatim}{ex_7_12b}
+int sum_tail(int n, int acc) {
+L:  if (n == 0) {
+    return acc;
+}
+acc+=n; n--;
+goto L;
+}
+\end{SaveVerbatim}
+
+\begin{Exmp}\ \\
+\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
+    \UseVerbatim{ex_7_12a}
+    & $\Rightarrow$ &
+    \UseVerbatim{ex_7_12b}
+\end{tabularx}
+
 gotoによるループ構造をgotoなしで記述すると以下のプログラムと等価である．
 
-\begin{center}
-    \begin{minipage}{.3\linewidth}
         \begin{Verbatim}
-            int sum(int n,int acc) {
-                    while(n!=0) {
-                            acc+=n; n--;
-                        }
-                    return acc;
-                }
+int sum(int n,int acc) {
+    while(n!=0) {
+        acc+=n; n--;
+    }
+    return acc;
+}
         \end{Verbatim}
-    \end{minipage}
-\end{center}
+    \end{Exmp}
 
 \subsection{データフロー解析}
 

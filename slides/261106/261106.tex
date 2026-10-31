@@ -327,9 +327,40 @@
   ループ内のコードは慎重に最適化\\
   本当に毎回実行しなければならないか？できるだけ効率よく実行
   \begin{list}{}{}
-    \item ループ不変式の移動\\
-          \greentext{ループから影響をうけない式を外に出す}l\\
-          例6.8
+      \item ループ不変式の移動
+      \begin{trivlist}
+        \item[{\bf ループ不変式}:] \greentext{ループ内で評価が変わらない式}\\
+        ループ内に $\texttt{t :=}\ a_1 \oplus a_2$という式があり，この定義式を$d$とする．\\ ($\oplus$は任意の２項演算子)
+        $a_i$に対して以下の少なくとも１つの条件がなりたつとき，ループ不変式である．
+        \begin{enumerate}
+        \item $a_i$は定数
+        \item $a_i$のすべての定義はループの外
+        \item $a_i$のうちの１つだけが，$d$に到達し，それはループ不変式の定義
+        \end{enumerate}  
+        例：1 $\texttt{c=a/b}$において，いずれの例においても
+        $\texttt{a}$, $\texttt{b}$の定義は
+        $\texttt{do}\cdots\texttt{while}$の外．
+        ２番めの場合は$\texttt{n<=0}$のときに注意
+      \end{trivlist}
+    \end{list}
+  \end{frame}
+
+  \begin{frame}{例}
+  \begin{center}
+    \begin{tabular}{ccc}
+      \multicolumn{3}{l}{例}                \\
+      \includegraphics[scale=.7]{ex6_8_1.pdf}
+       & $\Rightarrow$ &
+      \includegraphics[scale=.7]{ex6_8_2.pdf} \\[1zw]
+      \includegraphics[scale=.7]{ex6_8_3.pdf}
+       & $\Rightarrow$ &
+      \includegraphics[scale=.7]{ex6_8_4.pdf}
+    \end{tabular}
+  \end{center}  
+  \end{frame}
+
+\begin{frame}
+  \begin{list}{}{}
     \item ループ内の演算の強さの軽減\\
           強い演算：時間のコストが大きい演算\\
           足し算$<$掛け算 (加算器$<$乗算器)\\

@@ -105,44 +105,45 @@
 \contentsline {section}{\numberline {7.3}大域最適化}{107}{}%
 \contentsline {subsection}{\numberline {7.3.1}意味等価な変換}{107}{}%
 \contentsline {subsubsection}{ループ最適化}{108}{}%
-\contentsline {paragraph}{ループ不変コードの移動}{108}{}%
-\contentsline {paragraph}{ループ内演算の強さ軽減}{108}{}%
-\contentsline {paragraph}{帰納変数の消去}{108}{}%
-\contentsline {paragraph}{ループ融合}{108}{}%
-\contentsline {paragraph}{ループ分解}{108}{}%
-\contentsline {paragraph}{ループ展開}{109}{}%
-\contentsline {paragraph}{ソフトウェアパイプライン}{109}{}%
-\contentsline {subsubsection}{手続き呼び出し最適化}{109}{}%
-\contentsline {paragraph}{インライン展開}{109}{}%
-\contentsline {paragraph}{末尾再帰}{109}{}%
-\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{110}{}%
-\contentsline {subsubsection}{定義到達解析}{110}{}%
-\contentsline {subsubsection}{生存変数解析}{111}{}%
-\contentsline {subsubsection}{利用可能式解析}{112}{}%
-\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{113}{}%
-\contentsline {subsection}{\numberline {7.4.1}例}{113}{}%
-\contentsline {subsection}{\numberline {7.4.2}$\varphi $関数}{114}{}%
-\contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{120}{}%
-\contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{121}{}%
-\contentsline {paragraph}{不要コード除去}{121}{}%
-\contentsline {paragraph}{定数伝播}{121}{}%
-\contentsline {paragraph}{支配関係の保存}{121}{}%
-\contentsline {subsection}{\numberline {7.4.5}$\varphi $関数を持たないSSA形式への変換}{122}{}%
-\contentsline {chapter}{\numberline {第8章}目的コード生成}{127}{}%
-\contentsline {section}{\numberline {8.1}算術式のコード生成}{127}{}%
-\contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割当}{128}{}%
-\contentsline {subsection}{\numberline {8.2.1}レジスタ干渉グラフ}{130}{}%
-\contentsline {subsection}{\numberline {8.2.2}SSAに対するレジスタ割当}{130}{}%
-\contentsline {chapter}{\numberline {付 録A }VMコードの仕様}{133}{}%
-\contentsline {paragraph}{1. Load literal}{133}{}%
-\contentsline {paragraph}{2. Load}{133}{}%
-\contentsline {paragraph}{3. Store}{133}{}%
-\contentsline {paragraph}{4. Move to index register}{133}{}%
-\contentsline {paragraph}{5. Arithmetic operation}{134}{}%
-\contentsline {paragraph}{6. Unconditional Jump}{134}{}%
-\contentsline {paragraph}{7. Jump on condition}{134}{}%
-\contentsline {paragraph}{8. Read data}{134}{}%
-\contentsline {paragraph}{9. Write data}{134}{}%
-\contentsline {paragraph}{10. Increment stack top}{134}{}%
-\contentsline {paragraph}{11. Procedure call}{135}{}%
-\contentsline {paragraph}{12. Return}{135}{}%
+\contentsline {paragraph}{ループ不変式:}{108}{}%
+\contentsline {paragraph}{帰納変数：}{108}{}%
+\contentsline {paragraph}{帰納変数の消去}{109}{}%
+\contentsline {paragraph}{ループ内演算の強さ軽減}{109}{}%
+\contentsline {paragraph}{ループ融合}{109}{}%
+\contentsline {paragraph}{ループ分解}{110}{}%
+\contentsline {paragraph}{ループ展開}{110}{}%
+\contentsline {paragraph}{ソフトウェアパイプライン}{110}{}%
+\contentsline {subsubsection}{手続き呼び出し最適化}{110}{}%
+\contentsline {paragraph}{インライン展開}{110}{}%
+\contentsline {paragraph}{末尾再帰}{111}{}%
+\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{111}{}%
+\contentsline {subsubsection}{定義到達解析}{112}{}%
+\contentsline {subsubsection}{生存変数解析}{113}{}%
+\contentsline {subsubsection}{利用可能式解析}{114}{}%
+\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{114}{}%
+\contentsline {subsection}{\numberline {7.4.1}例}{115}{}%
+\contentsline {subsection}{\numberline {7.4.2}$\varphi $関数}{116}{}%
+\contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{122}{}%
+\contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{123}{}%
+\contentsline {paragraph}{不要コード除去}{123}{}%
+\contentsline {paragraph}{定数伝播}{123}{}%
+\contentsline {paragraph}{支配関係の保存}{123}{}%
+\contentsline {subsection}{\numberline {7.4.5}$\varphi $関数を持たないSSA形式への変換}{124}{}%
+\contentsline {chapter}{\numberline {第8章}目的コード生成}{129}{}%
+\contentsline {section}{\numberline {8.1}算術式のコード生成}{129}{}%
+\contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割当}{130}{}%
+\contentsline {subsection}{\numberline {8.2.1}レジスタ干渉グラフ}{132}{}%
+\contentsline {subsection}{\numberline {8.2.2}SSAに対するレジスタ割当}{132}{}%
+\contentsline {chapter}{\numberline {付 録A }VMコードの仕様}{135}{}%
+\contentsline {paragraph}{1. Load literal}{135}{}%
+\contentsline {paragraph}{2. Load}{135}{}%
+\contentsline {paragraph}{3. Store}{135}{}%
+\contentsline {paragraph}{4. Move to index register}{135}{}%
+\contentsline {paragraph}{5. Arithmetic operation}{136}{}%
+\contentsline {paragraph}{6. Unconditional Jump}{136}{}%
+\contentsline {paragraph}{7. Jump on condition}{136}{}%
+\contentsline {paragraph}{8. Read data}{136}{}%
+\contentsline {paragraph}{9. Write data}{136}{}%
+\contentsline {paragraph}{10. Increment stack top}{136}{}%
+\contentsline {paragraph}{11. Procedure call}{137}{}%
+\contentsline {paragraph}{12. Return}{137}{}%
