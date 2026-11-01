@@ -1,0 +1,18 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes,arrows.meta}
+\begin{document}
+\begin{tikzpicture}
+\foreach \x in {1,...,6} {
+    \node[draw,circle] (S\x) at (\x,0) {\ };
+    \node[draw,circle,fill=black] (D\x) at (\x,-1) {\ };
+    \path[-{Stealth[scale=1.5]}] (S\x) edge (D\x);
+}
+\node (l1) at (0,-0.3) {\small スレッド1};
+\node (l2) at (0,-1.3) {\small スレッド2};
+\draw[-{Stealth[scale=1]},line width=2pt] (l1) -- +(6.5,0);
+\draw[-{Stealth[scale=1]},line width=2pt] (l2) -- +(6.5,0);
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,30 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc,arrows.meta}
+\begin{document}
+\begin{tikzpicture}
+    \foreach \x in {1,2,3,4} {
+        \node[draw,circle,inner sep=2pt] (A\x) at ($1.5*(\x,0)$) {$A_{\x}$};
+        \node[draw,circle,inner sep=2pt] (B\x) at ($(1.5,-1.5)+1.5*(\x,0)$) {$B_{\x}$};
+        \node[draw,circle,inner sep=2pt] (C\x) at ($(3,-3)+1.5*(\x,0)$) {$C_{\x}$};
+    }
+    \coordinate (A5) at ($1.5*(5,0)$);
+    \coordinate (B5) at ($(1.5,-1.5)+1.5*(5,0)$);
+    \foreach \x [evaluate=\x as \next using int(\x+1)] in {1,2,3,4} {
+        \path[->] (A\x) edge (A\next);
+        \path[->] (B\x) edge (B\next);
+        \path[->] (A\x) edge (B\x);
+        \path[->] (B\x) edge (C\x);
+    }
+    \foreach \i in {1,...,6} {
+        \draw[style=dotted] ($1.5*(\i,0.5)$) -- +(0,-4.5);
+        \node at ($1.5*(\i,0.75)$) {$t_\i$};
+    }
+
+    \foreach \p in {1,2,3} {
+        \draw[-{Stealth[scale=1]},line width=2pt] ($(-0.5,1)+1.5*(\p,-\p)$) -- +(6,0);
+        \node at ($(-1.5,1)+1.5*(\p,-\p)$) {プロセッサ\p};
+    }
+\end{tikzpicture}
+\end{document}

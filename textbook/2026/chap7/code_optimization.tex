@@ -551,30 +551,50 @@ for(i=1;i<n;i++) {
 
 \paragraph{ソフトウェアパイプライン}
 
-\begin{SaveVerbatim}{ex_7_10a}
+\begin{SaveVerbatim}{SoftPipelineBefore}
 for(i=1;i<1000;i++) {
-    a[i]=a[i-1]+1; // Ai
-    b[i]=a[i]+b[i-1]; // Bi
-    c[i]=b[i]+2; // Ci
+  a[i]=a[i-1]+1; // Ai
+  b[i]=a[i]+b[i-1]; // Bi
+  c[i]=b[i]+2;
+}
+\end{SaveVerbatim}
+\begin{SaveVerbatim}{SoftPipelineAfter}
+a[1]=a[0]+1; // A1
+b[1]=a[1]+b[0]; // B1
+a[2]=a[1]+1; // A2
+for(i=3;i<998,i++) {
+  c[i-2]=b[i-2]+2; //Ci-2
+  b[i-1]=a[i-1]+b[i-2]; //Bi-1
+  a[i]=a[i-1]; // Ai
 }
 \end{SaveVerbatim}
 
-\begin{SaveVerbatim}{ex_7_10b}
-A1;
-B1; A2;
-for(i=3;i<1000;i++) {
-    Ci-2;Bi-1;Ai;
-}
-C998;B999;
-C999;
-\end{SaveVerbatim}
+ループ内の変数更新の依存関係を解析し，
+帰納変数をずらして並列性が向上するように変換可能な場合がある．
 
-\begin{Exmp}\ 配列の依存に応じてループを展開して，帰納変数をずらして並列性が向上するようにする．$\texttt{a[i]}$は$\texttt{a[i-1]}$に依存，$\texttt{b[i]}$は$\texttt{a[i]}$と$\texttt{b[i-1]}$に依存，$\texttt{c[i]}$は$\texttt{b[i]}$に依存する．$a$,$b$,$c$の帰納変数をひとつずつずらせば，計算の待ちがなくなり高速に計算できる可能性がある．
-\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
-    \UseVerbatim{ex_7_10a}
-    & $\Rightarrow$ &
-    \UseVerbatim{ex_7_10b}
-\end{tabularx}
+\begin{Exmp}\ 
+\begin{center}
+  \begin{tabularx}{\linewidth}{m{.4\linewidth}cm{.4\linewidth}}
+    \UseVerbatim[fontsize=\small]{SoftPipelineBefore} & $\Rightarrow$ &
+    \UseVerbatim[fontsize=\small]{SoftPipelineAfter}\\
+    (a) パイプライン適用前 & & (b) パイプライン適用後
+  \end{tabularx}
+\end{center}
+(a)のプログラムでは，ループ内で
+$\texttt{a[i]}$は$\texttt{a[i-1]}$に依存，$\texttt{b[i]}$は$\texttt{a[i]}$と$\texttt{b[i-1]}$に依存，$\texttt{c[i]}$は$\texttt{b[i]}$に依存する．
+    
+このループの依存関係を図で表すと(c)のような{\bf ループ運搬依存関係(loop-carried dependency)}となる．ここでは，各頂点$A_i$,$B_i$,$C_i$はそれぞれ$\texttt{a[i]}$, $\texttt{b[i]}$, $\texttt{c[i]}$の更新命令を表す．実線の辺は，矢印の根元の命令の実行が終わらないとそれに依存した命令が実行できないことを表し，破線は，帰納変数に依存して自分自身の前の回の実行が終了しないと命令が実行できないことを表す．    
+３個以上のプロセッサが並列に用いることができれば$a$,$b$,$c$の帰納変数をひとつずつずらせば，計算の依存を解消することができ高速に計算できる．帰納変数で展開するとループ内での依存関係は(d)のようになる．
+３つのプロセッサがある場合，各段階$t_i$では，計算に必要なデータは$t_{i-1}$までに計算されているので，各時点での依存関係はなくパイプラインとして並列に実行できる．
+
+\begin{center}
+\begin{tabular}{ccc}
+    \includegraphics{loop-car-depend-crop.pdf}
+    & &
+    \includegraphics[scale=0.8]{softpipeline-crop.pdf}\\
+(c) ループ運搬依存関係 & & (d) 実行における依存関係
+\end{tabular}\\
+\end{center}
 \end{Exmp}
 
 \subsubsection{手続き呼び出し最適化}
