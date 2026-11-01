@@ -58,24 +58,24 @@
 まず局所に有効な記号が存在するかどうかを調べて，局所になければ大域記号を参照する
 という規則である．
 
-\begin{figure}[H]
+\begin{figure}[t]
     \begin{center}
         \begin{minipage}{0.4\linewidth}
             \begin{Verbatim}[frame=single,numbers=left,numberblanklines=false]
-                int x;
-                int y;
-                int f(int y) {
-                        x = 2;
-                        return x+y;
-                    }
+int x;
+int y;
+int f(int y) {
+    x = 2;
+    return x+y;
+}
 
-                int main() {
-                        int x;
-                        x = 1;
-                        y = 3;
-                        x = f(x);
-                        printf("%d,%d\n",x,y);
-                    }
+int main() {
+    int x;
+    x = 1;
+    y = 3;
+    x = f(x);
+    printf("%d,%d\n",x,y);
+}
             \end{Verbatim}
         \end{minipage}
     \end{center}
@@ -192,25 +192,25 @@ C言語と同様に\texttt{main}から実行されるとすると，9行目は�
     \begin{tabular}{cc}
         \begin{minipage}{.4\linewidth}
             \begin{Verbatim}[frame=single]
-                int g;
+int g;
 
-                func f(int a, real b) {
-                        int x;
-                        x = a + 1;
-                        g = x;
-                    }
+func f(int a, real b) {
+    int x;
+    x = a + 1;
+    g = x;
+}
 
-                func h() {
-                        int x;
-                        g = 0;
-                    }
+func h() {
+    int x;
+    g = 0;
+}
 
-                func main() {
-                        int x;
-                        x = 3;
-                        f(x + 1, (2.5 + 3.5) * 2);
-                        h();
-                    }
+func main() {
+    int x;
+    x = 3;
+    f(x + 1, (2.5 + 3.5) * 2);
+    h();
+}
             \end{Verbatim}
         \end{minipage}
          &

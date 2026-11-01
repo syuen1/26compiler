@@ -61,6 +61,274 @@
 
 \section{最適化}
 
+\subsection{データフロー解析}
+
+\begin{frame}
+  \frametitle{データフロー解析}
+
+%  \vspace*{10pt}
+
+%  \greentext{(講義資料6.4:詳細については省略)}
+  基本ブロック$B$に対するデータフロー(定義到達解析)
+
+  \vspace*{10pt}
+
+ 定義: $\texttt{x=e}_1\oplus\texttt{e}_2$, $\texttt{x=e}$
+
+ \greentext{\small 左辺で出現した変数がどこまで更新されずに右辺で参照されるか？}
+
+  \[
+    out[B]=gen[B]\cup(in[B]-kill[B])
+  \]
+
+  プログラム上での位置(行番号)：
+  \begin{tabular}{ll}
+    $in[B]$   & $B$に入力されるデータ  \\
+    $out[B]$  & $B$から出力されるデータ \\
+    $gen[B]$  & $B$で定義されるデータ  \\
+    $kill[B]$ & $B$で上書きされるデータ \\
+  \end{tabular}
+
+  入力から出力への制御がきまっていればよいので、基本ブロック単位で考えれ
+  ばよい。
+
+  ループ：データフロー方程式を解いて全体的に必要なデータを計算する。
+\end{frame}
+
+\begin{frame}{データフロー方程式}
+  % \begin{tabular}{ccc}
+  %  \begin{minipage}{.2\textwidth}
+  % \begin{tikzpicture}
+  %  \node[draw] (S1) at (0,1.5) {$S_1$};
+  %  \node[draw] (S2) at (0,0) {$S_2$};
+  %  \path[->] (S1) edge (S2);
+  % \end{tikzpicture}
+  %  \end{minipage}
+  %  &
+  %  \begin{minipage}{.25\textwidth}
+  %   \begin{tikzpicture}
+  %    
+  %   \end{tikzpicture}
+  %  \end{minipage}
+  % \end{tabular}
+
+  %\greentext{定義到達可能性解析：}
+
+  \scalebox{0.7}{
+    \begin{tikzpicture}
+      \node[draw] (B5) at (2,0) {EXIT};
+      \node[draw] (B4) at (2,1.25) {$\begin{array}{ll}d_7: &
+             \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
+      \node[draw] (B3) at (0,2.25) {$d_6$:\texttt{a=u2}};
+      \node[draw] (B2) at (2,3.5) {$\begin{array}{ll}
+            d_4: & \texttt{i=i+1}  \\[-3pt]
+            d_5: & \texttt{j=j-1}  \\[-3pt]
+                 & \texttt{if ...}
+          \end{array}$};
+      \node[draw] (B1) at (2,5.25) {$\begin{array}{ll}
+            d_1: & \texttt{i=m-1} \\[-3pt]
+            d_2: & \texttt{j=n}   \\[-3pt]
+            d_3: & \texttt{a=u1}
+          \end{array}$};
+      \node[draw] (B0) at (2,6.75) {ENTRY};
+
+      \node at ($(B1)+(1.75,0)$) {$B_1$};
+      \node at ($(B2)+(1.75,0)$) {$B_2$};
+      \node at ($(B3)+(1.2,0)$) {$B_3$};
+      \node at ($(B4)+(1.75,0)$) {$B_4$};
+
+      \path[->] (B0) edge (B1) (B1) edge (B2) (B2) edge (B4)
+      (B2) edge (B3) (B3) edge (B4) (B4) edge (B5);
+      \path[->] (B4) [out=210,in=150,looseness=3] edge (B2);
+
+      \node[anchor=west] at ($(B1)+(2.5,0)$) {$\begin{array}{ll}
+            gen_{B_1}  & = \{d_1,d_2,d_3\}     \\[-3pt]
+            kill_{B_1} & = \{d_4,d_5,d_6,d_7\}
+          \end{array}$};
+      \node[anchor=west] at ($(B2)+(2.5,0)$) {$\begin{array}{ll}
+            gen_{B_2}  & = \{d_4,d_5\}     \\[-3pt]
+            kill_{B_2} & = \{d_1,d_2,d_7\}
+          \end{array}$};
+      \node[anchor=west] at ($(B3)+(4.5,0)$) {$\begin{array}{ll}
+            gen_{B_3}  & = \{d_6\} \\[-3pt]
+            kill_{B_3} & = \{d_3\}
+          \end{array}$};
+      \node[anchor=west] at ($(B4)+(2.5,0)$) {$\begin{array}{ll}
+            gen_{B_4}  & = \{d_7\}     \\[-3pt]
+            kill_{B_4} & = \{d_1,d_4\}
+          \end{array}$};
+    \end{tikzpicture}
+  }
+
+  \vspace*{-30pt}
+
+  {\footnotesize
+    \begin{eqnarray*}
+      IN[B_2] & = & OUT[B_1]\cup OUT[B_4]\\
+      OUT[B_2] & = & gen_{B_2}\cup(IN[B_2]-kill_{B_2})
+    \end{eqnarray*}
+  }
+
+  (Ahoら：Compilers より引用)
+\end{frame}
+
+\begin{frame}
+  \frametitle{データフロー方程式}
+  \[
+    \begin{array}{rcl}
+      OUT[B_1] & = & gen_{B_1}                         \\
+      IN[B_2]  & = & OUT[B_1]\cup OUT[B_4]             \\
+      OUT[B_2] & = & gen_{B_2}\cup(IN[B_2]-kill_{B_2}) \\
+      IN[B_3]  & = & OUT[B_2]                          \\
+      OUT[B_3] & = & gen_{B_3}\cup(IN[B_3]-kill_{B_3}) \\
+      IN[B_4]  & = & OUT[B_3]\cup OUT[B_2]             \\
+      OUT[B_4] & = & gen_{B_4}\cup(IN[B_4]-kill_{B_4})
+    \end{array}
+  \]
+\end{frame}
+
+\begin{frame}{データフロー方程式の計算}
+
+  到達可能性解析：
+
+  {\small
+  {XXXX XXX}:$d_1,d_2,\cdots,d_7$が集合に入っているとき$1$、入ってないとき$0$
+  }
+
+  \vspace*{10pt}
+
+  {\footnotesize
+    \begin{tabular}{c|c|c|c|c|c}\hline
+      Block $B$ & OUT[$B$]$^0$ & IN[$B$]$^1$ & OUT[$B$]$^1$ & IN[$B$]$^2$ & OUT[$B$]$^2$ \\\hline
+      $B_1$     & 111 0000     & 000 0000    & 111 0000     & 000 0000    & 111 0000     \\
+      $B_2$     & 000 1100     & 111 0001    & 001 1100     & 111 0111    & 001 1110     \\
+      $B_3$     & 000 0010     & 000 1100    & 000 1110     & 001 1100    & 000 1110     \\
+      $B_4$     & 000 0001     & 000 1110    & 000 0111     & 001 1110    & 001 0111     \\\hline
+    \end{tabular}
+  }
+
+  \vspace*{10pt}
+
+  \greentext{変化しなくなるまでくりかえす。}
+
+
+  $OUT[B_4]$=001 0111:\\
+  \greentext{本ブロックでは$d_3$,$d_5$,$d_6$,$d_7$がEXITが到達する可能性がある．}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{データフロー}
+  \greentext{生存解析}
+  \begin{tabular}{ll}
+    $Use[B]$: & $B$で再定義される前に資料される変数の集合 \\
+    $Def[B]$: & $B$で定義される変数の集合
+  \end{tabular}
+
+  \begin{eqnarray*}
+    In[B] & = & Use[B]\cup(Out[B]-Def[B])\\
+    Out[B] & = & \cup_{S\in Succ[B]}In[S]
+  \end{eqnarray*}
+  $Succ[B]$: フローグラフにおいて$B$から直接フローがあるブロック
+
+  \vspace*{10pt}
+
+  \greentext{フローグラフ下流の方から計算する}
+\end{frame}
+
+\begin{frame}
+  \frametitle{データフロー解析}
+  \scalebox{0.7}{
+    \begin{tikzpicture}
+      \node[draw] (B5) at (2,0) {EXIT};
+      \node[draw] (B4) at (2,1.25) {$\begin{array}{ll}d_7: &
+             \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
+      \node[draw] (B3) at (0,2.25) {$d_6$:\texttt{a=u2}};
+      \node[draw] (B2) at (2,3.5) {$\begin{array}{ll}
+            d_4: & \texttt{i=i+1}  \\[-3pt]
+            d_5: & \texttt{j=j-1}  \\[-3pt]
+                 & \texttt{if ...}
+          \end{array}$};
+      \node[draw] (B1) at (2,5.25) {$\begin{array}{ll}
+            d_1: & \texttt{i=m-1} \\[-3pt]
+            d_2: & \texttt{j=n}   \\[-3pt]
+            d_3: & \texttt{a=u1}
+          \end{array}$};
+      \node[draw] (B0) at (2,6.75) {ENTRY};
+
+      \node at ($(B1)+(1.75,0)$) {$B_1$};
+      \node at ($(B2)+(1.75,0)$) {$B_2$};
+      \node at ($(B3)+(1.2,0)$) {$B_3$};
+      \node at ($(B4)+(1.75,0)$) {$B_4$};
+
+      \path[->] (B0) edge (B1) (B1) edge (B2) (B2) edge (B4)
+      (B2) edge (B3) (B3) edge (B4) (B4) edge (B5);
+      \path[->] (B4) [out=210,in=150,looseness=3] edge (B2);
+
+      \node[anchor=west] at ($(B1)+(2.5,0)$) {$\begin{array}{ll}
+            Def_{B_1} & = \{i,j,a\}   \\[-3pt]
+            Use_{B_1} & = \{m,n,u_1\}
+          \end{array}$};
+      \node[anchor=west] at ($(B2)+(2.5,0)$) {$\begin{array}{ll}
+            Def_{B_2} & = \{i,j\} \\[-3pt]
+            Use_{B_2} & = \{i,j\}
+          \end{array}$};
+      \node[anchor=west] at ($(B3)+(4.5,0)$) {$\begin{array}{ll}
+            Def_{B_3} & = \{a\}  \\[-3pt]
+            Use_{B_3} & = \{u2\}
+          \end{array}$};
+      \node[anchor=west] at ($(B4)+(2.5,0)$) {$\begin{array}{ll}
+            Def_{B_4} & = \{i\}  \\[-3pt]
+            Use_{B_4} & = \{u3\}
+          \end{array}$};
+    \end{tikzpicture}
+  }
+\end{frame}
+
+\begin{frame}
+  \frametitle{データフロー解析（生存解析）}
+  $(a,i,j,m,n,u1,u2,u3)$とすると
+
+  {\scriptsize
+  $\begin{array}{l|llllll}
+          & OUT        & IN         & OUT        & IN         & OUT        & IN         \\\hline
+      B_1 & (00000000) & (00011100) & (01100000) & (00011100) & (01100010) & (00011100) \\
+      B_2 & (00000000) & (01100000) & (01100010) & (01100010) & (01100001) & (01100010) \\
+      B_3 & (00000000) & (00000010) & (00000001) & (00000010) & (00100001) & (10100001) \\
+      B_4 & (00000000) & (00000001) & (01100000) & (00100001) & (01100010) & (00100001)
+    \end{array}$}
+
+  \vspace*{10pt}
+
+  \greentext{\small フローグラフの基本ブロックにおいてどの変数が影響をうけるかを解析}
+
+  \vspace*{10pt}
+
+  $\begin{array}{l|ll}
+          & IN         & OUT        \\\hline
+      B_1 & \{m,n,u1\} & \{i,j,u2\} \\
+      B_2 & \{i,j,u2\} & \{i,j,u3\} \\
+      B_3 & \{a,j,u3\} & \{j,u3\}   \\
+      B_4 & \{j,u3\}   & \{i,j,u2\}
+    \end{array}$
+\end{frame}
+
+\begin{frame}
+\frametitle{データフロー解析（共通部分式）}
+
+部分式に含まれるすべてのフローをチェックする．
+
+例えば，$v\texttt{=}a\texttt{+}b$における$a\texttt{+}b$の計算が
+重複されているかどうかは，すべてのフローが同じであることをチェックする．
+
+\begin{eqnarray}
+    IN[B] & = & {\color{red}\bigcap}_{\mathsf{Pred}[B]}Out[P]\\
+    OUT[B] & = & Gen[B]\cup(In[B]\backslash Kill[B])
+\end{eqnarray}
+
+\end{frame}
+
+
 \subsection{静的単一代入}
 
 \begin{frame}
@@ -102,6 +370,8 @@
     \end{tabular}
   \end{center}
 \end{frame}
+
+
 
 \begin{frame}
   \frametitle{$\varphi$関数の挿入}
@@ -201,6 +471,21 @@ $u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で
     \end{center}
   }
 \end{frame}
+
+\begin{frame}
+\frametitle{厳密なSSA形式}
+
+SSA形式が満たす性質
+
+\begin{enumerate}
+\item 定義式の左辺の変数がプログラム中で唯一\\
+\greentext{構文的に左辺の変数は唯一}
+\item 右辺に現れる変数は最も近い上流の定義式で更新される\\
+\greentext{更新をとびこえて参照されることはない．(支配関係の保存)}
+\end{enumerate}
+\end{frame}
+
+
 
 \begin{frame}{フローグラフ$\rightarrow$支配木}
   \begin{tabular}{cc}
@@ -327,661 +612,266 @@ $u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で
     \item[$\cdot$] 定義合流条件を満たす$v_0$, $u_0$, $v$ がなくなるまで，上記を繰り返す．
         \end{trivlist}
   \end{quote}
-
-  % % {\scriptsize
-  % \begin{itembox}[l]{定義 ({\bf 定義合流条件})}
-  %   変数$x$の$\varphi$関数が頂点$v$に挿入されるための必要十分
-  %   条件は，次の条件(1)$\sim$(4)を満たす２つのパス$p$:$V_1,\ldots,v_k$および
-  %   $q$:$u_1,\ldots,u_\ell$が存在することである．
-  %   \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-  %     \item $k>1$, $\ell>1$
-  %     \item $v_1$,$u_1$の両方に$x$の定義が存在
-  %     \item $v_k=u_\ell=v$
-  %     \item $\{v_1,\ldots,v_{k-1}\}\cap\{u_1,\ldots,u_{\ell-1}\}=\varnothing$
-  %   \end{list}
-  % \end{itembox}
-  % % }
-
-  %   \begin{center}
-  %    \includegraphics[width=\textwidth]{def6_22.pdf}
-  %   \end{center}
-
-  %   パス$p$上の$x$の定義=$x_1$,$q$上の$x$の定義=$x_2$
-  %  定義合流条件の$v$に、$x_3=\phi(x_1,x_2)$
 \end{frame}
 
-% \begin{frame}
-%   \frametitle{定義合流条件}
-%   \begin{center}
-%     \includegraphics[width=.5\textwidth]{confluenceCondition.pdf}
-%   \end{center}
-% \end{frame}
+% \subsection{SSA形式への変換}
 
 % \begin{frame}
-%   \frametitle{支配関係}
-
-%   {\small
-%     \begin{itembox}[l]{定義 (頂点間の支配関係)}
-%       フローグラフ$G=(V,E)$が与えられたとき，$u,v\in V$に対して，
-%       開始頂点$v_0$から$v$に至るすべてのパス$p:v_0,\ldots,v_k$(ここで
-%       $v=v_k$)において，$u\in\{v_0,\ldots,v_k\}$であるとき，
-%       $u$は$v$を支配するといい，$u\vdom v$と書く．
-%     \end{itembox}}
-
-%   {\small
-%     \begin{itembox}[l]{命題}
-%       $\vdom$は，反射率($u\vdom u$)および
-%       推移律($u\vdom v$かつ$v\vdom w$ならば$u\vdom w$)
-%       を満たす．
-%     \end{itembox}}
-
-%   {\small
-%     \begin{trivlist}
-%       \item $u\vdom v$かつ$u\not= v$のとき，$u$は$v$を強く支配するといい，$u\svdom v$
-%       と書く．
-%       \item $Dom(v)=\{u\,|\,u\vdom v\}$を$v$は支配頂点の集合を表す．
-%     \end{trivlist}
-%   }
-% \end{frame}
-
-
-% \begin{frame}
-%   \frametitle{支配関係}
-
-%   \begin{itemize}
-%     \item $Dom(v)\not=\varnothing$
-%     \item $Dom(v)\backslash\{v\}\not=\varnothing$のとき，
-%           唯一の$u\in Dom(v)\backslash\{v\}$が存在して，
-%           すべての$w\in Dom(v)\backslash\{v\}$に対して，$w\vdom u$である．\\
-%           （唯一性の証明）$u_1,u_2\in Dom(v)\backslash\{v\}$であるならば，開始頂点から$v$へすべてのパス上に$u_1,u_2$が存在する．よって，$u_1\vdom u_2$または
-%           $u_2\vdom u_1$である．したがって，$u_1=u_2$となる．\\
-%           このような$u$を$idom(v)$と書く．
-%   \end{itemize}
-
-%   \begin{itembox}[l]{(支配木)}
-%     有向グラフ$(V,E')$:$E=\{(idom(v),v)\,|\,v\in V\}$は，木構造となり，
-%     これを支配木とよぶ．
-%   \end{itembox}
-%   %支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
-% \end{frame}
-%   \only<1>{
-%   \begin{center}
-%    \includegraphics[width=.7\textwidth]{def6_23.pdf}
-%   \end{center}
-
-%   $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 (図6.7)
-%  }
-%   \only<2>{
-% \begin{frame}
-%   \frametitle{支配関係，支配木}
-%   \begin{center}
-%     \begin{tabular}{cc}
-
-%       \begin{tikzpicture}
-%         \node[draw,circle] (v0) at (0,3) {$v_0$};
-%         \node[draw,circle] (u) at (0,1.5) {$u$};
-%         \node[draw,circle] (v) at (0,0) {$v$};
-%         \node at (0,2.25) {$\cdots$};
-%         \node at (0,0.75) {$\cdots$};
-%         \path[->] (v0) [out=-30,in=30] edge (u);
-%         \path[->] (v0) [out=-60, in=60] edge (u);
-%         \path[->] (v0) [out=240,in=120] edge (u);
-%         \path[->] (v0) [out=210, in=150] edge (u);
-%         \path[->] (u) [out=-30,in=30] edge (v);
-%         \path[->] (u) [out=-60, in=60] edge (v);
-%         \path[->] (u) [out=240,in=120] edge (v);
-%         \path[->] (u) [out=210, in=150] edge (v);
-%       \end{tikzpicture}
-
-%        &
-%       \begin{tabular}{c}                                                         \\[-12zw]
-%         $u\underline{\gg}v$                                         \\[1zw]
-%         $u\underline{\gg}u$                                         \\
-%         $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
-%         $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
-%         $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
-%         $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
-%       \end{tabular}
-%     \end{tabular}
-%   \end{center}
-% \end{frame}
-
-% \begin{frame}{フローグラフ$\rightarrow$支配木}
+%   \frametitle{SSA形式への変換}
 %   \begin{tabular}{cc}
-%     \begin{minipage}{.4\textwidth}
-%       \scalebox{0.6}{
+%     \begin{minipage}{.5\textwidth}
+
+%       \scalebox{0.8}{
 %         \begin{tikzpicture}
-%           \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6)
-%           {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-%                                & \mathtt{j=1}                               \\[-2pt]
-%                                & \mathtt{k=1}                               \\[-2pt]
-%                                & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
+%           \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
+%             {\small $\begin{array}{ll}\hspace*{1zw}
+%                    & \mathtt{i=1}                               \\[-2pt]
+%                    & \mathtt{j=1}                               \\[-2pt]
+%                    & \mathtt{k=1}                               \\[-2pt]
+%                    & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};}
+%           \only<2->{\node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
+%             {\small $\begin{array}{ll}\hspace*{1zw}
+%                    & \mathtt{i_1=1}                              \\[-2pt]
+%                    & \mathtt{j_1=1}                              \\[-2pt]
+%                    & \mathtt{k_1=1}                              \\[-2pt]
+%                    & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};}
 %           \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-%           \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4)
-%           {\small $\begin{array}{ll}
-%                 L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-%               \end{array}$};
+%           \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
+%             {\small $\begin{array}{ll}
+%                   L3: & \mathtt{i=}\phi\mathtt{(i,i)}              \\[-2pt]
+%                       & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
+%                 \end{array}$};}
+%           \only<2>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
+%             {\small $\begin{array}{ll}
+%                   L3: & \mathtt{i=}\phi\mathtt{(i_1,i)}            \\[-2pt]
+%                       & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
+%                 \end{array}$};}
+%           \only<3>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
+%             {\small $\begin{array}{ll}
+%                   L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i)}          \\[-2pt]
+%                       & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
+%                 \end{array}$};}
+%           \only<4->{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
+%             {\small $\begin{array}{ll}
+%                   L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i_3)}        \\[-2pt]
+%                       & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
+%                 \end{array}$};}
 %           \node at ($(v1)+(-2.2,0)$) {$v_1$};
-%           \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-%           {\small $\begin{array}{ll}
-%                 \hspace*{1zw} & \mathtt{i=i+1}   \\
-%                               & \mathtt{goto L3}
-%               \end{array}$};
+%           \only<1-3>{\node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
+%             {\small $\begin{array}{ll}
+%                   \hspace*{1zw} & \mathtt{i=i+1}   \\
+%                                 & \mathtt{goto L3}
+%                 \end{array}$};}
+%           \only<4->{\node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
+%             {\small $\begin{array}{ll}
+%                   \hspace*{1zw} & \mathtt{i_3=i_2+1} \\
+%                                 & \mathtt{goto L3}
+%                 \end{array}$};}
 %           \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-%           \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-%           {\small $\begin{array}{ll}
-%                 L1: & \mathtt{j=i+k} \\
-%               \end{array}$};
+%           \only<1-4>{\node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
+%             {\small $\begin{array}{ll}
+%                   L1: & \mathtt{j=i+k} \\
+%                 \end{array}$};}
+%           \only<5->{\node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
+%             {\small $\begin{array}{ll}
+%                   L1: & \mathtt{j_2=i_1+k_1} \\
+%                 \end{array}$};}
 %           \node at ($(v3)+(-2.2,0)$) {$v_3$};
-%           \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,0)
-%           {\small $\begin{array}{ll}
-%                 L2: & \mathtt{k=i+j} \\
-%               \end{array}$};
+%           \only<1,2>{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
+%             {\small $\begin{array}{ll}
+%                   L2: & \mathtt{i=}\phi\mathtt{(i,i)} \\
+%                       & \mathtt{j=}\phi\mathtt{(j,j)} \\
+%                       & \mathtt{k=i+j}                \\
+%                 \end{array}$};}
+%           \only<3,4,5>{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
+%             {\small $\begin{array}{ll}
+%                   L2: & \mathtt{i=}\phi\mathtt{(i_2,i)} \\
+%                       & \mathtt{j=}\phi\mathtt{(j_1,j)} \\
+%                       & \mathtt{k=i+j}                  \\
+%                 \end{array}$};}
+%           \only<6->{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
+%             {\small $\begin{array}{ll}
+%                   L2: & \mathtt{i_4=}\phi\mathtt{(i_2,i_1)} \\
+%                       & \mathtt{j_3=}\phi\mathtt{(j_1,j_2)} \\
+%                       & \mathtt{k_2=i_4+j_3}                \\
+%                 \end{array}$};}
 %           \node at ($(v4)+(-2.2,0)$) {$v_4$};
 %           \path[->] (v0) edge (v1);
 %           \path[->] (v1) edge (v2);
 %           \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
 %           \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
 %           \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
+%           \path[->] (v3) edge (v4);
 %         \end{tikzpicture}
 %       }
 %     \end{minipage}
 %      &
 %     \begin{minipage}{.5\textwidth}
-%       \scalebox{0.6}{
+%       \begin{center}
 %         \begin{tikzpicture}
-%           \node[draw,circle] (v0) at (0,3) {$v_0$};
-%           \node[draw,circle] (v1) at (0,1.5) {$v_1$};
-%           \node[draw,circle] (v2) at (0,0) {$v_2$};
-%           \node[draw,circle] (v3) at (1.5,1.5) {$v_3$};
-%           \node[draw,circle] (v4) at (1.5,0) {$v_4$};
-%           \path[->] (v0) edge (v1)  (v0) edge (v3)  (v1) edge (v2)  (v1) edge (v4) (v3) edge (v4) (v2) [out=225,in=135] edge (v1);
-%           \node at (0.75,-1) {\small フローグラフ};
+%           \only<1-3>{\node[draw,circle,minimum size=3mm] (vt2) at (0,0) {};}
+%           \only<4>{\node[draw,circle,minimum size=3mm,fill=red] (vt2) at (0,0) {};}
+%           \only<5->{\node[draw,circle,minimum size=3mm,fill=blue] (vt2) at (0,0) {};}
+%           \only<1,2>{\node[draw,circle,minimum size=3mm] (vt1) at (0,1) {};}
+%           \only<3>{\node[draw,circle,minimum size=3mm,fill=red] (vt1) at (0,1) {};}
+%           \only<4->{\node[draw,circle,minimum size=3mm,fill=blue] (vt1) at (0,1) {};}
+%           \only<1>{\node[draw,circle,minimum size=3mm] (vt0) at (1,2) {};}
+%           \only<2>{\node[draw,circle,minimum size=3mm,fill=red] (vt0) at (1,2) {};}
+%           \only<3->{\node[draw,circle,minimum size=3mm,fill=blue] (vt0) at (1,2) {};}
+%           \only<1-4>{\node[draw,circle,minimum size=3mm] (vt3) at (1,1) {};}
+%           \only<5>{\node[draw,circle,minimum size=3mm,fill=red] (vt3) at (1,1) {};}
+%           \only<6->{\node[draw,circle,minimum size=3mm,fill=blue] (vt3) at (1,1) {};}
+%           \only<1-5>{\node[draw,circle,minimum size=3mm] (vt4) at (2,1) {};}
+%           \only<6->{\node[draw,circle,minimum size=3mm,fill=red] (vt4) at (2,1) {};}
 
-%           \node[draw,circle] (w0) at (4.5,3) {$v_0$};
-%           \node[draw,circle] (w1) at (3,1.5) {$v_1$};
-%           \node[draw,circle] (w2) at (3,0) {$v_2$};
-%           \node[draw,circle] (w3) at (4.5,1.5) {$v_3$};
-%           \node[draw,circle] (w4) at (6,1.5) {$v_4$};
-%           \path[->] (w0) edge (w1) (w0) edge (w3) (w0) edge (w4) (w1) edge (w2);
-%           \node at (4.5,-1) {\small 支配木};
+%           \node at (0,0) {\scriptsize $v_2$};
+%           \node at (0,1) {\scriptsize $v_1$};
+%           \node at (1,2) {\scriptsize $v_0$};
+%           \node at (1,1) {\scriptsize $v_3$};
+%           \node at (2,1) {\scriptsize $v_4$};
+
+%           \path[->] (vt0) edge (vt1) (vt0) edge (vt3) (vt0) edge (vt4) (vt1) edge (vt2);
 %         \end{tikzpicture}
-%       }
+%       \end{center}
+%       \[
+%         \only<1>{\begin{array}{ll}
+%             stack(i)=[] & c(i)=1 \\
+%             stack(j)=[] & c(j)=1 \\
+%             stack(k)=[] & c(k)=1 \\
+%           \end{array}}
+%         \only<2>{\begin{array}{ll}
+%             stack(i)=[1] & c(i)=2 \\
+%             stack(j)=[1] & c(j)=2 \\
+%             stack(k)=[1] & c(k)=2 \\
+%           \end{array}}
+%         \only<3>{\begin{array}{ll}
+%             stack(i)=[1,2] & c(i)=3 \\
+%             stack(j)=[1]   & c(j)=2 \\
+%             stack(k)=[1]   & c(k)=2 \\
+%           \end{array}}
+%         \only<4>{\begin{array}{ll}
+%             stack(i)=[1,2,3] & c(i)=4 \\
+%             stack(j)=[1]     & c(j)=2 \\
+%             stack(k)=[1]     & c(k)=2 \\
+%           \end{array}}
+%         \only<5>{\begin{array}{ll}
+%             stack(i)=[1,2,3] & c(i)=4 \\
+%             stack(j)=[1,2]   & c(j)=3 \\
+%             stack(k)=[1]     & c(k)=2 \\
+%           \end{array}}
+%         \only<6>{\begin{array}{ll}
+%             stack(i)=[1,2,3] & c(i)=4 \\
+%             stack(j)=[1,2]   & c(j)=3 \\
+%             stack(k)=[1,2]   & c(k)=3 \\
+%           \end{array}}
+%       \]
 %     \end{minipage}
 %   \end{tabular}
 % \end{frame}
 
-\begin{frame}
-  \frametitle{支配辺境}
+% \subsection{SSA形式に対する最適化}
 
-  フローグラフ$G=(V,E)$
+% \begin{frame}
+%   \frametitle{SSA形式に対する最適化}
+%   SSA形式：データフロー解析ずみのプログラム\\[2zw]
 
-  \begin{Def}
-    $v$の支配辺境(Dominance Frontier)
-    \[DF(v)=\{u\in V|\exists w.w\in
-      pred(u),v\underline{\gg}w,v\not\gg u\}
-    \]
-  \end{Def}
+%   \greentext{構文的にフローが表現されている}
+%   $\Rightarrow$
+%   \redtext{最適化を効果的に適用できる}：
+%   \greentext{更新のチェックが不要}
 
-  \greentext{強く支配していれば$\phi$関数を挿入する必要なし}
+%   例：DAGの構成が容易
 
-  \begin{center}
-    \begin{tikzpicture}
-      \draw[style=dashed] (0,0) rectangle (4,1);
-      \node[draw,circle,minimum size=3mm] (u1) at (1,0.5) {};
-      \node at (1,0.5) {\scriptsize $u_1$};
-      \node[draw,circle,minimum size=3mm] (u2) at (2,0.5) {};
-      \node at (2,0.5) {\scriptsize $u_2$};
-      \node[draw,circle,minimum size=3mm] (u3) at (3,0.5) {};
-      \node at (3,0.5) {\scriptsize $u_3$};
+%   \vspace*{1zw}
 
-      \node[draw,circle,minimum size=3mm] (w1) at (1,2) {};
-      \node at (1,2) {\scriptsize $w_1$};
-      \node[draw,circle,minimum size=3mm] (w2) at (2,2) {};
-      \node at (2,2) {\scriptsize $w_2$};
-      \node[draw,circle,minimum size=3mm] (w3) at (3,2) {};
-      \node at (3,2) {\scriptsize $w_3$};
+%   \begin{itemize}
+%     \item 定数伝播
+%     \item コピー伝播
+%     \item 共通部分式の削除
+%     \item ループ不変コードの移動
+%     \item 不用コードの削除
+%   \end{itemize}
+% \end{frame}
 
-      \node[draw,circle,minimum size=3mm] (v) at (2,3.5) {};
-      \node at (2,3.5) {\scriptsize $v$};
+% \begin{frame}
+%   \frametitle{SSA最適化例 [佐々:06]}
 
-      \node[fill,circle,minimum size=2mm] (p0) at (0,3) {};
-      \node[fill,circle,minimum size=2mm] (p1) at (2.5,3.5) {};
-      \node[fill,circle,minimum size=2mm] (p2) at (3.5,3) {};
+%   \only<1>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc01.pdf}
+%          & $\Rightarrow$ &
+%         \includegraphics{ssasrc02.pdf}
+%         \\[1zw]
+%         \multicolumn{3}{c}{\greentext{SSA形式へ変換}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-      \path[->] (v) edge (w1) (v) edge (w2) (v) edge (w3)
-      (w1) edge (u1) (w2) edge (u2) (w3) edge (u3)
-      (p0) edge (u1) (p1) edge (u2) (p2) edge (u3);
-    \end{tikzpicture}
-  \end{center}
+%   \only<2>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc02.pdf}
+%          & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%         \includegraphics{ssasrc03.pdf}               \\[1zw]
+%         \multicolumn{3}{c}{\greentext{共通部分式除去}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-\end{frame}
+%   \only<3>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc03.pdf}
+%          & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%         \includegraphics{ssasrc04.pdf}               \\[1zw]
+%         \multicolumn{3}{c}{\greentext{コピー伝播}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-\begin{frame}
-  \frametitle{支配辺境の計算}
+%   \only<4>{
+%     \begin{center}
+%       \begin{center}
+%         \begin{tabular}{ccc}
+%           \includegraphics{ssasrc04.pdf}
+%            & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%           \includegraphics{ssasrc05.pdf}               \\[1zw]
+%           \multicolumn{3}{c}{\greentext{共通部分式除去、定数伝播}}
+%         \end{tabular}
+%       \end{center}
+%     \end{center}
+%   }
 
-  フローグラフ$G=(V,E,v_{init})$
+%   \only<5>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc05.pdf}
+%          & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%         \includegraphics{ssasrc06.pdf}               \\[1zw]
+%         \multicolumn{3}{c}{\greentext{コピー伝播、定数伝播、恒等式}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-  \begin{Lem}
-    \[
-      DF(v)=DF_{local}(v)\cup\bigcup_{w\in Child(v)}DF^v_{up}(w)
-    \]
-    ここで、
+% \end{frame}
 
-    \[
-      \begin{array}{rcl}
-        DF_{local}(v) & = & \{u|(v,u)\in
-        E,\mathsf{idom}(u)\not=v\}                                \\
-        \multicolumn{3}{p{.5\textwidth}}{
-          \mbox{\greentext{$v$の次の頂点で他からのフローが存在する}}}
-        \\[10pt]
-        DF^v_{up}(w)  & = & \{u\in DF(w)|\mathsf{idom}(u)\not=v\} \\
-        \multicolumn{3}{p{.5\textwidth}}{
-        \mbox{\greentext{$w$は支配木において$v$の子で$u$から見て、}}}             \\
-        \multicolumn{3}{p{.5\textwidth}}{\mbox{\greentext{
-              $v$は$w$よりも上(根に近い)にある。}}}
-      \end{array}
-    \]
+% \begin{frame}
+%   \frametitle{最適化の条件}
 
-  \end{Lem}
-  支配木の葉から$DF$を計算していく(p129：例)
-\end{frame}
+%   最適化を行うときに支配関係を壊さないようにする。
 
-\begin{frame}
-  \frametitle{定義合流条件の計算}
+%   \begin{center}
+%     \includegraphics[height=.5\textheight]{SSAincorrectOpt.pdf}
+%   \end{center}
 
-  \begin{list}{}{}
-    \item [定義合流条件'($S$)]
-          二つのパス $p(=v_1,\cdots,v_k)$, $q(=u_1,\cdots,u_l)$
-          \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-            \item $k\ge 2$, $l\ge 2$
-            \item $v_1,u_1\in S$
-            \item $v_k=u_l=v$
-            \item $\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,u_{l-1}\}=\emptyset$
-          \end{list}
-
-          \vspace*{5pt}
-
-    \item $J(S)=\{v|\mbox{上の条件を満たす$v$}\}$
-  \end{list}
-
-  \vspace*{5pt}
-
-  \redtext{\small
-    変数$x$が定義される場所の集合を$S$とすると
-    $J(S)$は、$x$に対して最初に$\phi$関数$x=\phi(x,x)$が挿入
-    される場所}
-
-  \vspace*{5pt}
-
-  {\small\greentext{
-      $\phi$関数によって新たに定義が挿入されるため、さらに挿入が必
-      要:次の漸化式で不動点$J^+(S_0)$を計算}}
-
-  \[
-    \begin{array}{rcl}
-      S_{i+1}      & = & J(S_0\cup S_i)                   \\
-      J^{n+1}(S_0) & = & J(S_0\cup J^n(S_0))              \\
-      J^+(S_0)     & = & \lim_{n\leftarrow\infty}J^n(S_0)
-    \end{array}
-  \]
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{支配辺境と合流条件}
-
-  \begin{itembox}[l]{定理}
-    $DF(S)=\bigcup_{v\in S}DF(v)$のとき、
-    \[
-      F_{i+1}=DF(S_0\cup F_i)\quad(i\ge 0,F_0=\emptyset)
-    \]
-    とするとき，$DF^+(S_0)=\lim_{n\leftarrow\infty}F_n$とする．
-    このとき，
-    \[
-      DF^+(S_0)=J^+(S_0)
-    \]
-  \end{itembox}
-
-  \greentext{合流条件は支配辺境から計算可能}
-
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{例6.29}
-
-  \begin{tabular}{ccc}
-    \begin{minipage}{.4\textwidth}
-      \scalebox{0.8}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-          {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-                               & \mathtt{j=1}                               \\[-2pt]
-                               & \mathtt{k=1}                               \\[-2pt]
-                               & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<2>{
-            \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i=}\phi\mathtt{(i,i)}              \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i=i+1}   \\
-                              & \mathtt{goto L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j=i+k} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \only<1>{
-            \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{k=i+j} \\
-                \end{array}$};}
-          \only<2>{
-            \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i=}\phi\mathtt{(i,i)} \\
-                      & \mathtt{j=}\phi\mathtt{(j,j)} \\
-                      & \mathtt{k=i+j}                \\
-                \end{array}$};}
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-          \path[->] (v3) edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     & \hspace*{1zw} &
-    \begin{minipage}{.5\textwidth}
-      \begin{tabular}{l}
-        $i$の定義：$S_0=\{v_0,v_2\}$  \\
-        $j$の定義：$S'_0=\{v_0,v_3\}$ \\
-        $k$の定義：$S''_0=\{v_0,v_4\}$
-      \end{tabular}
-
-      \[
-        \begin{array}{l}
-          DF^+(S_0)=\{v_1,v_4\} \\
-          DF^+(S'_0)=\{v_4\}    \\
-          DF^+(S''_0)=\emptyset
-        \end{array}
-      \]
-    \end{minipage}
-  \end{tabular}
-
-\end{frame}
-
-\subsection{SSA形式への変換}
-
-\begin{frame}
-  \frametitle{SSA形式への変換}
-  \begin{tabular}{cc}
-    \begin{minipage}{.5\textwidth}
-
-      \scalebox{0.8}{
-        \begin{tikzpicture}
-          \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-            {\small $\begin{array}{ll}\hspace*{1zw}
-                   & \mathtt{i=1}                               \\[-2pt]
-                   & \mathtt{j=1}                               \\[-2pt]
-                   & \mathtt{k=1}                               \\[-2pt]
-                   & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};}
-          \only<2->{\node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-            {\small $\begin{array}{ll}\hspace*{1zw}
-                   & \mathtt{i_1=1}                              \\[-2pt]
-                   & \mathtt{j_1=1}                              \\[-2pt]
-                   & \mathtt{k_1=1}                              \\[-2pt]
-                   & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};}
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \only<1>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i=}\phi\mathtt{(i,i)}              \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<2>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i=}\phi\mathtt{(i_1,i)}            \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<3>{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i)}          \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \only<4->{\node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-            {\small $\begin{array}{ll}
-                  L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i_3)}        \\[-2pt]
-                      & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-                \end{array}$};}
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \only<1-3>{\node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-            {\small $\begin{array}{ll}
-                  \hspace*{1zw} & \mathtt{i=i+1}   \\
-                                & \mathtt{goto L3}
-                \end{array}$};}
-          \only<4->{\node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-            {\small $\begin{array}{ll}
-                  \hspace*{1zw} & \mathtt{i_3=i_2+1} \\
-                                & \mathtt{goto L3}
-                \end{array}$};}
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \only<1-4>{\node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-            {\small $\begin{array}{ll}
-                  L1: & \mathtt{j=i+k} \\
-                \end{array}$};}
-          \only<5->{\node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-            {\small $\begin{array}{ll}
-                  L1: & \mathtt{j_2=i_1+k_1} \\
-                \end{array}$};}
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \only<1,2>{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i=}\phi\mathtt{(i,i)} \\
-                      & \mathtt{j=}\phi\mathtt{(j,j)} \\
-                      & \mathtt{k=i+j}                \\
-                \end{array}$};}
-          \only<3,4,5>{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i=}\phi\mathtt{(i_2,i)} \\
-                      & \mathtt{j=}\phi\mathtt{(j_1,j)} \\
-                      & \mathtt{k=i+j}                  \\
-                \end{array}$};}
-          \only<6->{\node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-            {\small $\begin{array}{ll}
-                  L2: & \mathtt{i_4=}\phi\mathtt{(i_2,i_1)} \\
-                      & \mathtt{j_3=}\phi\mathtt{(j_1,j_2)} \\
-                      & \mathtt{k_2=i_4+j_3}                \\
-                \end{array}$};}
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-          \path[->] (v3) edge (v4);
-        \end{tikzpicture}
-      }
-    \end{minipage}
-     &
-    \begin{minipage}{.5\textwidth}
-      \begin{center}
-        \begin{tikzpicture}
-          \only<1-3>{\node[draw,circle,minimum size=3mm] (vt2) at (0,0) {};}
-          \only<4>{\node[draw,circle,minimum size=3mm,fill=red] (vt2) at (0,0) {};}
-          \only<5->{\node[draw,circle,minimum size=3mm,fill=blue] (vt2) at (0,0) {};}
-          \only<1,2>{\node[draw,circle,minimum size=3mm] (vt1) at (0,1) {};}
-          \only<3>{\node[draw,circle,minimum size=3mm,fill=red] (vt1) at (0,1) {};}
-          \only<4->{\node[draw,circle,minimum size=3mm,fill=blue] (vt1) at (0,1) {};}
-          \only<1>{\node[draw,circle,minimum size=3mm] (vt0) at (1,2) {};}
-          \only<2>{\node[draw,circle,minimum size=3mm,fill=red] (vt0) at (1,2) {};}
-          \only<3->{\node[draw,circle,minimum size=3mm,fill=blue] (vt0) at (1,2) {};}
-          \only<1-4>{\node[draw,circle,minimum size=3mm] (vt3) at (1,1) {};}
-          \only<5>{\node[draw,circle,minimum size=3mm,fill=red] (vt3) at (1,1) {};}
-          \only<6->{\node[draw,circle,minimum size=3mm,fill=blue] (vt3) at (1,1) {};}
-          \only<1-5>{\node[draw,circle,minimum size=3mm] (vt4) at (2,1) {};}
-          \only<6->{\node[draw,circle,minimum size=3mm,fill=red] (vt4) at (2,1) {};}
-
-          \node at (0,0) {\scriptsize $v_2$};
-          \node at (0,1) {\scriptsize $v_1$};
-          \node at (1,2) {\scriptsize $v_0$};
-          \node at (1,1) {\scriptsize $v_3$};
-          \node at (2,1) {\scriptsize $v_4$};
-
-          \path[->] (vt0) edge (vt1) (vt0) edge (vt3) (vt0) edge (vt4) (vt1) edge (vt2);
-        \end{tikzpicture}
-      \end{center}
-      \[
-        \only<1>{\begin{array}{ll}
-            stack(i)=[] & c(i)=1 \\
-            stack(j)=[] & c(j)=1 \\
-            stack(k)=[] & c(k)=1 \\
-          \end{array}}
-        \only<2>{\begin{array}{ll}
-            stack(i)=[1] & c(i)=2 \\
-            stack(j)=[1] & c(j)=2 \\
-            stack(k)=[1] & c(k)=2 \\
-          \end{array}}
-        \only<3>{\begin{array}{ll}
-            stack(i)=[1,2] & c(i)=3 \\
-            stack(j)=[1]   & c(j)=2 \\
-            stack(k)=[1]   & c(k)=2 \\
-          \end{array}}
-        \only<4>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1]     & c(j)=2 \\
-            stack(k)=[1]     & c(k)=2 \\
-          \end{array}}
-        \only<5>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1,2]   & c(j)=3 \\
-            stack(k)=[1]     & c(k)=2 \\
-          \end{array}}
-        \only<6>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1,2]   & c(j)=3 \\
-            stack(k)=[1,2]   & c(k)=3 \\
-          \end{array}}
-      \]
-    \end{minipage}
-  \end{tabular}
-\end{frame}
-
-\subsection{SSA形式に対する最適化}
-
-\begin{frame}
-  \frametitle{SSA形式に対する最適化}
-  SSA形式：データフロー解析ずみのプログラム\\[2zw]
-
-  \greentext{構文的にフローが表現されている}
-  $\Rightarrow$
-  \redtext{最適化を効果的に適用できる}：
-  \greentext{更新のチェックが不要}
-
-  例：DAGの構成が容易
-
-  \vspace*{1zw}
-
-  \begin{itemize}
-    \item 定数伝播
-    \item コピー伝播
-    \item 共通部分式の削除
-    \item ループ不変コードの移動
-    \item 不用コードの削除
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{SSA最適化例 [佐々:06]}
-
-  \only<1>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc01.pdf}
-         & $\Rightarrow$ &
-        \includegraphics{ssasrc02.pdf}
-        \\[1zw]
-        \multicolumn{3}{c}{\greentext{SSA形式へ変換}}
-      \end{tabular}
-    \end{center}
-  }
-
-  \only<2>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc02.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc03.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{共通部分式除去}}
-      \end{tabular}
-    \end{center}
-  }
-
-  \only<3>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc03.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc04.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{コピー伝播}}
-      \end{tabular}
-    \end{center}
-  }
-
-  \only<4>{
-    \begin{center}
-      \begin{center}
-        \begin{tabular}{ccc}
-          \includegraphics{ssasrc04.pdf}
-           & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-          \includegraphics{ssasrc05.pdf}               \\[1zw]
-          \multicolumn{3}{c}{\greentext{共通部分式除去、定数伝播}}
-        \end{tabular}
-      \end{center}
-    \end{center}
-  }
-
-  \only<5>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc05.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc06.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{コピー伝播、定数伝播、恒等式}}
-      \end{tabular}
-    \end{center}
-  }
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{最適化の条件}
-
-  最適化を行うときに支配関係を壊さないようにする。
-
-  \begin{center}
-    \includegraphics[height=.5\textheight]{SSAincorrectOpt.pdf}
-  \end{center}
-
-  $z<0$の評価は同じ方向にしかブランチしない\\
-  $\Rightarrow$ $z<0$ならば3の$\phi$関数はいつも$x_1$を$x_2$へ代入\\
-  5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\[5pt]
-  %(支配関係を壊すと一般にはデータフローが保証されない)\\
-  厳密SSA形式：\redtext{定義が一意的＋支配関係}
-  %\greentext{静的と動的のギャップを$\phi$関数で埋めているため}
-\end{frame}
+%   $z<0$の評価は同じ方向にしかブランチしない\\
+%   $\Rightarrow$ $z<0$ならば3の$\phi$関数はいつも$x_1$を$x_2$へ代入\\
+%   5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\[5pt]
+%   %(支配関係を壊すと一般にはデータフローが保証されない)\\
+%   厳密SSA形式：\redtext{定義が一意的＋支配関係}
+%   %\greentext{静的と動的のギャップを$\phi$関数で埋めているため}
+% \end{frame}
 
 % \begin{frame}
 %   \frametitle{条件付き定数伝播}
@@ -1106,171 +996,171 @@ $u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で
 %   \end{center}
 % \end{frame}
 
-\subsection{SSA形式からの逆変換}
+% \subsection{SSA形式からの逆変換}
 
-\begin{frame}
-  \frametitle{SSA形式からの逆変換：$\phi$関数の消去}
+% \begin{frame}
+%   \frametitle{SSA形式からの逆変換：$\phi$関数の消去}
 
-  \begin{tabular}{ccc}
-    \begin{minipage}{.4\textwidth}
-      \begin{tikzpicture}
-        \node[draw] (u1) at (0,2) {$x_1=\cdots$};
-        \node[draw] (u2) at (2,2) {$x_2=\cdots$};
-        \node[draw] (v0) at (1,0) {$x_3=\phi(x_1,x_2)$};
-        \path[->] (u1) edge (v0) (u2) edge (v0);
-        \node at ($(u1)+(-1,0)$) {$u_1$};
-        \node at ($(u2)+(-1,0)$) {$u_2$};
-        \node at ($(v0)+(-1.5,0)$) {$v$};
-      \end{tikzpicture}
-    \end{minipage}
-     & $\Rightarrow$ &
-    \begin{minipage}{.4\textwidth}
-      \begin{tikzpicture}
-        \node[style=dashed,draw] (uu1) at (0,2) {$x_1=\cdots$};
-        \node[style=dotted,draw] (uw1) at (0,1) {$x_3=x_1$};
-        \node[style=dashed,draw] (uu2) at (2.5,2) {$x_2=\cdots$};
-        \node[style=dotted,draw] (uw2) at (2.5,1) {$x_3=x_2$};
-        \node at ($(uu1)+(-1.1,0)$) {$u_1$};
-        \node at ($(uw1)+(-1.1,0)$) {$w_1$};
-        \node at ($(uu2)+(-1.1,0)$) {$u_2$};
-        \node at ($(uw2)+(-1.1,0)$) {$w_2$};
-        \node[minimum width=1.5cm, minimum height=5mm,draw] (ww1) at (1.25,0) {};
-        \node at ($(ww1)+(-1.1,0)$) {$v$};
-        \draw (-0.9,0.6) rectangle +(1.8,1.8);
-        \draw (1.6,0.6) rectangle +(1.8,1.8);
-        \path[->](uu1) edge (uw1)  (uu2) edge (uw2) (uw1) edge (ww1)  (uw2) edge (ww1);
-      \end{tikzpicture}
-    \end{minipage}
-  \end{tabular}
+%   \begin{tabular}{ccc}
+%     \begin{minipage}{.4\textwidth}
+%       \begin{tikzpicture}
+%         \node[draw] (u1) at (0,2) {$x_1=\cdots$};
+%         \node[draw] (u2) at (2,2) {$x_2=\cdots$};
+%         \node[draw] (v0) at (1,0) {$x_3=\phi(x_1,x_2)$};
+%         \path[->] (u1) edge (v0) (u2) edge (v0);
+%         \node at ($(u1)+(-1,0)$) {$u_1$};
+%         \node at ($(u2)+(-1,0)$) {$u_2$};
+%         \node at ($(v0)+(-1.5,0)$) {$v$};
+%       \end{tikzpicture}
+%     \end{minipage}
+%      & $\Rightarrow$ &
+%     \begin{minipage}{.4\textwidth}
+%       \begin{tikzpicture}
+%         \node[style=dashed,draw] (uu1) at (0,2) {$x_1=\cdots$};
+%         \node[style=dotted,draw] (uw1) at (0,1) {$x_3=x_1$};
+%         \node[style=dashed,draw] (uu2) at (2.5,2) {$x_2=\cdots$};
+%         \node[style=dotted,draw] (uw2) at (2.5,1) {$x_3=x_2$};
+%         \node at ($(uu1)+(-1.1,0)$) {$u_1$};
+%         \node at ($(uw1)+(-1.1,0)$) {$w_1$};
+%         \node at ($(uu2)+(-1.1,0)$) {$u_2$};
+%         \node at ($(uw2)+(-1.1,0)$) {$w_2$};
+%         \node[minimum width=1.5cm, minimum height=5mm,draw] (ww1) at (1.25,0) {};
+%         \node at ($(ww1)+(-1.1,0)$) {$v$};
+%         \draw (-0.9,0.6) rectangle +(1.8,1.8);
+%         \draw (1.6,0.6) rectangle +(1.8,1.8);
+%         \path[->](uu1) edge (uw1)  (uu2) edge (uw2) (uw1) edge (ww1)  (uw2) edge (ww1);
+%       \end{tikzpicture}
+%     \end{minipage}
+%   \end{tabular}
 
-  \vspace*{10pt}
+%   \vspace*{10pt}
 
-  \redtext{$\phi$関数に対してはコード生成ができない。}
+%   \redtext{$\phi$関数に対してはコード生成ができない。}
 
-  \vspace*{5pt}
+%   \vspace*{5pt}
 
-  \greentext{(先の例はたまたま$\phi$関数まで消えてしまった。)}
+%   \greentext{(先の例はたまたま$\phi$関数まで消えてしまった。)}
 
-  \vspace*{1zw}
+%   \vspace*{1zw}
 
-  \greentext{ノード$w_1$,$w_2$を挿入して、$\phi$関数を消去}
+%   \greentext{ノード$w_1$,$w_2$を挿入して、$\phi$関数を消去}
 
-  \vspace*{10pt}
+%   \vspace*{10pt}
 
-  3番地コード$\rightarrow$SSA形式$\rightarrow$最適化$\rightarrow$ $\phi$関数消去
+%   3番地コード$\rightarrow$SSA形式$\rightarrow$最適化$\rightarrow$ $\phi$関数消去
 
-\end{frame}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{逆変換アルゴリズム}
+% \begin{frame}
+%   \frametitle{逆変換アルゴリズム}
 
-  \begin{trivlist}
-    \item [1.] フローグラフの変換\\
-    $\phi$関数を持つブロックに対して挿入条件を満たさないまで、代
-    入文を挿入する。
+%   \begin{trivlist}
+%     \item [1.] フローグラフの変換\\
+%     $\phi$関数を持つブロックに対して挿入条件を満たさないまで、代
+%     入文を挿入する。
 
-    \vspace*{1zw}
+%     \vspace*{1zw}
 
-    挿入条件：$\phi$関数を持つブロックが複数の先行頂点を持ち、そ
-    のうちの一つが複数の後続頂点を持つ。
+%     挿入条件：$\phi$関数を持つブロックが複数の先行頂点を持ち、そ
+%     のうちの一つが複数の後続頂点を持つ。
 
-    先行ブロックの最後がgoto文の場合は、goto文の直前に代入文を挿
-    入する。
-    \item [2.] $\phi$関数の消去
-  \end{trivlist}
+%     先行ブロックの最後がgoto文の場合は、goto文の直前に代入文を挿
+%     入する。
+%     \item [2.] $\phi$関数の消去
+%   \end{trivlist}
 
-\end{frame}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{逆変換例}
+% \begin{frame}
+%   \frametitle{逆変換例}
 
-  %\greentext{(p.136 演習問題3)}
+%   %\greentext{(p.136 演習問題3)}
 
-  \only<1>{
-    \begin{center}
-      \scalebox{0.75}{
-        \begin{tikzpicture}
-          \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-          {\small $\begin{array}{ll}\hspace*{1zw}
-                 & \mathtt{i_1=1}                              \\[-2pt]
-                 & \mathtt{j_1=1}                              \\[-2pt]
-                 & \mathtt{k_1=1}                              \\[-2pt]
-                 & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};
-          \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
-          {\small $\begin{array}{ll}
-                L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i_3)}        \\[-2pt]
-                    & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
-              \end{array}$};
-          \node at ($(v1)+(-2.2,0)$) {$v_1$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
-          {\small $\begin{array}{ll}
-                \hspace*{1zw} & \mathtt{i_3=i_2+1} \\
-                              & \mathtt{goto\ L3}
-              \end{array}$};
-          \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
-          {\small $\begin{array}{ll}
-                L1: & \mathtt{j_2=i_1+k_1} \\
-              \end{array}$};
-          \node at ($(v3)+(-2.2,0)$) {$v_3$};
-          \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
-          {\small $\begin{array}{ll}
-                L2: & \mathtt{i_4=}\phi\mathtt{(i_2,i_1)} \\
-                    & \mathtt{j_3=}\phi\mathtt{(j_1,j_2)} \\
-                    & \mathtt{k_2=i_4+j_3}                \\
-              \end{array}$};
-          \node at ($(v4)+(-2.2,0)$) {$v_4$};
-          \path[->] (v0) edge (v1);
-          \path[->] (v1) edge (v2);
-          \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
-          \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
-          \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
-          \path[->] (v3) edge (v4);
-        \end{tikzpicture}
-      }
-    \end{center}
-  }
-  \only<2>{
-    \scalebox{0.8}{
-      \begin{tikzpicture}
-        \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
-        {\small $\begin{array}{ll}\hspace*{1zw}
-               & \mathtt{i_1=1}                              \\[-2pt]
-               & \mathtt{j_1=1}                              \\[-2pt]
-               & \mathtt{k_1=1}                              \\[-2pt]
-               & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};
-        \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
-        \node[anchor=west,draw, minimum width=3.8cm,minimum height=5mm,fill=lightlightgrey] (w0) at (0,5)
-        {$\hspace*{1zw}\mathtt{i_2=i_1}$};
-        \node at ($(w0)+(-2.2,0)$) {$w_0$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,3.8)
-        {$\mathtt{L3:\ if}\ q'\ \mathtt{goto}\ \mathtt{L2}$};
-        \node at ($(v1)+(-2.2,0)$) {$v_1$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2)
-        {$\begin{array}{ll}\hspace*{1zw} & \mathtt{i_3=i_2+1} \\[-2pt]
-                               & \mathtt{i_2=i_3}   \\[-2pt]
-                               & goto\ L3\end{array}$};
-        \node at ($(v2)+(-2.2,0.6)$) {$v_2$};
-        \node[anchor=west,draw,minimum width=3cm,minimum height=8mm,fill=lightlightgrey] (w1) at (5,2)
-        {$\begin{array}{ll}L2: & \mathtt{i_4=i_2} \\[-2pt] & \mathtt{j_3=j_1}\\[-2pt]
-                     & goto\ L4
-            \end{array}$};
-        \node at ($(w1)+(-1.8,0.3)$) {$w_1$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v3) at (9,4)
-        {$\begin{array}{ll}L1: & \mathtt{j_2=i_1+k_1} \\
-                     & \mathtt{i_4=j_1}     \\ & \mathtt{j_3=j_2}\end{array}$};
-        \node at ($(v3)+(-2.2,0.4)$) {$v_3$};
-        \node[anchor=west,draw,minimum width=3.8cm] (v4) at (9,0)
-        {$L4:$\ $\mathtt{k_2=i_4+j_3}$};
-        \node at ($(v4)+(-2.2,0)$) {$v_4$};
-        \path[->] (v0) edge (w0)  (w0) edge (v1)  (v1) edge (v2)  (v2) [out=190,in=170,looseness=1] edge (v1);
-        \path[->] (v1) [out=350,in=135] edge (w1)  (w1) [out=330,in=120] edge (v4);
-        \path[->] (v3) edge (v4);
-        \path[->] (v0) [out=330,in=135] edge (v3);
-      \end{tikzpicture}
-    }
-  }
-\end{frame}
+%   \only<1>{
+%     \begin{center}
+%       \scalebox{0.75}{
+%         \begin{tikzpicture}
+%           \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
+%           {\small $\begin{array}{ll}\hspace*{1zw}
+%                  & \mathtt{i_1=1}                              \\[-2pt]
+%                  & \mathtt{j_1=1}                              \\[-2pt]
+%                  & \mathtt{k_1=1}                              \\[-2pt]
+%                  & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};
+%           \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4.25)
+%           {\small $\begin{array}{ll}
+%                 L3: & \mathtt{i_2=}\phi\mathtt{(i_1,i_3)}        \\[-2pt]
+%                     & \mathtt{if}\ q\ \mathtt{goto}\ \mathtt{L2} \\
+%               \end{array}$};
+%           \node at ($(v1)+(-2.2,0)$) {$v_1$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2.5)
+%           {\small $\begin{array}{ll}
+%                 \hspace*{1zw} & \mathtt{i_3=i_2+1} \\
+%                               & \mathtt{goto\ L3}
+%               \end{array}$};
+%           \node at ($(v2)+(-2.2,0.2)$) {$v_2$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v3) at (0,1)
+%           {\small $\begin{array}{ll}
+%                 L1: & \mathtt{j_2=i_1+k_1} \\
+%               \end{array}$};
+%           \node at ($(v3)+(-2.2,0)$) {$v_3$};
+%           \node[anchor=west,draw,minimum width=3.8cm] (v4) at (0,-0.5)
+%           {\small $\begin{array}{ll}
+%                 L2: & \mathtt{i_4=}\phi\mathtt{(i_2,i_1)} \\
+%                     & \mathtt{j_3=}\phi\mathtt{(j_1,j_2)} \\
+%                     & \mathtt{k_2=i_4+j_3}                \\
+%               \end{array}$};
+%           \node at ($(v4)+(-2.2,0)$) {$v_4$};
+%           \path[->] (v0) edge (v1);
+%           \path[->] (v1) edge (v2);
+%           \path[->] (v2) [out=210,in=150,looseness=3] edge (v1);
+%           \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
+%           \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
+%           \path[->] (v3) edge (v4);
+%         \end{tikzpicture}
+%       }
+%     \end{center}
+%   }
+%   \only<2>{
+%     \scalebox{0.8}{
+%       \begin{tikzpicture}
+%         \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6.5)
+%         {\small $\begin{array}{ll}\hspace*{1zw}
+%                & \mathtt{i_1=1}                              \\[-2pt]
+%                & \mathtt{j_1=1}                              \\[-2pt]
+%                & \mathtt{k_1=1}                              \\[-2pt]
+%                & \mathtt{if}\ p'\ \mathtt{goto}\ \mathtt{L1} \\\end{array}$};
+%         \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
+%         \node[anchor=west,draw, minimum width=3.8cm,minimum height=5mm,fill=lightlightgrey] (w0) at (0,5)
+%         {$\hspace*{1zw}\mathtt{i_2=i_1}$};
+%         \node at ($(w0)+(-2.2,0)$) {$w_0$};
+%         \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,3.8)
+%         {$\mathtt{L3:\ if}\ q'\ \mathtt{goto}\ \mathtt{L2}$};
+%         \node at ($(v1)+(-2.2,0)$) {$v_1$};
+%         \node[anchor=west,draw,minimum width=3.8cm] (v2) at (0,2)
+%         {$\begin{array}{ll}\hspace*{1zw} & \mathtt{i_3=i_2+1} \\[-2pt]
+%                                & \mathtt{i_2=i_3}   \\[-2pt]
+%                                & goto\ L3\end{array}$};
+%         \node at ($(v2)+(-2.2,0.6)$) {$v_2$};
+%         \node[anchor=west,draw,minimum width=3cm,minimum height=8mm,fill=lightlightgrey] (w1) at (5,2)
+%         {$\begin{array}{ll}L2: & \mathtt{i_4=i_2} \\[-2pt] & \mathtt{j_3=j_1}\\[-2pt]
+%                      & goto\ L4
+%             \end{array}$};
+%         \node at ($(w1)+(-1.8,0.3)$) {$w_1$};
+%         \node[anchor=west,draw,minimum width=3.8cm] (v3) at (9,4)
+%         {$\begin{array}{ll}L1: & \mathtt{j_2=i_1+k_1} \\
+%                      & \mathtt{i_4=j_1}     \\ & \mathtt{j_3=j_2}\end{array}$};
+%         \node at ($(v3)+(-2.2,0.4)$) {$v_3$};
+%         \node[anchor=west,draw,minimum width=3.8cm] (v4) at (9,0)
+%         {$L4:$\ $\mathtt{k_2=i_4+j_3}$};
+%         \node at ($(v4)+(-2.2,0)$) {$v_4$};
+%         \path[->] (v0) edge (w0)  (w0) edge (v1)  (v1) edge (v2)  (v2) [out=190,in=170,looseness=1] edge (v1);
+%         \path[->] (v1) [out=350,in=135] edge (w1)  (w1) [out=330,in=120] edge (v4);
+%         \path[->] (v3) edge (v4);
+%         \path[->] (v0) [out=330,in=135] edge (v3);
+%       \end{tikzpicture}
+%     }
+%   }
+% \end{frame}
 
 \end{document}
