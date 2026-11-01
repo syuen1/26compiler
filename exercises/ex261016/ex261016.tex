@@ -21,50 +21,60 @@
   \item 提出期限: 10月27日(火) 23:55(JST)
 \end{itemize}
 \begin{list}{[\arabic{coffee}]}{\usecounter{coffee}}
-    \item 以下の文法について答えよ．
-        \[\langle\{S,E\},\{id,\texttt{(},\texttt{)},
-        \left\{\begin{array}{clcl}
-            0: & S\rightarrow E\ \# & 2: & E\rightarrow id\ \texttt{(}\ E\ \texttt{)}\}\\
-            1: & E\rightarrow id & 3: & E\rightarrow E\ \texttt{+}\ E\\
-        \end{array}\right\},S
-        \rangle\]
-        \begin{list}{(\alph{bean})}{\usecounter{bean}}
-            \item この文法はLR(0)文法か？(LR(0)オートマトンに基づいて先読み文字なしで
-            PDTの操作を決定して還元が可能か？)
-            \item この文法はSLR(0)文法か？
-            \item この文法はLR(1)文法か？
-        \end{list}
-    \item 以下の文法はLL(1)解析可能ではあるがLALR(1)解析可能でないことを示せ．
+    % \item 以下の文法について答えよ．
+    %     \[\langle\{S,E\},\{id,\texttt{(},\texttt{)},
+    %     \left\{\begin{array}{clcl}
+    %         0: & S\rightarrow E & 2: & E\rightarrow id\ \texttt{(}\ E\ \texttt{)}\}\\
+    %         1: & E\rightarrow id & 3: & E\rightarrow E\ \texttt{+}\ E\\
+    %     \end{array}\right\},S
+    %     \rangle\]
+    %     \begin{list}{(\alph{bean})}{\usecounter{bean}}
+    %         \item 
+    %         この文法はLR(0)文法か？LR(0)オートマトンに基づいて先読み
+    %         文字なしでPDTの操作を決定して還元が可能かLR(0)オートマトンを
+    %         構成して説明せよ．
+    %         \item この文法はSLR(1)文法か？構文解析表を構成して説明せよ．
+    %         \item この文法はLR(1)文法か？構文解析表を構成して説明せよ．
+    %     \end{list}
+    \item 以下の文法はLL(1)解析可能ではあるがLALR(1)解析可能でないことを
+        それぞれ構文解析表を構成して説明せよ．
         \[\langle\{S,A,E,F,X\},\{\texttt{(},\texttt{)},\texttt{[},\texttt{]},\left\{
             \begin{array}{clcl}
                 1: & S\rightarrow \verb|(|X & 5: & X\rightarrow F\verb|]| \\
-                2: & S\rightarrow E\verb|]| & 6: & E \rightarrow A        \\
-                3: & S\rightarrow F\verb|)| & 7: & F\rightarrow A         \\
-                4: & X\rightarrow E\verb|)| & 8: & A\rightarrow
+                2: & S\rightarrow E\verb|]| & 6: & E \rightarrow A\\
+                3: & S\rightarrow F\verb|)| & 7: & F\rightarrow A\\
+                4: & X\rightarrow E\verb|)| & 8: & A\rightarrow\varepsilon
             \end{array}
         \right\},S\rangle\]
-　  \item 以下の文法はLALR(1)解析可能であるがLL(1)解析可能でないことを示せ．
-        \[\langle\{S,A,B\},\{\texttt{a},\texttt{b},\texttt{c},\texttt{d}\},\left\{
+    % \item 以下の文法はLALR(1)解析可能であるがLL(1)解析可能でないことを
+    % それぞれ構文解析表を構成して説明せよ．
+    %     \[\langle\{S,A,B\},\{\texttt{a},\texttt{b},\texttt{c},\texttt{d},\texttt{e}\},\left\{
+    %         \begin{array}{clcl}
+    %             1: & S\rightarrow A\verb|a|         & 4: & S\rightarrow \verb|b|B\verb|a| \\
+    %             2: & S\rightarrow \verb|b|A\verb|c| & 5: & A\rightarrow\verb|d|           \\
+    %             3: & S\rightarrow B\verb|c|         & 6: & B\rightarrow\verb|e|
+    %         \end{array}\right\},S\rangle\]
+    \item 以下の文法について，LALR(1)構文解析表はと複数の動作をもつエントリが
+    存在する．
+        \[\langle\{S,E\},\{\texttt{while},\texttt{do},\texttt{:=},\texttt{+},id\},
+        \left\{\begin{array}{clcl}
+            0: & S\rightarrow E\ \# & 3: & E\rightarrow E\ \texttt{+}\ E\\
+            1: & E\rightarrow \texttt{while}\ E\ \texttt{do}\ E & 4: & E\rightarrow id\\
+            2: & E\rightarrow id\texttt{:=}E & & \\
+        \end{array}\right\},S\rangle\]
+        \begin{list}{(\alph{bean})}{\usecounter{bean}}
+            \item LALR(1)構文解析表を作成せよ．
+            \item 複数の動作がある状態について説明し，一般的な構文解析木を構成するためには，どちらの動作を優先すべきであるかについて解答せよ．
+        \end{list}
+    \item 以下の文法について
+            \[\langle\{S,X,M\},\{\texttt{a},\texttt{b},\texttt{c},\texttt{d}\},\left\{
             \begin{array}{clcl}
-                1: & S\rightarrow A\verb|a|         & 4: & S\rightarrow \verb|b|B\verb|a| \\
-                2: & S\rightarrow \verb|b|A\verb|c| & 5: & A\rightarrow\verb|d|           \\
-                3: & S\rightarrow B\verb|c|         & 6: & B\rightarrow\verb|d|
-            \end{array}\right\},S\rangle\]
-    \item 以下の文法はLALR(1)解析可能であるがSLR(1)解析可能でないことを示せ．
-             \[\langle\{S,X,M\{,\{\texttt{a},\texttt{b},\texttt{c},\texttt{d}\},\left\{
-            \begin{array}{clcl}
-                0: & S\rightarrow X         & 3: & X\rightarrow \verb|d|\verb|c| \\
+                0: & S\rightarrow X & 3: & X\rightarrow \verb|d|\verb|c| \\
                 1: & X\rightarrow M \verb|a| & 4: & X\rightarrow\verb|b|\verb|d|\verb|a|\\
-                2: & X\rightarrow \verb|b|M\verb|c|         & 5: & X\rightarrow\verb|d|
+                2: & X\rightarrow \verb|b|M\verb|c|         & 5: & M\rightarrow\verb|d|
             \end{array}\right\},S\rangle\]
-    \item 以下の文法について，LALR(1)構文解析表を作成すると複数の動作をもつエントリが存在する．
-            \[\langle\{S,E\},\{\texttt{while},\texttt{do},\texttt{:=},\texttt{+},id\},
-            \left\{\begin{array}{clcl}
-                0: & S\rightarrow E\ \# & 3: & E\rightarrow E\ \texttt{+}\ E\\
-                1: & E\rightarrow \texttt{while}\ E\ \texttt{do}\ E & 4: & E\rightarrow id\\
-                2: & E\rightarrow id\texttt{:=}E & & \\
-            \end{array}\right\},S\rangle\]
-            この複数の動作がある状態について説明し，一般的な構文解析木を構成するためには，
-            どちらの動作を優先すべきであるかについて解答せよ．
+            LR(1)解析可能であるがSLR(1)解析可能でない．これを以下の方法で説明せよ．
+            
+            講義ページのGoogle Colaboratoryの実行環境で示したpythonプログラムを用いて，colaboratory でLR(1)構文解析表とSLR(1)構文解析表を作成する過程を示せ．この過程をブラウザの印刷機能などを利用して，PDFに変換し，ファイルを結合して一つのPDFにまとめて提出すること．
 \end{list}
 \end{document}
