@@ -61,6 +61,8 @@
 
 \section{最適化}
 
+\subsection{支配木}
+
 \begin{frame}{フローグラフ$\rightarrow$支配木}
   \begin{tabular}{cc}
     \begin{minipage}{.4\textwidth}
@@ -125,6 +127,8 @@
     \end{minipage}
   \end{tabular}
 \end{frame}
+
+\subsection{SSA}
 
 \begin{frame}
   \frametitle{静的単一代入を用いた最適化}
@@ -489,6 +493,9 @@
           \path[->] (v0) [out=350,in=10,looseness=0.5] edge (v3);
           \path[->] (v1) [out=350,in=10,looseness=0.5] edge (v4);
           \path[->] (v3) edge (v4);
+          \only<7>{
+            \draw[color=green,line width=1.5pt] (-1.75,7.75) rectangle +(7,-9.25);
+          }
         \end{tikzpicture}
       }
     \end{minipage}
@@ -558,229 +565,229 @@
 
 \subsection{SSA形式に対する最適化}
 
-\begin{frame}
-  \frametitle{SSA形式に対する最適化}
-  SSA形式：データフロー解析ずみのプログラム\\[2zw]
+% \begin{frame}
+%   \frametitle{SSA形式に対する最適化}
+%   SSA形式：データフロー解析ずみのプログラム\\[2zw]
 
-  \greentext{構文的にフローが表現されている}
-  $\Rightarrow$
-  \redtext{最適化を効果的に適用できる}：
-  \greentext{更新のチェックが不要}
+%   \greentext{構文的にフローが表現されている}
+%   $\Rightarrow$
+%   \redtext{最適化を効果的に適用できる}：
+%   \greentext{更新のチェックが不要}
 
-  例：DAGの構成が容易
+%   例：DAGの構成が容易
 
-  \vspace*{1zw}
+%   \vspace*{1zw}
 
-  \begin{itemize}
-    \item 定数伝播
-    \item コピー伝播
-    \item 共通部分式の削除
-    \item ループ不変コードの移動
-    \item 不用コードの削除
-  \end{itemize}
-\end{frame}
+%   \begin{itemize}
+%     \item 不用コードの削除
+%     \item 定数伝播
+%     \item コピー伝播
+%     \item 共通部分式の削除
+%     \item ループ不変コードの移動
+%   \end{itemize}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{SSA最適化例 [佐々:06]}
+% \begin{frame}
+%   \frametitle{SSA最適化例 [佐々:06]}
 
-  \only<1>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc01.pdf}
-         & $\Rightarrow$ &
-        \includegraphics{ssasrc02.pdf}
-        \\[1zw]
-        \multicolumn{3}{c}{\greentext{SSA形式へ変換}}
-      \end{tabular}
-    \end{center}
-  }
+%   \only<1>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc01.pdf}
+%          & $\Rightarrow$ &
+%         \includegraphics{ssasrc02.pdf}
+%         \\[1zw]
+%         \multicolumn{3}{c}{\greentext{SSA形式へ変換}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-  \only<2>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc02.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc03.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{共通部分式除去}}
-      \end{tabular}
-    \end{center}
-  }
+%   \only<2>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc02.pdf}
+%          & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%         \includegraphics{ssasrc03.pdf}               \\[1zw]
+%         \multicolumn{3}{c}{\greentext{共通部分式除去}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-  \only<3>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc03.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc04.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{コピー伝播}}
-      \end{tabular}
-    \end{center}
-  }
+%   \only<3>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc03.pdf}
+%          & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%         \includegraphics{ssasrc04.pdf}               \\[1zw]
+%         \multicolumn{3}{c}{\greentext{コピー伝播}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-  \only<4>{
-    \begin{center}
-      \begin{center}
-        \begin{tabular}{ccc}
-          \includegraphics{ssasrc04.pdf}
-           & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-          \includegraphics{ssasrc05.pdf}               \\[1zw]
-          \multicolumn{3}{c}{\greentext{共通部分式除去、定数伝播}}
-        \end{tabular}
-      \end{center}
-    \end{center}
-  }
+%   \only<4>{
+%     \begin{center}
+%       \begin{center}
+%         \begin{tabular}{ccc}
+%           \includegraphics{ssasrc04.pdf}
+%            & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%           \includegraphics{ssasrc05.pdf}               \\[1zw]
+%           \multicolumn{3}{c}{\greentext{共通部分式除去、定数伝播}}
+%         \end{tabular}
+%       \end{center}
+%     \end{center}
+%   }
 
-  \only<5>{
-    \begin{center}
-      \begin{tabular}{ccc}
-        \includegraphics{ssasrc05.pdf}
-         & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
-        \includegraphics{ssasrc06.pdf}               \\[1zw]
-        \multicolumn{3}{c}{\greentext{コピー伝播、定数伝播、恒等式}}
-      \end{tabular}
-    \end{center}
-  }
+%   \only<5>{
+%     \begin{center}
+%       \begin{tabular}{ccc}
+%         \includegraphics{ssasrc05.pdf}
+%          & \hspace*{1zw}$\Rightarrow$\hspace*{1zw} &
+%         \includegraphics{ssasrc06.pdf}               \\[1zw]
+%         \multicolumn{3}{c}{\greentext{コピー伝播、定数伝播、恒等式}}
+%       \end{tabular}
+%     \end{center}
+%   }
 
-\end{frame}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{最適化の条件}
+% \begin{frame}
+%   \frametitle{最適化の条件}
 
-  最適化を行うときに支配関係を壊さないようにする。
+%   最適化を行うときに支配関係を壊さないようにする。
 
-  \begin{center}
-    \includegraphics[height=.5\textheight]{SSAincorrectOpt.pdf}
-  \end{center}
+%   \begin{center}
+%     \includegraphics[height=.5\textheight]{SSAincorrectOpt.pdf}
+%   \end{center}
 
-  $z<0$の評価は同じ方向にしかブランチしない\\
-  $\Rightarrow$ $z<0$ならば3の$\phi$関数はいつも$x_1$を$x_2$へ代入\\
-  5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\[5pt]
-  %(支配関係を壊すと一般にはデータフローが保証されない)\\
-  厳密SSA形式：\redtext{定義が一意的＋支配関係}
-  %\greentext{静的と動的のギャップを$\phi$関数で埋めているため}
-\end{frame}
+%   $z<0$の評価は同じ方向にしかブランチしない\\
+%   $\Rightarrow$ $z<0$ならば3の$\phi$関数はいつも$x_1$を$x_2$へ代入\\
+%   5において$z<0$で、$x_1$を参照に用いると支配関係が壊れる\\[5pt]
+%   %(支配関係を壊すと一般にはデータフローが保証されない)\\
+%   厳密SSA形式：\redtext{定義が一意的＋支配関係}
+%   %\greentext{静的と動的のギャップを$\phi$関数で埋めているため}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{条件付き定数伝播}
-  \begin{center}
-    {\begin{tabularx}{.75\textwidth}{XXX}
-      \multicolumn{1}{m{.35\textwidth}}{
-      \includegraphics[height=.7\textheight]{prog-example-crop.pdf}
-      }
-      & \multicolumn{1}{m{2em}}{$\Rightarrow$} &
-      \multicolumn{1}{m{.4\textwidth}}{
-      \includegraphics[height=.7\textheight]{SSA-prog-crop.pdf}
-      }
-     \end{tabularx}}
-  \end{center}
-  \centerline{\greentext{6のブロックは実行されるか？}}
-\end{frame}
+% \begin{frame}
+%   \frametitle{条件付き定数伝播}
+%   \begin{center}
+%     {\begin{tabularx}{.75\textwidth}{XXX}
+%       \multicolumn{1}{m{.35\textwidth}}{
+%       \includegraphics[height=.7\textheight]{prog-example-crop.pdf}
+%       }
+%       & \multicolumn{1}{m{2em}}{$\Rightarrow$} &
+%       \multicolumn{1}{m{.4\textwidth}}{
+%       \includegraphics[height=.7\textheight]{SSA-prog-crop.pdf}
+%       }
+%      \end{tabularx}}
+%   \end{center}
+%   \centerline{\greentext{6のブロックは実行されるか？}}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{条件付き定数伝播アルゴリズム}
-  {\scriptsize
-  \begin{tabular}{l}
-  $\mathcal{B}[n]=true$ならばブロック$n$は実行される可能性あり\\
-  $\mathcal{V}[x]$ 定数$c$, 決まらない$\top$, 初期化されない$\bot$
-  \end{tabular}}
+% \begin{frame}
+%   \frametitle{条件付き定数伝播アルゴリズム}
+%   {\scriptsize
+%   \begin{tabular}{l}
+%   $\mathcal{B}[n]=true$ならばブロック$n$は実行される可能性あり\\
+%   $\mathcal{V}[x]$ 定数$c$, 決まらない$\top$, 初期化されない$\bot$
+%   \end{tabular}}
 
-  \vspace*{5pt}
+%   \vspace*{5pt}
 
-  {\scriptsize\color[rgb]{0,0.5,0}
-  $\phi(x_1,\ldots,x_n)$において，$x_i$のフロー元となる直近のブロックを$b_i$と書く．
-  }
+%   {\scriptsize\color[rgb]{0,0.5,0}
+%   $\phi(x_1,\ldots,x_n)$において，$x_i$のフロー元となる直近のブロックを$b_i$と書く．
+%   }
 
-  \vspace*{5pt}
+%   \vspace*{5pt}
 
-  {\scriptsize
-  初期化：$\mathcal{B}[n]=false$ ($1\leq n\leq N$), 
-  $\mathcal{V}[x]=\bot$ ($x\in X$)
-  }
+%   {\scriptsize
+%   初期化：$\mathcal{B}[n]=false$ ($1\leq n\leq N$), 
+%   $\mathcal{V}[x]=\bot$ ($x\in X$)
+%   }
 
-  \vspace*{5pt}
+%   \vspace*{5pt}
 
-  {\scriptsize 
-  \begin{list}{Step \arabic{coffee}.}{\usecounter{coffee}}
-    \item 実行の引数となる変数$x\in P$について，$\mathcal{V}(x)\leftarrow\top$ 
-    \item $\mathcal{B}[1]\leftarrow true$
-  \end{list}
-  $\mathcal{B}$と$\mathcal{V}$が変化しなくなるまでStep 3 $\sim$ Step 10を繰り返す．
-  \begin{list}{Step \arabic{coffee}.}{\usecounter{coffee}\setcounter{coffee}{2}}
-    \item
-    $\mathcal{B}[n]=true$の次のブロックが唯一の$m$のとき，
-    $\mathcal{B}[m]\leftarrow true$
-    \item $z\leftarrow x\; op\; y$に対して$\mathcal{V}[x]=c_1$ かつ $\mathcal{V}[y]=c_2$
-    のとき，$\mathcal{V}[z]\leftarrow c_1\; op\; c_2$
-    \item $z\leftarrow x\; op\; y$に対して$\mathcal{V}[x]=\top$ または $\mathcal{V}[y]=\top$
-    のとき，$\mathcal{V}[z]\leftarrow\top$
-    \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
-    $\mathcal{V}[x_i]=c_i$, $\mathcal{V}[x_j]=c_j$, $c_i\not=c_j$となる
-    $i,j$が存在し，$\mathcal{B}[b_i]=\mathcal{B}[b_j]=true$のとき，$y\leftarrow\top$
-    \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
-    $\mathcal{V}[x_i]=\top$となる$i$が存在するならば$\mathcal{V}[y]=\top$
-    \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
-    $\mathcal{B}[b_i]=true$である$x_i$ですべて$\mathcal{V}[x_i]=c$であり，
-    $\mathcal{B}[b_j]=false$である$x_j$ですべて$\mathcal{V}[x_j]=\bot$ならば，
-    $\mathcal{V}[y]\leftarrow c$
-    \item $\mathbf{if}\ x<y\ \mathbf{goto}\ B_i\ \mathbf{else}\ B_j$に対して
-    $\mathcal{V}[x]=\top$ または $\mathcal{V}[y]=\top$ならば
-    $\mathcal{B}[i]\leftarrow true$, $\mathcal{B}[j]\leftarrow true$
-    \item $\mathbf{if}\ x<y\ \mathbf{goto}\ B_i\ \mathbf{else}\ B_j$に対して
-    $\mathcal{V}[x]=c_1$, $\mathcal{V}[y]=c_2$のとき，$c_1<c_2$ならば
-    $\mathcal{B}[i]\leftarrow true$, $c_1\not<c_2$ならば$\mathcal{B}[j]\leftarrow true$.
-  \end{list}
-  }
+%   {\scriptsize 
+%   \begin{list}{Step \arabic{coffee}.}{\usecounter{coffee}}
+%     \item 実行の引数となる変数$x\in P$について，$\mathcal{V}(x)\leftarrow\top$ 
+%     \item $\mathcal{B}[1]\leftarrow true$
+%   \end{list}
+%   $\mathcal{B}$と$\mathcal{V}$が変化しなくなるまでStep 3 $\sim$ Step 10を繰り返す．
+%   \begin{list}{Step \arabic{coffee}.}{\usecounter{coffee}\setcounter{coffee}{2}}
+%     \item
+%     $\mathcal{B}[n]=true$の次のブロックが唯一の$m$のとき，
+%     $\mathcal{B}[m]\leftarrow true$
+%     \item $z\leftarrow x\; op\; y$に対して$\mathcal{V}[x]=c_1$ かつ $\mathcal{V}[y]=c_2$
+%     のとき，$\mathcal{V}[z]\leftarrow c_1\; op\; c_2$
+%     \item $z\leftarrow x\; op\; y$に対して$\mathcal{V}[x]=\top$ または $\mathcal{V}[y]=\top$
+%     のとき，$\mathcal{V}[z]\leftarrow\top$
+%     \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
+%     $\mathcal{V}[x_i]=c_i$, $\mathcal{V}[x_j]=c_j$, $c_i\not=c_j$となる
+%     $i,j$が存在し，$\mathcal{B}[b_i]=\mathcal{B}[b_j]=true$のとき，$y\leftarrow\top$
+%     \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
+%     $\mathcal{V}[x_i]=\top$となる$i$が存在するならば$\mathcal{V}[y]=\top$
+%     \item $y\leftarrow\phi(x_1,\ldots,x_n)$に対して，
+%     $\mathcal{B}[b_i]=true$である$x_i$ですべて$\mathcal{V}[x_i]=c$であり，
+%     $\mathcal{B}[b_j]=false$である$x_j$ですべて$\mathcal{V}[x_j]=\bot$ならば，
+%     $\mathcal{V}[y]\leftarrow c$
+%     \item $\mathbf{if}\ x<y\ \mathbf{goto}\ B_i\ \mathbf{else}\ B_j$に対して
+%     $\mathcal{V}[x]=\top$ または $\mathcal{V}[y]=\top$ならば
+%     $\mathcal{B}[i]\leftarrow true$, $\mathcal{B}[j]\leftarrow true$
+%     \item $\mathbf{if}\ x<y\ \mathbf{goto}\ B_i\ \mathbf{else}\ B_j$に対して
+%     $\mathcal{V}[x]=c_1$, $\mathcal{V}[y]=c_2$のとき，$c_1<c_2$ならば
+%     $\mathcal{B}[i]\leftarrow true$, $c_1\not<c_2$ならば$\mathcal{B}[j]\leftarrow true$.
+%   \end{list}
+%   }
 
-\end{frame}
+% \end{frame}
 
-\begin{frame}
-\frametitle{条件付き定数伝播}
+% \begin{frame}
+% \frametitle{条件付き定数伝播}
 
-\begin{center}
-  \begin{tabularx}{.6\textwidth}{cc}
-    \multicolumn{1}{m{.3\textwidth}}{
-     \includegraphics[width=.3\textwidth]{SSA-prog-crop.pdf}
-     }
-     &
-     {\small
-     \begin{tabularx}{0.3\textwidth}{XXXXX}
-       $B$ & $\mathcal{E}[B]$ & & $x$ & $\mathcal{V}[x]$\\\cline{1-2}\cline{4-5}
-       1 & $true$ & & $i_1$ & $1$\\
-       2 & $true$ & & $j_1$ & $1$\\
-       3 & $true$ & & $j_2$ & $1$\\
-       4 & $true$ & & $j_3$ & $1$\\
-       5 & $true$ & & $j_4$ & $1$\\
-       6 & $false$ & & $j_5$ & $\bot$\\
-       7 & $true$ & & $k_1$ & $0$\\
-         &        & & $k_2$ & $\top$\\
-         &        & & $k_3$ & $\top$\\
-         &        & & $k_4$ & $\top$\\
-         &        & & $k_5$ & $\bot$
-     \end{tabularx}}
-   \end{tabularx}
-   \end{center}
-   \greentext{$j$は定数が伝播して，$j<20$の判定がいつも成立．$k$は$\top$なので$k<100$の
-   判定は実行時}
-\end{frame}
+% \begin{center}
+%   \begin{tabularx}{.6\textwidth}{cc}
+%     \multicolumn{1}{m{.3\textwidth}}{
+%      \includegraphics[width=.3\textwidth]{SSA-prog-crop.pdf}
+%      }
+%      &
+%      {\small
+%      \begin{tabularx}{0.3\textwidth}{XXXXX}
+%        $B$ & $\mathcal{E}[B]$ & & $x$ & $\mathcal{V}[x]$\\\cline{1-2}\cline{4-5}
+%        1 & $true$ & & $i_1$ & $1$\\
+%        2 & $true$ & & $j_1$ & $1$\\
+%        3 & $true$ & & $j_2$ & $1$\\
+%        4 & $true$ & & $j_3$ & $1$\\
+%        5 & $true$ & & $j_4$ & $1$\\
+%        6 & $false$ & & $j_5$ & $\bot$\\
+%        7 & $true$ & & $k_1$ & $0$\\
+%          &        & & $k_2$ & $\top$\\
+%          &        & & $k_3$ & $\top$\\
+%          &        & & $k_4$ & $\top$\\
+%          &        & & $k_5$ & $\bot$
+%      \end{tabularx}}
+%    \end{tabularx}
+%    \end{center}
+%    \greentext{$j$は定数が伝播して，$j<20$の判定がいつも成立．$k$は$\top$なので$k<100$の
+%    判定は実行時}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{条件付き定数伝播}
-  \begin{center}
-    \begin{tabularx}{0.8\textwidth}{XXX}
-      \multicolumn{1}{m{.3\textwidth}}{
-        \only<1>{\includegraphics[width=.3\textwidth]{SSA-prog-crop.pdf}}
-        \only<2>{\includegraphics[width=.3\textwidth]{SSA-prog-opt1-crop.pdf}}
-      }
-      &
-      \multicolumn{1}{m{2em}}{$\Rightarrow$} 
-      &
-      \multicolumn{1}{m{.3\textwidth}}
-      {
-        \only<1>{\includegraphics[width=.3\textwidth]{SSA-prog-opt1-crop.pdf}}
-        \only<2>{\includegraphics[width=.3\textwidth]{SSA-prog-opt2-crop.pdf}}
-      }
-    \end{tabularx}
-  \end{center}
-\end{frame}
+% \begin{frame}
+%   \frametitle{条件付き定数伝播}
+%   \begin{center}
+%     \begin{tabularx}{0.8\textwidth}{XXX}
+%       \multicolumn{1}{m{.3\textwidth}}{
+%         \only<1>{\includegraphics[width=.3\textwidth]{SSA-prog-crop.pdf}}
+%         \only<2>{\includegraphics[width=.3\textwidth]{SSA-prog-opt1-crop.pdf}}
+%       }
+%       &
+%       \multicolumn{1}{m{2em}}{$\Rightarrow$} 
+%       &
+%       \multicolumn{1}{m{.3\textwidth}}
+%       {
+%         \only<1>{\includegraphics[width=.3\textwidth]{SSA-prog-opt1-crop.pdf}}
+%         \only<2>{\includegraphics[width=.3\textwidth]{SSA-prog-opt2-crop.pdf}}
+%       }
+%     \end{tabularx}
+%   \end{center}
+% \end{frame}
 
 \end{document}

@@ -1336,7 +1336,7 @@ $\varphi$関数を含むブロックの頂点がこの条件を満たさない�
          &
         \includegraphics[width=.3\linewidth]{SSA-phiElimination-b-crop.pdf}
     \end{tabular}
-    \caption{SSA形式からの$\varphi$関数の消去}
+    \caption{SSA形式からの$\varphi$関数の消去}\label{fig:phiElimination}
 \end{figure}
 
 例えば図\ref{fig:SSAexample}のフローグラフでは，$v_1$は$\varphi$関数を含み，$v_1$の先行頂点のうち$v_0$は複数の後続頂点$v_1$, $v_3$を持ち，$v_1$の先行頂点も複数存在する．従って，$v_0$と$v_1$の間に新たな頂点$w_0$を挿入することで条件を満たす．$v_4$についても$v_2$が複数の後続頂点を
