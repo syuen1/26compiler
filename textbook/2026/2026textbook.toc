@@ -113,22 +113,22 @@
 \contentsline {paragraph}{ループ分解}{110}{}%
 \contentsline {paragraph}{ループ展開}{110}{}%
 \contentsline {paragraph}{ソフトウェアパイプライン}{110}{}%
-\contentsline {subsubsection}{手続き呼び出し最適化}{110}{}%
-\contentsline {paragraph}{インライン展開}{110}{}%
+\contentsline {subsubsection}{手続き呼び出し最適化}{111}{}%
+\contentsline {paragraph}{インライン展開}{111}{}%
 \contentsline {paragraph}{末尾再帰}{111}{}%
-\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{111}{}%
+\contentsline {subsection}{\numberline {7.3.2}データフロー解析}{112}{}%
 \contentsline {subsubsection}{定義到達解析}{112}{}%
-\contentsline {subsubsection}{生存変数解析}{113}{}%
-\contentsline {subsubsection}{利用可能式解析}{114}{}%
-\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{114}{}%
+\contentsline {subsubsection}{生存変数解析}{114}{}%
+\contentsline {subsubsection}{利用可能式解析}{115}{}%
+\contentsline {section}{\numberline {7.4}静的単一代入形式と最適化}{115}{}%
 \contentsline {subsection}{\numberline {7.4.1}例}{115}{}%
 \contentsline {subsection}{\numberline {7.4.2}$\varphi $関数}{116}{}%
 \contentsline {subsection}{\numberline {7.4.3}SSA形式への変換}{122}{}%
 \contentsline {subsection}{\numberline {7.4.4}SSA上での最適化}{123}{}%
-\contentsline {paragraph}{不要コード除去}{123}{}%
-\contentsline {paragraph}{定数伝播}{123}{}%
-\contentsline {paragraph}{支配関係の保存}{123}{}%
-\contentsline {subsection}{\numberline {7.4.5}$\varphi $関数を持たないSSA形式への変換}{124}{}%
+\contentsline {paragraph}{不要コード除去}{124}{}%
+\contentsline {paragraph}{定数伝播}{124}{}%
+\contentsline {paragraph}{支配関係の保存}{124}{}%
+\contentsline {subsection}{\numberline {7.4.5}$\varphi $関数を持たないSSA形式への変換}{125}{}%
 \contentsline {chapter}{\numberline {第8章}目的コード生成}{129}{}%
 \contentsline {section}{\numberline {8.1}算術式のコード生成}{129}{}%
 \contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割当}{130}{}%

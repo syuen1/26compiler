@@ -617,11 +617,13 @@ y = a * a;
 \end{SaveVerbatim}
 
 \begin{Exmp}
+    \begin{center}
 \begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
     \UseVerbatim{ex_7_11a}
     & $\Rightarrow$ &
     \UseVerbatim{ex_7_11b}
 \end{tabularx}
+\end{center}
 \end{Exmp}
 
 c言語では，関数の前に{\tt inline}を付加することでスタックを用いずに呼び出しを
@@ -636,7 +638,10 @@ c言語では，関数の前に{\tt inline}を付加することでスタック�
 もとの環境の変数は参照されないので，環境を復元する必要がない．従って，
 インラインでない関数呼び出しを行う場合であっても，毎回，局所環境を作成する
 必要がなく，最初の１回目の呼び出しで作成した領域を上書きすればよい．
-変換としては，再帰呼び出しをgotoに置き換えることで高速化が可能である．
+返り値も一度しか参照されないので上書きが可能である．
+
+最初の呼び出しで作成した駆動レコードを再利用することによって，
+再帰呼び出しをgotoに置き換えることで高速化が可能である．
 
 \begin{SaveVerbatim}{ex_7_12a}
 int sum_tail(int n, int acc) {
@@ -657,6 +662,7 @@ goto L;
 }
 \end{SaveVerbatim}
 
+\newpage
 \begin{Exmp}\ \\
 \begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.1\textwidth}m{.3\textwidth}}
     \UseVerbatim{ex_7_12a}
