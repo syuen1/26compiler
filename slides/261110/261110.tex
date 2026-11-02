@@ -66,16 +66,16 @@
 \begin{frame}
   \frametitle{データフロー解析}
 
-%  \vspace*{10pt}
+  %  \vspace*{10pt}
 
-%  \greentext{(講義資料6.4:詳細については省略)}
+  %  \greentext{(講義資料6.4:詳細については省略)}
   基本ブロック$B$に対するデータフロー(定義到達解析)
 
   \vspace*{10pt}
 
- 定義: $\texttt{x=e}_1\oplus\texttt{e}_2$, $\texttt{x=e}$
+  定義: $\texttt{x=e}_1\oplus\texttt{e}_2$, $\texttt{x=e}$
 
- \greentext{\small 左辺で出現した変数がどこまで更新されずに右辺で参照されるか？}
+  \greentext{\small 左辺で出現した変数がどこまで更新されずに右辺で参照されるか？}
 
   \[
     out[B]=gen[B]\cup(in[B]-kill[B])
@@ -118,7 +118,7 @@
     \begin{tikzpicture}
       \node[draw] (B5) at (2,0) {EXIT};
       \node[draw] (B4) at (2,1.25) {$\begin{array}{ll}d_7: &
-             \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
+                       \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
       \node[draw] (B3) at (0,2.25) {$d_6$:\texttt{a=u2}};
       \node[draw] (B2) at (2,3.5) {$\begin{array}{ll}
             d_4: & \texttt{i=i+1}  \\[-3pt]
@@ -192,7 +192,7 @@
   到達可能性解析：
 
   {\small
-  {XXXX XXX}:$d_1,d_2,\cdots,d_7$が集合に入っているとき$1$、入ってないとき$0$
+    {XXXX XXX}:$d_1,d_2,\cdots,d_7$が集合に入っているとき$1$、入ってないとき$0$
   }
 
   \vspace*{10pt}
@@ -242,7 +242,7 @@
     \begin{tikzpicture}
       \node[draw] (B5) at (2,0) {EXIT};
       \node[draw] (B4) at (2,1.25) {$\begin{array}{ll}d_7: &
-             \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
+                       \texttt{i=u3} \\ & \texttt{if...}\end{array}$};
       \node[draw] (B3) at (0,2.25) {$d_6$:\texttt{a=u2}};
       \node[draw] (B2) at (2,3.5) {$\begin{array}{ll}
             d_4: & \texttt{i=i+1}  \\[-3pt]
@@ -290,13 +290,13 @@
   $(a,i,j,m,n,u1,u2,u3)$とすると
 
   {\scriptsize
-  $\begin{array}{l|llllll}
-          & OUT        & IN         & OUT        & IN         & OUT        & IN         \\\hline
-      B_1 & (00000000) & (00011100) & (01100000) & (00011100) & (01100010) & (00011100) \\
-      B_2 & (00000000) & (01100000) & (01100010) & (01100010) & (01100001) & (01100010) \\
-      B_3 & (00000000) & (00000010) & (00000001) & (00000010) & (00100001) & (10100001) \\
-      B_4 & (00000000) & (00000001) & (01100000) & (00100001) & (01100010) & (00100001)
-    \end{array}$}
+    $\begin{array}{l|llllll}
+            & OUT        & IN         & OUT        & IN         & OUT        & IN         \\\hline
+        B_1 & (00000000) & (00011100) & (01100000) & (00011100) & (01100010) & (00011100) \\
+        B_2 & (00000000) & (01100000) & (01100010) & (01100010) & (01100001) & (01100010) \\
+        B_3 & (00000000) & (00000010) & (00000001) & (00000010) & (00100001) & (10100001) \\
+        B_4 & (00000000) & (00000001) & (01100000) & (00100001) & (01100010) & (00100001)
+      \end{array}$}
 
   \vspace*{10pt}
 
@@ -314,17 +314,17 @@
 \end{frame}
 
 \begin{frame}
-\frametitle{データフロー解析（共通部分式）}
+  \frametitle{データフロー解析（共通部分式）}
 
-部分式に含まれるすべてのフローをチェックする．
+  部分式に含まれるすべてのフローをチェックする．
 
-例えば，$v\texttt{=}a\texttt{+}b$における$a\texttt{+}b$の計算が
-重複されているかどうかは，すべてのフローが同じであることをチェックする．
+  例えば，$v\texttt{=}a\texttt{+}b$における$a\texttt{+}b$の計算が
+  重複されているかどうかは，すべてのフローが同じであることをチェックする．
 
-\begin{eqnarray}
+  \begin{eqnarray}
     IN[B] & = & {\color{red}\bigcap}_{\mathsf{Pred}[B]}Out[P]\\
     OUT[B] & = & Gen[B]\cup(In[B]\backslash Kill[B])
-\end{eqnarray}
+  \end{eqnarray}
 
 \end{frame}
 
@@ -387,10 +387,10 @@
     コントロールグラフ上の路$p:v_0\rightarrow v_1\rightarrow\cdots\rightarrow v_k$,
     $q:u_0\rightarrow u_1\rightarrow\cdots\rightarrow u_\ell$が存在．
     \begin{list}{(\arabic{coffee})}{\usecounter{coffee}}
-        \item 路の長さが1以上である．($k>0$,$\ell>0$);
-        \item $v_1$と$u_1$の両方に$x$の定義が存在する．;
-        \item 路の終点$v$が一致している．($v_k=v_\ell=v$);
-        \item 路の途中で交わることがない．($\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,v_{\ell-1}\}=\varnothing$)
+      \item 路の長さが1以上である．($k>0$,$\ell>0$);
+      \item $v_1$と$u_1$の両方に$x$の定義が存在する．;
+      \item 路の終点$v$が一致している．($v_k=v_\ell=v$);
+      \item 路の途中で交わることがない．($\{v_1,\cdots,v_{k-1}\}\cap\{u_1,\cdots,v_{\ell-1}\}=\varnothing$)
     \end{list}
   \end{CustomDef}
 
@@ -412,77 +412,77 @@
   支配関係：開始頂点からのパスに必ず含まれるとき、「支配」される。
 
   \only<1>{
-    % \begin{center}
-    %   \includegraphics[width=.7\textwidth]{def6_23.pdf}
-    % \end{center}
+      % \begin{center}
+      %   \includegraphics[width=.7\textwidth]{def6_23.pdf}
+      % \end{center}
 
-    \begin{CustomDef}{7.2}{支配関係}
-    フローグラフを$(V,E,v_{init})$とする．
-    頂点$v,u$に対して，$v_{init}$から$u$へのすべての路に
-    おいて$v$が出現するとき，$v$は$u$の{\bf 支配頂点(dominator)}であると呼び，$u\domll v$と書く．
-    $u\not= v$かつ$u\domll v$であるとき，$u\ll v$と書く．
-    $u$の支配頂点の集合$\domv{u}=\{v\;|\;u\domll v\}$で定義する．
-    \end{CustomDef}
+      \begin{CustomDef}{7.2}{支配関係}
+        フローグラフを$(V,E,v_{init})$とする．
+        頂点$v,u$に対して，$v_{init}$から$u$へのすべての路に
+        おいて$v$が出現するとき，$v$は$u$の{\bf 支配頂点(dominator)}であると呼び，$u\domll v$と書く．
+        $u\not= v$かつ$u\domll v$であるとき，$u\ll v$と書く．
+        $u$の支配頂点の集合$\domv{u}=\{v\;|\;u\domll v\}$で定義する．
+      \end{CustomDef}
 
-    $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 %(図6.7)
-  }
+      $u\underline{\gg}v$:$u$が$v$を支配:支配関係の表現=支配木 %(図6.7)
+    }
   \only<2>{
-    どの頂点$v$についても$v_{init}\in\domv{v}$かつ$v\in\domv{v}$である．$\domll$は半順序である．
-\begin{itemize}
-    \item (反射律) $v\domll v$
-    \item (反対称律) $v\domll u$かつ$u\domll v$ならば$u=v$
-    \item (推移律) $v\domll u$かつ$u\domll w$ならば$v\domll w$
-\end{itemize}
+      どの頂点$v$についても$v_{init}\in\domv{v}$かつ$v\in\domv{v}$である．$\domll$は半順序である．
+      \begin{itemize}
+        \item (反射律) $v\domll v$
+        \item (反対称律) $v\domll u$かつ$u\domll v$ならば$u=v$
+        \item (推移律) $v\domll u$かつ$u\domll w$ならば$v\domll w$
+      \end{itemize}
 
-\vspace*{10pt}
+      \vspace*{10pt}
 
-$u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で最小の頂点が一つ存在する．
-  }
+      $u\not= v_{init}$のとき，$\domv{u}\backslash\{u\}$には$\domll$の意味で最小の頂点が一つ存在する．
+    }
   \only<3>{
-    \begin{center}
-      \begin{tabular}{cc}
+      \begin{center}
+        \begin{tabular}{cc}
 
-        \begin{tikzpicture}
-          \node[draw,circle] (v0) at (0,3) {$v_0$};
-          \node[draw,circle] (u) at (0,1.5) {$u$};
-          \node[draw,circle] (v) at (0,0) {$v$};
-          \node at (0,2.25) {$\cdots$};
-          \node at (0,0.75) {$\cdots$};
-          \path[->] (v0) [out=-30,in=30] edge (u);
-          \path[->] (v0) [out=-60, in=60] edge (u);
-          \path[->] (v0) [out=240,in=120] edge (u);
-          \path[->] (v0) [out=210, in=150] edge (u);
-          \path[->] (u) [out=-30,in=30] edge (v);
-          \path[->] (u) [out=-60, in=60] edge (v);
-          \path[->] (u) [out=240,in=120] edge (v);
-          \path[->] (u) [out=210, in=150] edge (v);
-        \end{tikzpicture}
+          \begin{tikzpicture}
+            \node[draw,circle] (v0) at (0,3) {$v_0$};
+            \node[draw,circle] (u) at (0,1.5) {$u$};
+            \node[draw,circle] (v) at (0,0) {$v$};
+            \node at (0,2.25) {$\cdots$};
+            \node at (0,0.75) {$\cdots$};
+            \path[->] (v0) [out=-30,in=30] edge (u);
+            \path[->] (v0) [out=-60, in=60] edge (u);
+            \path[->] (v0) [out=240,in=120] edge (u);
+            \path[->] (v0) [out=210, in=150] edge (u);
+            \path[->] (u) [out=-30,in=30] edge (v);
+            \path[->] (u) [out=-60, in=60] edge (v);
+            \path[->] (u) [out=240,in=120] edge (v);
+            \path[->] (u) [out=210, in=150] edge (v);
+          \end{tikzpicture}
 
-         &
-        \begin{tabular}{c}                                                         \\[-12zw]
-          $u\underline{\gg}v$                                         \\[1zw]
-          $u\underline{\gg}u$                                         \\
-          $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
-          $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
-          $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
-          $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
+           &
+          \begin{tabular}{c}                                                         \\[-12zw]
+            $u\underline{\gg}v$                                         \\[1zw]
+            $u\underline{\gg}u$                                         \\
+            $u\underline{\gg}v,v\underline{\gg}w$ならば$u\underline{\gg}w$ \\[1zw]
+            $u\not=v$のとき$u{\gg}v$                                       \\[1zw]
+            $v$以外で最も下にある支配頂点$u$: $idom(v)$                              \\[1zw]
+            $(idom(v),v)$を辺とするグラフ=\redtext{支配木}
+          \end{tabular}
         \end{tabular}
-      \end{tabular}
-    \end{center}
-  }
+      \end{center}
+    }
 \end{frame}
 
 \begin{frame}
-\frametitle{厳密なSSA形式}
+  \frametitle{厳密なSSA形式}
 
-SSA形式が満たす性質
+  SSA形式が満たす性質
 
-\begin{enumerate}
-\item 定義式の左辺の変数がプログラム中で唯一\\
-\greentext{構文的に左辺の変数は唯一}
-\item 右辺に現れる変数は最も近い上流の定義式で更新される\\
-\greentext{更新をとびこえて参照されることはない．(支配関係の保存)}
-\end{enumerate}
+  \begin{enumerate}
+    \item 定義式の左辺の変数がプログラム中で唯一\\
+          \greentext{構文的に左辺の変数は唯一}
+    \item 右辺に現れる変数は最も近い上流の定義式で更新される\\
+          \greentext{更新をとびこえて参照されることはない．(支配関係の保存)}
+  \end{enumerate}
 \end{frame}
 
 
@@ -494,9 +494,9 @@ SSA形式が満たす性質
         \begin{tikzpicture}
           \node[anchor=west,draw,minimum width=3.8cm] (v0) at (0,6)
           {\small $\begin{array}{ll}\hspace*{1zw} & \mathtt{i=1}                               \\[-2pt]
-                               & \mathtt{j=1}                               \\[-2pt]
-                               & \mathtt{k=1}                               \\[-2pt]
-                               & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
+                                             & \mathtt{j=1}                               \\[-2pt]
+                                             & \mathtt{k=1}                               \\[-2pt]
+                                             & \mathtt{if}\ p\ \mathtt{goto}\ \mathtt{l1} \\\end{array}$};
           \node at ($(v0)+(-2.2,0.7)$) {$v_0$};
           \node[anchor=west,draw,minimum width=3.8cm] (v1) at (0,4)
           {\small $\begin{array}{ll}
@@ -552,67 +552,67 @@ SSA形式が満たす性質
   \end{tabular}
 \end{frame}
 
-\begin{frame}
-  \frametitle{静的単一代入を用いた最適化}
+% \begin{frame}
+%   \frametitle{静的単一代入を用いた最適化}
 
-  データフロー解析のもうひとつの手法:\\
-  静的単一代入(Static Single Assignment:SSA)\\
-  \redtext{各変数の定義がプログラム中で唯一}
+%   データフロー解析のもうひとつの手法:\\
+%   静的単一代入(Static Single Assignment:SSA)\\
+%   \redtext{各変数の定義がプログラム中で唯一}
 
-  二度目の代入が発生すると変数名を変更\\
-  % \quad\greentext{変数を見ればUdチェーンがすぐに判明する。}\\
-  \quad\greentext{値が同じの共通部分式が判別できる=式として一致}
+%   二度目の代入が発生すると変数名を変更\\
+%   % \quad\greentext{変数を見ればUdチェーンがすぐに判明する。}\\
+%   \quad\greentext{値が同じの共通部分式が判別できる=式として一致}
 
-  %  変換例：例6.20、6.21\\
-  定義ごとに変数に添字をつける。合流する場合は、$\varphi$関数で表現
+%   %  変換例：例6.20、6.21\\
+%   定義ごとに変数に添字をつける。合流する場合は、$\varphi$関数で表現
 
-  いかにして、SSA形式を得るか？
+%   いかにして、SSA形式を得るか？
 
-  \vspace*{5pt}
+%   \vspace*{5pt}
 
-  \begin{list}{}{}
-    \item [(1)] $\varphi$関数の挿入
-    \item [(2)] 変数の添字の決定
-  \end{list}
-  \par\vspace*{3pt}\par
-  \qquad\redtext{SSA形式において最適化}
-  \par\vspace*{3pt}\par
-  \begin{list}{}{}
-    \item [(3)] SSAから逆変換する。($\varphi$関数の消去)
-  \end{list}
+%   \begin{list}{}{}
+%     \item [(1)] $\varphi$関数の挿入
+%     \item [(2)] 変数の添字の決定
+%   \end{list}
+%   \par\vspace*{3pt}\par
+%   \qquad\redtext{SSA形式において最適化}
+%   \par\vspace*{3pt}\par
+%   \begin{list}{}{}
+%     \item [(3)] SSAから逆変換する。($\varphi$関数の消去)
+%   \end{list}
 
-  \greentext{近年のコンパイラでよく用いられる手法}
+%   \greentext{近年のコンパイラでよく用いられる手法}
 
-\end{frame}
+% \end{frame}
 
-\begin{frame}
-  \frametitle{例}
+% \begin{frame}
+%   \frametitle{例}
 
-  \begin{center}
-    \begin{tabular}{c}
-      \includegraphics[height=.4\textheight]{ex6_20r1.pdf}
-      \\
-      \includegraphics[height=.4\textheight]{ex6_21r1.pdf}
-    \end{tabular}
-  \end{center}
-\end{frame}
+%   \begin{center}
+%     \begin{tabular}{c}
+%       \includegraphics[height=.4\textheight]{ex6_20r1.pdf}
+%       \\
+%       \includegraphics[height=.4\textheight]{ex6_21r1.pdf}
+%     \end{tabular}
+%   \end{center}
+% \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{$\varphi$関数の挿入}
+% \begin{frame}[fragile]
+%   \frametitle{$\varphi$関数の挿入}
 
-%  フローグラフ：$(V,E,v_{init})$
+% %  フローグラフ：$(V,E,v_{init})$
 
-  $\texttt{x=}\varphi(\texttt{x},\cdots,\texttt{x})$の挿入：
+%   $\texttt{x=}\varphi(\texttt{x},\cdots,\texttt{x})$の挿入：
 
-  \vspace*{10pt}
+%   \vspace*{10pt}
 
-  \begin{quote}
-    \begin{trivlist}
-    \item[$\cdot$] 変数\verb|x|に対して定義7.1の条件を満たす$v_0$, $u_0$, $v$がフローグラフに存在し，頂点$v$の基本ブロックに$\varphi$関数が含まれていないならば，$v$に\verb|x=|$\varphi$\verb|(x,...,x)|を挿入する．\\[10pt]
-    \item[$\cdot$] 定義合流条件を満たす$v_0$, $u_0$, $v$ がなくなるまで，上記を繰り返す．
-        \end{trivlist}
-  \end{quote}
-\end{frame}
+%   \begin{quote}
+%     \begin{trivlist}
+%     \item[$\cdot$] 変数\verb|x|に対して定義7.1の条件を満たす$v_0$, $u_0$, $v$がフローグラフに存在し，頂点$v$の基本ブロックに$\varphi$関数が含まれていないならば，$v$に\verb|x=|$\varphi$\verb|(x,...,x)|を挿入する．\\[10pt]
+%     \item[$\cdot$] 定義合流条件を満たす$v_0$, $u_0$, $v$ がなくなるまで，上記を繰り返す．
+%         \end{trivlist}
+%   \end{quote}
+% \end{frame}
 
 % \subsection{SSA形式への変換}
 
