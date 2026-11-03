@@ -23,6 +23,8 @@
 \usepackage{tabularx}
 \usepackage{tikz}
 \usetikzlibrary{calc,shapes}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 %\usepackage{pstricks,pst-node,pst-tree}
 %\usepackage{multimedia}
 %\usepackage{pstricks,pst-node,pst-tree}
@@ -245,28 +247,78 @@
 
   \begin{Lem}
     \[
-      DF(v)=DF_{local}(v)\cup\bigcup_{w\in Child(v)}DF^v_{up}(w)
+      DF(v)=DF_{local}(v)\cup\bigcup_{w\in Child(v)}DF_{up}(w)
     \]
     ここで、
 
     \[
       \begin{array}{rcl}
-        DF_{local}(v) & = & \{u|(v,u)\in
-        E,\mathsf{idom}(u)\not=v\}                                \\
+        DF_{local}(v) & = & \{u|v\rightarrow u,u\not\ll v\}                                \\
         \multicolumn{3}{p{.5\textwidth}}{
-          \mbox{\greentext{$v$の次の頂点で他からのフローが存在する}}}
+          \mbox{\greentext{$v$の後続頂点で}}}\\
+          \multicolumn{3}{p{.5\textwidth}}{
+            \mbox{\greentext{$v$を経由しない根からのフローが存在する頂点}}}
         \\[10pt]
-        DF^v_{up}(w)  & = & \{u\in DF(w)|\mathsf{idom}(u)\not=v\} \\
+        DF_{up}(v)  & = & \{u\in DF(v)|u\not\ll\idomv{v}\} \\
         \multicolumn{3}{p{.5\textwidth}}{
-        \mbox{\greentext{$w$は支配木において$v$の子で$u$から見て、}}}             \\
-        \multicolumn{3}{p{.5\textwidth}}{\mbox{\greentext{
-              $v$は$w$よりも上(根に近い)にある。}}}
+        \mbox{\greentext{$v$の親頂点からも支配されない頂点集合}}}
       \end{array}
     \]
 
   \end{Lem}
-  支配木の葉から$DF$を計算していく(p129：例)
+  アルゴリズム＝支配木の葉から$DF$を計算していく
 \end{frame}
+
+\begin{frame}
+\frametitle{補題}
+\begin{enumerate}
+\item $DF_{local}(v)=\{u|v\rightarrow u, \idomv{u}\not= v\}$\\[20pt]
+\item $v$の子頂点$w$に対して，\\[5pt]
+$DF_{up}(w)=\{u\in DF(w)|\idomv{u}\not= v\}$
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{支配辺境の計算アルゴリズム}
+
+  {\small
+        \begin{algorithmic}
+            % \caption{支配辺境の計算}\label{alg:dominanceFrontier}
+            \Procedure{computeDF}{$n$}
+            \State $S \gets \{\}$
+            \ForAll{$y \in \mathsf{succ}[n]$}   \Comment $DF_{local}$の計算
+            \If{$\idomv{y}\not=n$}
+            \State $S \gets S\cup\{y\}$
+            \EndIf
+            \EndFor
+            \ForAll{$c \in \mathsf{Child}(n)$}  \Comment $DF_{up}$の計算
+            \State computeDF(c) \Comment 支配木の子頂点から計算する
+            \ForAll{$w \in DF[c]$}
+            \If{$w\notin\domv{n}$ or $n=w$}
+            \State $S\gets S\cup\{w\}$
+            \EndIf
+            \EndFor
+            \EndFor
+            \State $DF[n]\gets S$
+            \EndProcedure
+        \end{algorithmic}
+  }
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{支配辺境の計算例}
+\centerline{\greentext{\small 講義ページにpythonによる実現を掲載}}
+\begin{tabular}{ccc}
+  \includegraphics{7_15-prog-crop.pdf}
+  &
+  \includegraphics[scale=0.25]{ex7_15.cfg.png}
+  &
+  \includegraphics{7_15-DF-crop.pdf}
+\end{tabular}
+
+\end{frame}
+
+
 
 \begin{frame}
   \frametitle{定義合流条件の計算}
@@ -408,6 +460,24 @@
 \subsection{SSA形式への変換}
 
 \begin{frame}
+\frametitle{SSA形式への変換アルゴリズム}
+\begin{enumerate}
+\item 各変数$x$に対してスタック$\mathsf{stack}(x)$とカウンタ$\mathsf{count}(x)$を用意して，
+各スタックに$0$をプッシュして$\mathsf{count}(x)$を0に初期化
+
+\item 支配木を深さ優先でトラバースして添字を割り当てる．
+\begin{enumerate}
+\item $\varphi$関数以外の右辺に各変数のスタックトップの添字を割り当て
+\item スタックトップの添字を+1した数をpushして，左辺の変数にわりあて
+\item $\varphi$関数の引数に先行頂点の添字のスタックトップを割り当て
+\item 子頂点の添字付け
+\item スタックをpopする
+\end{enumerate}
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
   \frametitle{SSA形式への変換}
   \begin{tabular}{cc}
     \begin{minipage}{.5\textwidth}
@@ -529,34 +599,34 @@
       \end{center}
       \[
         \only<1>{\begin{array}{ll}
-            stack(i)=[] & c(i)=1 \\
-            stack(j)=[] & c(j)=1 \\
-            stack(k)=[] & c(k)=1 \\
+            stack(i)=[0] & c(i)=0 \\
+            stack(j)=[0] & c(j)=0 \\
+            stack(k)=[0] & c(k)=0 \\
           \end{array}}
         \only<2>{\begin{array}{ll}
-            stack(i)=[1] & c(i)=2 \\
-            stack(j)=[1] & c(j)=2 \\
-            stack(k)=[1] & c(k)=2 \\
+            stack(i)=[1,0] & c(i)=1 \\
+            stack(j)=[1,0] & c(j)=1 \\
+            stack(k)=[1,0] & c(k)=1 \\
           \end{array}}
         \only<3>{\begin{array}{ll}
-            stack(i)=[1,2] & c(i)=3 \\
-            stack(j)=[1]   & c(j)=2 \\
-            stack(k)=[1]   & c(k)=2 \\
+            stack(i)=[2,1,0] & c(i)=2 \\
+            stack(j)=[1,0]   & c(j)=1 \\
+            stack(k)=[1,0]   & c(k)=1 \\
           \end{array}}
         \only<4>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1]     & c(j)=2 \\
-            stack(k)=[1]     & c(k)=2 \\
+            stack(i)=[3,2,1,0] & c(i)=3 \\
+            stack(j)=[1,0]     & c(j)=1 \\
+            stack(k)=[1,0]     & c(k)=1 \\
           \end{array}}
         \only<5>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1,2]   & c(j)=3 \\
-            stack(k)=[1]     & c(k)=2 \\
+            stack(i)=[1,0] & c(i)=3 \\
+            stack(j)=[2,1,0]   & c(j)=2 \\
+            stack(k)=[1,0]     & c(k)=1 \\
           \end{array}}
         \only<6>{\begin{array}{ll}
-            stack(i)=[1,2,3] & c(i)=4 \\
-            stack(j)=[1,2]   & c(j)=3 \\
-            stack(k)=[1,2]   & c(k)=3 \\
+            stack(i)=[4,1,0] & c(i)=4 \\
+            stack(j)=[3,1,0]   & c(j)=3 \\
+            stack(k)=[2,1,0]   & c(k)=2 \\
           \end{array}}
       \]
     \end{minipage}

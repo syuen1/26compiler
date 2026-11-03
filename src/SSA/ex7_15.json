@@ -1,0 +1,152 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "i:=1",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 2,
+          "text": "j:=1",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 3,
+          "text": "k:=1",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 4,
+          "text": "if p goto l1",
+          "kind": "conditional",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 5,
+          "text": "label l3",
+          "kind": "label",
+          "target": "",
+          "label": "l3"
+        },
+        {
+          "line": 6,
+          "text": "if q goto l2",
+          "kind": "conditional",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 7,
+          "text": "i:=i + 1",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 8,
+          "text": "goto l3",
+          "kind": "goto",
+          "target": "l3",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 9,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 10,
+          "text": "j:=i + k",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B5",
+      "instructions": [
+        {
+          "line": 11,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 12,
+          "text": "k:=i + j",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B4",
+      "kind": "true"
+    },
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "false"
+    },
+    {
+      "source": "B2",
+      "target": "B5",
+      "kind": "true"
+    },
+    {
+      "source": "B2",
+      "target": "B3",
+      "kind": "false"
+    },
+    {
+      "source": "B3",
+      "target": "B2",
+      "kind": "goto"
+    },
+    {
+      "source": "B4",
+      "target": "B5",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B5",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT"
+}

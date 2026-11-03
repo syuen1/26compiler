@@ -1373,7 +1373,15 @@ $\varphi$関数を含むブロックの頂点がこの条件を満たさない�
 \end{Lem}
 
 \begin{proof}
-    (作成中)
+    $v\rightarrow u$であるとき，
+$u\ll v$ $\Leftrightarrow$ $v=\idomv{u}$を証明する．
+\begin{trivlist}
+    \item[($\Leftarrow$)] 定義から，$v$は$u$を真に支配するので，成立．
+    \item[($\Rightarrow$)] $u\ll v$より，$v$の子頂点$v'$で$u\domll v'$となる$v'$が
+    存在する．ここで$v\rightarrow u$であるので，$v'=u$となる．
+    従って，$\idomv{u}=\idomv{v'}=v$．
+\end{trivlist}
+    $\Leftrightarrow$の対偶をとると，上記が成り立つ．
 \end{proof}
 
 \begin{Lem}

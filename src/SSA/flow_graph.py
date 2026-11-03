@@ -83,7 +83,8 @@ NAME = r'[A-Za-z][A-Za-z_0-9$]*'
 VALUE = rf'(?:-?[0-9]+|{NAME})'
 LABEL = re.compile(rf'label\s+({NAME})')
 GOTO = re.compile(rf'goto\s+({NAME})')
-CONDITIONAL = re.compile(rf'if\s+not\s+({VALUE})\s+goto\s+({NAME})')
+CONDITIONAL = re.compile(
+    rf'if\s+(?:(?P<negated>not)\s+)?(?P<condition>{VALUE})\s+goto\s+(?P<target>{NAME})')
 NORMAL = re.compile(
     rf'(?:read\s+{NAME}|write\s+{VALUE}|'
     rf'{NAME}\s*:=\s*{VALUE}(?:\s+(?:\+|-|\*|div|=|<>|<=|>=|<|>)\s+{VALUE})?)'
@@ -106,7 +107,7 @@ def parse_code(code):
         elif (match := GOTO.fullmatch(text)):
             instruction = Instruction(line_number, text, 'goto', target=match[1])
         elif (match := CONDITIONAL.fullmatch(text)):
-            instruction = Instruction(line_number, text, 'conditional', target=match[2])
+            instruction = Instruction(line_number, text, 'conditional', target=match['target'])
         elif NORMAL.fullmatch(text):
             instruction = Instruction(line_number, text, 'normal')
         else:
@@ -144,9 +145,9 @@ def build_flow_graph(code):
         if last.kind == 'goto':
             edges.append(Edge(block.name, owner[labels[last.target]], 'goto'))
         elif last.kind == 'conditional':
-            # "if not t goto L": false goes to L; true falls through.
-            edges.append(Edge(block.name, owner[labels[last.target]], 'false'))
-            edges.append(Edge(block.name, following, 'true'))
+            negated = CONDITIONAL.fullmatch(last.text)['negated'] is not None
+            edges.append(Edge(block.name, owner[labels[last.target]], 'false' if negated else 'true'))
+            edges.append(Edge(block.name, following, 'true' if negated else 'false'))
         else:
             edges.append(Edge(block.name, following, 'fallthrough'))
     return FlowGraph(blocks, edges)

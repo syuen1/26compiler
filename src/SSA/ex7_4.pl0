@@ -1,0 +1,23 @@
+program EX7_4;
+var i,j,k,return;
+begin
+  i := 1;
+  j := 1;
+  k := 0;
+  while k<100 do
+    begin
+      if j < 20 then
+        begin
+          j := i;
+          k := k + 1;
+        end
+      else
+        begin
+          j := k;
+          k := k + 2;
+        end;
+      i := i + 1;
+    end;
+  return:= j;
+end.
+      
