@@ -1,0 +1,66 @@
+iterations: 7
+E[B]:
+  B1 -> true
+  B2 -> true
+  B3 -> true
+  B4 -> true
+  B5 -> true
+  B6 -> false
+  B7 -> true
+V[x]:
+  i1 -> 1
+  j1 -> 1
+  k1 -> 0
+  j2 -> 1
+  j4 -> 1
+  k2 -> ⊤
+  k4 -> ⊤
+  p2 -> ⊤
+  p3 -> 1
+  j3 -> 1
+  k3 -> ⊤
+  j5 -> ⊥
+  k5 -> ⊥
+
+B1:
+       i1 := 1
+       j1 := 1
+       k1 := 0
+  -> B2
+
+B2:
+       label l2
+       k2 := φ(k4@B7, k1@B1)
+       j2 := 1
+       p2 := k2 < 100
+       if not p2 goto l4
+  -> B3 [true], B4 [false]
+
+B3:
+       p3 := 1
+       if not 1 goto l6
+  -> B5 [true], B6 [false]
+
+B4:
+       label l4
+       write 1
+  -> EXIT
+
+B5:
+       j3 := 1
+       k3 := k2 + 1
+       goto l7
+  -> B7
+
+B6:
+       label l6
+       j5 := k2
+       k5 := k2 + 2
+  -> B7
+
+B7:
+       label l7
+       k4 := φ(k3@B5, k5@B6)
+       j4 := 1
+       goto l2
+  -> B2

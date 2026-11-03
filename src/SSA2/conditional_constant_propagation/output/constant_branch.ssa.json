@@ -1,0 +1,190 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "c_1 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 2,
+          "text": "t1_1 := c_1 = 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 3,
+          "text": "if not t1_1 goto l1",
+          "kind": "conditional",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 4,
+          "text": "x_1 := 4",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 5,
+          "text": "goto l2",
+          "kind": "goto",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 6,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 7,
+          "text": "x_2 := 9",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 8,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 0,
+          "text": "x_3 := φ(x_1@B2, x_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 9,
+          "text": "t2_1 := x_3 * 2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 10,
+          "text": "y_1 := t2_1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 11,
+          "text": "write y_1",
+          "kind": "write",
+          "target": "",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B3",
+      "kind": "false"
+    },
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "true"
+    },
+    {
+      "source": "B2",
+      "target": "B4",
+      "kind": "goto"
+    },
+    {
+      "source": "B3",
+      "target": "B4",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B4",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT",
+  "stage": "ssa",
+  "versions": {
+    "c_0": {
+      "variable": "c",
+      "index": 0
+    },
+    "t1_0": {
+      "variable": "t1",
+      "index": 0
+    },
+    "x_0": {
+      "variable": "x",
+      "index": 0
+    },
+    "t2_0": {
+      "variable": "t2",
+      "index": 0
+    },
+    "y_0": {
+      "variable": "y",
+      "index": 0
+    },
+    "c_1": {
+      "variable": "c",
+      "index": 1
+    },
+    "t1_1": {
+      "variable": "t1",
+      "index": 1
+    },
+    "x_1": {
+      "variable": "x",
+      "index": 1
+    },
+    "x_2": {
+      "variable": "x",
+      "index": 2
+    },
+    "x_3": {
+      "variable": "x",
+      "index": 3
+    },
+    "t2_1": {
+      "variable": "t2",
+      "index": 1
+    },
+    "y_1": {
+      "variable": "y",
+      "index": 1
+    }
+  },
+  "undefined": [],
+  "unreachable": []
+}

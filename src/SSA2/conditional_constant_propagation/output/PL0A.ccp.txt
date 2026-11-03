@@ -1,0 +1,51 @@
+iterations: 5
+E[B]:
+  B1 -> true
+  B2 -> true
+  B3 -> true
+  B4 -> true
+V[x]:
+  n_1 -> 10
+  sum_1 -> 0
+  n_2 -> ⊤
+  n_3 -> ⊤
+  sum_2 -> ⊤
+  sum_3 -> ⊤
+  t1_1 -> ⊤
+  t1_0 -> ⊥
+  t1_2 -> ⊤
+  t2_1 -> ⊤
+  t2_0 -> ⊥
+  t2_2 -> ⊤
+  t3_1 -> ⊤
+  t3_0 -> ⊥
+  t3_2 -> ⊤
+
+B1:
+    1: n_1 := 10
+    2: sum_1 := 0
+  -> B2
+
+B2:
+    3: label l1
+       n_2 := φ(n_1@B1, n_3@B3)
+       sum_2 := φ(sum_1@B1, sum_3@B3)
+       t1_1 := φ(t1_0@B1, t1_2@B3)
+       t2_1 := φ(t2_0@B1, t2_2@B3)
+       t3_1 := φ(t3_0@B1, t3_2@B3)
+    4: t1_2 := n_2 > 0
+    5: if not t1_2 goto l2
+  -> B4 [false], B3 [true]
+
+B3:
+    6: t2_2 := sum_2 + n_2
+    7: sum_3 := t2_2
+    8: t3_2 := n_2 - 1
+    9: n_3 := t3_2
+   10: goto l1
+  -> B2
+
+B4:
+   11: label l2
+   12: write sum_2
+  -> EXIT

@@ -1,0 +1,236 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "n_1 := 10",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 2,
+          "text": "sum_1 := 0",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 3,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 0,
+          "text": "n_2 := φ(n_1@B1, n_3@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "sum_2 := φ(sum_1@B1, sum_3@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t1_1 := φ(t1_0@B1, t1_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t2_1 := φ(t2_0@B1, t2_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t3_1 := φ(t3_0@B1, t3_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 4,
+          "text": "t1_2 := n_2 > 0",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 5,
+          "text": "if not t1_2 goto l2",
+          "kind": "conditional",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 6,
+          "text": "t2_2 := sum_2 + n_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 7,
+          "text": "sum_3 := t2_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 8,
+          "text": "t3_2 := n_2 - 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 9,
+          "text": "n_3 := t3_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 10,
+          "text": "goto l1",
+          "kind": "goto",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 11,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 12,
+          "text": "write sum_2",
+          "kind": "write",
+          "target": "",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B2",
+      "target": "B4",
+      "kind": "false"
+    },
+    {
+      "source": "B2",
+      "target": "B3",
+      "kind": "true"
+    },
+    {
+      "source": "B3",
+      "target": "B2",
+      "kind": "goto"
+    },
+    {
+      "source": "B4",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT",
+  "stage": "conditional-constant-propagation",
+  "algorithm": "block-based-slide-steps-1-10",
+  "E": {
+    "B1": true,
+    "B2": true,
+    "B3": true,
+    "B4": true
+  },
+  "V": {
+    "n_1": {
+      "kind": "constant",
+      "value": 10
+    },
+    "sum_1": {
+      "kind": "constant",
+      "value": 0
+    },
+    "n_2": {
+      "kind": "top"
+    },
+    "n_3": {
+      "kind": "top"
+    },
+    "sum_2": {
+      "kind": "top"
+    },
+    "sum_3": {
+      "kind": "top"
+    },
+    "t1_1": {
+      "kind": "top"
+    },
+    "t1_0": {
+      "kind": "bottom"
+    },
+    "t1_2": {
+      "kind": "top"
+    },
+    "t2_1": {
+      "kind": "top"
+    },
+    "t2_0": {
+      "kind": "bottom"
+    },
+    "t2_2": {
+      "kind": "top"
+    },
+    "t3_1": {
+      "kind": "top"
+    },
+    "t3_0": {
+      "kind": "bottom"
+    },
+    "t3_2": {
+      "kind": "top"
+    }
+  },
+  "parameters": [],
+  "iterations": 5,
+  "undefined": [
+    "t1_0",
+    "t2_0",
+    "t3_0"
+  ]
+}

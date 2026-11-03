@@ -1,0 +1,249 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "n_1 := 10",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 2,
+          "text": "sum_1 := 0",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 3,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 0,
+          "text": "n_2 := φ(n_1@B1, n_3@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "sum_2 := φ(sum_1@B1, sum_3@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t1_1 := φ(t1_0@B1, t1_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t2_1 := φ(t2_0@B1, t2_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t3_1 := φ(t3_0@B1, t3_2@B3)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 4,
+          "text": "t1_2 := n_2 > 0",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 5,
+          "text": "if not t1_2 goto l2",
+          "kind": "conditional",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 6,
+          "text": "t2_2 := sum_2 + n_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 7,
+          "text": "sum_3 := t2_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 8,
+          "text": "t3_2 := n_2 - 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 9,
+          "text": "n_3 := t3_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 10,
+          "text": "goto l1",
+          "kind": "goto",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 11,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 12,
+          "text": "write sum_2",
+          "kind": "write",
+          "target": "",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B2",
+      "target": "B4",
+      "kind": "false"
+    },
+    {
+      "source": "B2",
+      "target": "B3",
+      "kind": "true"
+    },
+    {
+      "source": "B3",
+      "target": "B2",
+      "kind": "goto"
+    },
+    {
+      "source": "B4",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT",
+  "stage": "ssa",
+  "versions": {
+    "n_0": {
+      "variable": "n",
+      "index": 0
+    },
+    "sum_0": {
+      "variable": "sum",
+      "index": 0
+    },
+    "t1_0": {
+      "variable": "t1",
+      "index": 0
+    },
+    "t2_0": {
+      "variable": "t2",
+      "index": 0
+    },
+    "t3_0": {
+      "variable": "t3",
+      "index": 0
+    },
+    "n_1": {
+      "variable": "n",
+      "index": 1
+    },
+    "sum_1": {
+      "variable": "sum",
+      "index": 1
+    },
+    "n_2": {
+      "variable": "n",
+      "index": 2
+    },
+    "sum_2": {
+      "variable": "sum",
+      "index": 2
+    },
+    "t1_1": {
+      "variable": "t1",
+      "index": 1
+    },
+    "t2_1": {
+      "variable": "t2",
+      "index": 1
+    },
+    "t3_1": {
+      "variable": "t3",
+      "index": 1
+    },
+    "t1_2": {
+      "variable": "t1",
+      "index": 2
+    },
+    "t2_2": {
+      "variable": "t2",
+      "index": 2
+    },
+    "sum_3": {
+      "variable": "sum",
+      "index": 3
+    },
+    "t3_2": {
+      "variable": "t3",
+      "index": 2
+    },
+    "n_3": {
+      "variable": "n",
+      "index": 3
+    }
+  },
+  "undefined": [
+    "t1_0",
+    "t2_0",
+    "t3_0"
+  ],
+  "unreachable": []
+}

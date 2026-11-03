@@ -1,0 +1,177 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "c_1 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 2,
+          "text": "t1_1 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 3,
+          "text": "if not 1 goto l1",
+          "kind": "conditional",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 4,
+          "text": "x_1 := 4",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 5,
+          "text": "goto l2",
+          "kind": "goto",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 6,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 7,
+          "text": "x_2 := 9",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 8,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 0,
+          "text": "x_3 := 4",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 9,
+          "text": "t2_1 := 8",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 10,
+          "text": "y_1 := 8",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 11,
+          "text": "write 8",
+          "kind": "write",
+          "target": "",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B3",
+      "kind": "false"
+    },
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "true"
+    },
+    {
+      "source": "B2",
+      "target": "B4",
+      "kind": "goto"
+    },
+    {
+      "source": "B3",
+      "target": "B4",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B4",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT",
+  "stage": "conditional-constant-propagation",
+  "algorithm": "block-based-slide-steps-1-10",
+  "E": {
+    "B1": true,
+    "B2": true,
+    "B3": false,
+    "B4": true
+  },
+  "V": {
+    "c_1": {
+      "kind": "constant",
+      "value": 1
+    },
+    "t1_1": {
+      "kind": "constant",
+      "value": 1
+    },
+    "x_1": {
+      "kind": "constant",
+      "value": 4
+    },
+    "x_2": {
+      "kind": "bottom"
+    },
+    "x_3": {
+      "kind": "constant",
+      "value": 4
+    },
+    "t2_1": {
+      "kind": "constant",
+      "value": 8
+    },
+    "y_1": {
+      "kind": "constant",
+      "value": 8
+    }
+  },
+  "parameters": [],
+  "iterations": 4,
+  "undefined": []
+}

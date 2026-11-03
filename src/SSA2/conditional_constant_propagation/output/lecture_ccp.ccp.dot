@@ -1,0 +1,22 @@
+digraph CCP {
+  node [shape=box, fontname="monospace", style=filled];
+  ENTRY [shape=oval, fillcolor="white"];
+  EXIT [shape=oval, fillcolor="white"];
+  "B1" [label="B1  E[B1] = true\ni1 := 1\nj1 := 1\nk1 := 0", fillcolor="#e5f5e0"];
+  "B2" [label="B2  E[B2] = true\nlabel l2\nk2 := φ(k4@B7, k1@B1)\nj2 := 1\np2 := k2 < 100\nif not p2 goto l4", fillcolor="#e5f5e0"];
+  "B3" [label="B3  E[B3] = true\np3 := 1\nif not 1 goto l6", fillcolor="#e5f5e0"];
+  "B4" [label="B4  E[B4] = true\nlabel l4\nwrite 1", fillcolor="#e5f5e0"];
+  "B5" [label="B5  E[B5] = true\nj3 := 1\nk3 := k2 + 1\ngoto l7", fillcolor="#e5f5e0"];
+  "B6" [label="B6  E[B6] = false\nlabel l6\nj5 := k2\nk5 := k2 + 2", fillcolor="#eeeeee"];
+  "B7" [label="B7  E[B7] = true\nlabel l7\nk4 := φ(k3@B5, k5@B6)\nj4 := 1\ngoto l2", fillcolor="#e5f5e0"];
+  ENTRY -> "B1";
+  "B1" -> "B2";
+  "B2" -> "B3" [label="true"];
+  "B2" -> "B4" [label="false"];
+  "B3" -> "B5" [label="true"];
+  "B3" -> "B6" [label="false"];
+  "B4" -> "EXIT";
+  "B5" -> "B7";
+  "B6" -> "B7" [style=dashed];
+  "B7" -> "B2";
+}

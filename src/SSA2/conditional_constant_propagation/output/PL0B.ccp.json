@@ -1,0 +1,539 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "read n_1",
+          "kind": "read",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 2,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 0,
+          "text": "n_2 := φ(n_1@B1, n_3@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t1_1 := φ(t1_0@B1, t1_2@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "x_1 := φ(x_0@B1, x_2@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t2_1 := φ(t2_0@B1, t2_2@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "m_1 := φ(m_0@B1, m_3@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t3_1 := φ(t3_0@B1, t3_3@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t4_1 := φ(t4_0@B1, t4_3@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t5_1 := φ(t5_0@B1, t5_3@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t6_1 := φ(t6_0@B1, t6_2@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t7_1 := φ(t7_0@B1, t7_2@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t8_1 := φ(t8_0@B1, t8_2@B8)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 3,
+          "text": "t1_2 := 1 < n_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 4,
+          "text": "if not t1_2 goto l2",
+          "kind": "conditional",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 5,
+          "text": "x_2 := n_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 6,
+          "text": "t2_2 := x_2 div 2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 7,
+          "text": "m_2 := t2_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 8,
+          "text": "label l3",
+          "kind": "label",
+          "target": "",
+          "label": "l3"
+        },
+        {
+          "line": 0,
+          "text": "m_3 := φ(m_2@B3, m_4@B5)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t3_2 := φ(t3_1@B3, t3_3@B5)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t4_2 := φ(t4_1@B3, t4_3@B5)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t5_2 := φ(t5_1@B3, t5_3@B5)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "t6_2 := φ(t6_1@B3, t6_3@B5)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 9,
+          "text": "t3_3 := x_2 div m_3",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 10,
+          "text": "t4_3 := t3_3 * m_3",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 11,
+          "text": "t5_3 := x_2 <> t4_3",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 12,
+          "text": "if not t5_3 goto l4",
+          "kind": "conditional",
+          "target": "l4",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B5",
+      "instructions": [
+        {
+          "line": 13,
+          "text": "t6_3 := m_3 - 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 14,
+          "text": "m_4 := t6_3",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 15,
+          "text": "goto l3",
+          "kind": "goto",
+          "target": "l3",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B6",
+      "instructions": [
+        {
+          "line": 16,
+          "text": "label l4",
+          "kind": "label",
+          "target": "",
+          "label": "l4"
+        },
+        {
+          "line": 17,
+          "text": "t7_2 := m_3 = 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 18,
+          "text": "if not t7_2 goto l5",
+          "kind": "conditional",
+          "target": "l5",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B7",
+      "instructions": [
+        {
+          "line": 19,
+          "text": "write x_2",
+          "kind": "write",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B8",
+      "instructions": [
+        {
+          "line": 20,
+          "text": "label l5",
+          "kind": "label",
+          "target": "",
+          "label": "l5"
+        },
+        {
+          "line": 21,
+          "text": "t8_2 := n_2 - 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 22,
+          "text": "n_3 := t8_2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 23,
+          "text": "goto l1",
+          "kind": "goto",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B9",
+      "instructions": [
+        {
+          "line": 24,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B2",
+      "target": "B9",
+      "kind": "false"
+    },
+    {
+      "source": "B2",
+      "target": "B3",
+      "kind": "true"
+    },
+    {
+      "source": "B3",
+      "target": "B4",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B4",
+      "target": "B6",
+      "kind": "false"
+    },
+    {
+      "source": "B4",
+      "target": "B5",
+      "kind": "true"
+    },
+    {
+      "source": "B5",
+      "target": "B4",
+      "kind": "goto"
+    },
+    {
+      "source": "B6",
+      "target": "B8",
+      "kind": "false"
+    },
+    {
+      "source": "B6",
+      "target": "B7",
+      "kind": "true"
+    },
+    {
+      "source": "B7",
+      "target": "B8",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B8",
+      "target": "B2",
+      "kind": "goto"
+    },
+    {
+      "source": "B9",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT",
+  "stage": "conditional-constant-propagation",
+  "algorithm": "block-based-slide-steps-1-10",
+  "E": {
+    "B1": true,
+    "B2": true,
+    "B3": true,
+    "B4": true,
+    "B5": true,
+    "B6": true,
+    "B7": true,
+    "B8": true,
+    "B9": true
+  },
+  "V": {
+    "n_1": {
+      "kind": "top"
+    },
+    "n_2": {
+      "kind": "top"
+    },
+    "n_3": {
+      "kind": "top"
+    },
+    "t1_1": {
+      "kind": "top"
+    },
+    "t1_0": {
+      "kind": "bottom"
+    },
+    "t1_2": {
+      "kind": "top"
+    },
+    "x_1": {
+      "kind": "top"
+    },
+    "x_0": {
+      "kind": "bottom"
+    },
+    "x_2": {
+      "kind": "top"
+    },
+    "t2_1": {
+      "kind": "top"
+    },
+    "t2_0": {
+      "kind": "bottom"
+    },
+    "t2_2": {
+      "kind": "top"
+    },
+    "m_1": {
+      "kind": "top"
+    },
+    "m_0": {
+      "kind": "bottom"
+    },
+    "m_3": {
+      "kind": "top"
+    },
+    "t3_1": {
+      "kind": "top"
+    },
+    "t3_0": {
+      "kind": "bottom"
+    },
+    "t3_3": {
+      "kind": "top"
+    },
+    "t4_1": {
+      "kind": "top"
+    },
+    "t4_0": {
+      "kind": "bottom"
+    },
+    "t4_3": {
+      "kind": "top"
+    },
+    "t5_1": {
+      "kind": "top"
+    },
+    "t5_0": {
+      "kind": "bottom"
+    },
+    "t5_3": {
+      "kind": "top"
+    },
+    "t6_1": {
+      "kind": "top"
+    },
+    "t6_0": {
+      "kind": "bottom"
+    },
+    "t6_2": {
+      "kind": "top"
+    },
+    "t7_1": {
+      "kind": "top"
+    },
+    "t7_0": {
+      "kind": "bottom"
+    },
+    "t7_2": {
+      "kind": "top"
+    },
+    "t8_1": {
+      "kind": "top"
+    },
+    "t8_0": {
+      "kind": "bottom"
+    },
+    "t8_2": {
+      "kind": "top"
+    },
+    "m_2": {
+      "kind": "top"
+    },
+    "m_4": {
+      "kind": "top"
+    },
+    "t3_2": {
+      "kind": "top"
+    },
+    "t4_2": {
+      "kind": "top"
+    },
+    "t5_2": {
+      "kind": "top"
+    },
+    "t6_3": {
+      "kind": "top"
+    }
+  },
+  "parameters": [],
+  "iterations": 6,
+  "undefined": [
+    "t1_0",
+    "x_0",
+    "t2_0",
+    "m_0",
+    "t3_0",
+    "t4_0",
+    "t5_0",
+    "t6_0",
+    "t7_0",
+    "t8_0"
+  ]
+}

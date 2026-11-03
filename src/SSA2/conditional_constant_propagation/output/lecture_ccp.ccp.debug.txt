@@ -1,0 +1,112 @@
+Conditional constant propagation: E[B], V[x]
+1: iteration 0; initialize: E[B]=false, V[x]=⊥
+  E: B1 -> false, B2 -> false, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> ⊥, j1 -> ⊥, k1 -> ⊥, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+2: iteration 0; Step 2: entry: E[B1] <- true
+  E: B1 -> true, B2 -> false, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> ⊥, j1 -> ⊥, k1 -> ⊥, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+3: iteration 1; begin iteration
+  E: B1 -> true, B2 -> false, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> ⊥, j1 -> ⊥, k1 -> ⊥, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+4: iteration 1; Step 3: successor of B1: E[B2] <- true
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> ⊥, j1 -> ⊥, k1 -> ⊥, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+5: iteration 1; Step 4/5: B1: i1 := 1: V[i1] <- 1
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> ⊥, k1 -> ⊥, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+6: iteration 1; Step 4/5: B1: j1 := 1: V[j1] <- 1
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> ⊥, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+7: iteration 1; Step 4/5: B1: k1 := 0: V[k1] <- 0
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> ⊥, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+8: iteration 1; Step 8: B2: j2 := φ(j4@B7, j1@B1): V[j2] <- 1
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> ⊥, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+9: iteration 1; Step 8: B2: k2 := φ(k4@B7, k1@B1): V[k2] <- 0
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+10: iteration 1; end iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+11: iteration 2; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> ⊥, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+12: iteration 2; Step 4/5: B2: p2 := k2 < 100: V[p2] <- 1
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+13: iteration 2; Step 10: branch from B2: E[B3] <- true
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+14: iteration 2; end iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+15: iteration 3; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> ⊥, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+16: iteration 3; Step 4/5: B3: p3 := j2 < 20: V[p3] <- 1
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> false, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+17: iteration 3; Step 10: branch from B3: E[B5] <- true
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+18: iteration 3; end iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+19: iteration 4; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> false
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+20: iteration 4; Step 3: successor of B5: E[B7] <- true
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> ⊥, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+21: iteration 4; Step 4/5: B5: j3 := i1: V[j3] <- 1
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> ⊥, j5 -> ⊥, k5 -> ⊥
+22: iteration 4; Step 4/5: B5: k3 := k2 + 1: V[k3] <- 1
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> ⊥, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+23: iteration 4; Step 8: B7: j4 := φ(j3@B5, j5@B6): V[j4] <- 1
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> 0, k4 -> ⊥, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+24: iteration 4; Step 8: B7: k4 := φ(k3@B5, k5@B6): V[k4] <- 1
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> 0, k4 -> 1, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+25: iteration 4; end iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> 0, k4 -> 1, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+26: iteration 5; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> 0, k4 -> 1, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+27: iteration 5; Step 6: B2: k2 := φ(k4@B7, k1@B1): V[k2] <- ⊤
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> 1, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+28: iteration 5; end iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> 1, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+29: iteration 6; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> 1, p2 -> 1, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+30: iteration 6; Step 4/5: B2: p2 := k2 < 100: V[p2] <- ⊤
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> 1, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> 1, j5 -> ⊥, k5 -> ⊥
+31: iteration 6; Step 4/5: B5: k3 := k2 + 1: V[k3] <- ⊤
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> 1, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥
+32: iteration 6; Step 7: B7: k4 := φ(k3@B5, k5@B6): V[k4] <- ⊤
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> false, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> ⊤, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥
+33: iteration 6; Step 9: branch from B2: E[B4] <- true
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> true, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> ⊤, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥
+34: iteration 6; end iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> true, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> ⊤, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥
+35: iteration 7; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> true, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> ⊤, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥
+36: iteration 7; end iteration
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> true, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> ⊤, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥
+37: iteration 7; fixed point
+  E: B1 -> true, B2 -> true, B3 -> true, B4 -> true, B5 -> true, B6 -> false, B7 -> true
+  V: i1 -> 1, j1 -> 1, k1 -> 0, j2 -> 1, j4 -> 1, k2 -> ⊤, k4 -> ⊤, p2 -> ⊤, p3 -> 1, j3 -> 1, k3 -> ⊤, j5 -> ⊥, k5 -> ⊥

@@ -1,0 +1,304 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "i1 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "j1 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "k1 := 0",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 0,
+          "text": "k2 := φ(k4@B7, k1@B1)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "j2 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "p2 := k2 < 100",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "if not p2 goto l4",
+          "kind": "conditional",
+          "target": "l4",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "p3 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "if not 1 goto l6",
+          "kind": "conditional",
+          "target": "l6",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "label l4",
+          "kind": "label",
+          "target": "",
+          "label": "l4"
+        },
+        {
+          "line": 0,
+          "text": "write 1",
+          "kind": "write",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B5",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "j3 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "k3 := k2 + 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "goto l7",
+          "kind": "goto",
+          "target": "l7",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B6",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "label l6",
+          "kind": "label",
+          "target": "",
+          "label": "l6"
+        },
+        {
+          "line": 0,
+          "text": "j5 := k2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "k5 := k2 + 2",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B7",
+      "instructions": [
+        {
+          "line": 0,
+          "text": "label l7",
+          "kind": "label",
+          "target": "",
+          "label": "l7"
+        },
+        {
+          "line": 0,
+          "text": "k4 := φ(k3@B5, k5@B6)",
+          "kind": "phi",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "j4 := 1",
+          "kind": "assign",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 0,
+          "text": "goto l2",
+          "kind": "goto",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B2",
+      "target": "B3",
+      "kind": "true"
+    },
+    {
+      "source": "B2",
+      "target": "B4",
+      "kind": "false"
+    },
+    {
+      "source": "B3",
+      "target": "B5",
+      "kind": "true"
+    },
+    {
+      "source": "B3",
+      "target": "B6",
+      "kind": "false"
+    },
+    {
+      "source": "B4",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B5",
+      "target": "B7",
+      "kind": "goto"
+    },
+    {
+      "source": "B6",
+      "target": "B7",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B7",
+      "target": "B2",
+      "kind": "goto"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT",
+  "stage": "conditional-constant-propagation",
+  "algorithm": "block-based-slide-steps-1-10",
+  "E": {
+    "B1": true,
+    "B2": true,
+    "B3": true,
+    "B4": true,
+    "B5": true,
+    "B6": false,
+    "B7": true
+  },
+  "V": {
+    "i1": {
+      "kind": "constant",
+      "value": 1
+    },
+    "j1": {
+      "kind": "constant",
+      "value": 1
+    },
+    "k1": {
+      "kind": "constant",
+      "value": 0
+    },
+    "j2": {
+      "kind": "constant",
+      "value": 1
+    },
+    "j4": {
+      "kind": "constant",
+      "value": 1
+    },
+    "k2": {
+      "kind": "top"
+    },
+    "k4": {
+      "kind": "top"
+    },
+    "p2": {
+      "kind": "top"
+    },
+    "p3": {
+      "kind": "constant",
+      "value": 1
+    },
+    "j3": {
+      "kind": "constant",
+      "value": 1
+    },
+    "k3": {
+      "kind": "top"
+    },
+    "j5": {
+      "kind": "bottom"
+    },
+    "k5": {
+      "kind": "bottom"
+    }
+  },
+  "parameters": [],
+  "iterations": 7,
+  "undefined": []
+}

@@ -1,0 +1,58 @@
+Conditional constant propagation: E[B], V[x]
+1: iteration 0; initialize: E[B]=false, V[x]=⊥
+  E: B1 -> false, B2 -> false, B3 -> false, B4 -> false
+  V: c_1 -> ⊥, t1_1 -> ⊥, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+2: iteration 0; Step 2: entry: E[B1] <- true
+  E: B1 -> true, B2 -> false, B3 -> false, B4 -> false
+  V: c_1 -> ⊥, t1_1 -> ⊥, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+3: iteration 1; begin iteration
+  E: B1 -> true, B2 -> false, B3 -> false, B4 -> false
+  V: c_1 -> ⊥, t1_1 -> ⊥, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+4: iteration 1; Step 4/5: B1: c_1 := 1: V[c_1] <- 1
+  E: B1 -> true, B2 -> false, B3 -> false, B4 -> false
+  V: c_1 -> 1, t1_1 -> ⊥, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+5: iteration 1; Step 4/5: B1: t1_1 := c_1 = 1: V[t1_1] <- 1
+  E: B1 -> true, B2 -> false, B3 -> false, B4 -> false
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+6: iteration 1; Step 10: branch from B1: E[B2] <- true
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+7: iteration 1; end iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+8: iteration 2; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> false
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+9: iteration 2; Step 3: successor of B2: E[B4] <- true
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> ⊥, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+10: iteration 2; Step 4/5: B2: x_1 := 4: V[x_1] <- 4
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> ⊥, t2_1 -> ⊥, y_1 -> ⊥
+11: iteration 2; Step 8: B4: x_3 := φ(x_1@B2, x_2@B3): V[x_3] <- 4
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> ⊥, y_1 -> ⊥
+12: iteration 2; end iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> ⊥, y_1 -> ⊥
+13: iteration 3; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> ⊥, y_1 -> ⊥
+14: iteration 3; Step 4/5: B4: t2_1 := x_3 * 2: V[t2_1] <- 8
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> 8, y_1 -> ⊥
+15: iteration 3; Step 4/5: B4: y_1 := t2_1: V[y_1] <- 8
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> 8, y_1 -> 8
+16: iteration 3; end iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> 8, y_1 -> 8
+17: iteration 4; begin iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> 8, y_1 -> 8
+18: iteration 4; end iteration
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> 8, y_1 -> 8
+19: iteration 4; fixed point
+  E: B1 -> true, B2 -> true, B3 -> false, B4 -> true
+  V: c_1 -> 1, t1_1 -> 1, x_1 -> 4, x_2 -> ⊥, x_3 -> 4, t2_1 -> 8, y_1 -> 8
