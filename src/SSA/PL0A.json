@@ -1,0 +1,137 @@
+{
+  "blocks": [
+    {
+      "name": "B1",
+      "instructions": [
+        {
+          "line": 1,
+          "text": "n := 10",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 2,
+          "text": "sum := 0",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B2",
+      "instructions": [
+        {
+          "line": 3,
+          "text": "label l1",
+          "kind": "label",
+          "target": "",
+          "label": "l1"
+        },
+        {
+          "line": 4,
+          "text": "t1 := n > 0",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 5,
+          "text": "if not t1 goto l2",
+          "kind": "conditional",
+          "target": "l2",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B3",
+      "instructions": [
+        {
+          "line": 6,
+          "text": "t2 := sum + n",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 7,
+          "text": "sum := t2",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 8,
+          "text": "t3 := n - 1",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 9,
+          "text": "n := t3",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        },
+        {
+          "line": 10,
+          "text": "goto l1",
+          "kind": "goto",
+          "target": "l1",
+          "label": ""
+        }
+      ]
+    },
+    {
+      "name": "B4",
+      "instructions": [
+        {
+          "line": 11,
+          "text": "label l2",
+          "kind": "label",
+          "target": "",
+          "label": "l2"
+        },
+        {
+          "line": 12,
+          "text": "write sum",
+          "kind": "normal",
+          "target": "",
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B2",
+      "kind": "fallthrough"
+    },
+    {
+      "source": "B2",
+      "target": "B4",
+      "kind": "false"
+    },
+    {
+      "source": "B2",
+      "target": "B3",
+      "kind": "true"
+    },
+    {
+      "source": "B3",
+      "target": "B2",
+      "kind": "goto"
+    },
+    {
+      "source": "B4",
+      "target": "EXIT",
+      "kind": "fallthrough"
+    }
+  ],
+  "entry": "B1",
+  "exit": "EXIT"
+}

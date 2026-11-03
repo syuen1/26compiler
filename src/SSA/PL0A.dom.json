@@ -1,0 +1,43 @@
+{
+  "root": "B1",
+  "dominators": {
+    "B1": [
+      "B1"
+    ],
+    "B2": [
+      "B1",
+      "B2"
+    ],
+    "B3": [
+      "B1",
+      "B2",
+      "B3"
+    ],
+    "B4": [
+      "B1",
+      "B2",
+      "B4"
+    ]
+  },
+  "immediate_dominators": {
+    "B1": null,
+    "B2": "B1",
+    "B3": "B2",
+    "B4": "B2"
+  },
+  "edges": [
+    {
+      "source": "B1",
+      "target": "B2"
+    },
+    {
+      "source": "B2",
+      "target": "B3"
+    },
+    {
+      "source": "B2",
+      "target": "B4"
+    }
+  ],
+  "unreachable": []
+}
