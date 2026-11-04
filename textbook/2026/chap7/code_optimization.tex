@@ -1368,7 +1368,7 @@ $\varphi$関数を含むブロックの頂点がこの条件を満たさない�
     \end{trivlist}
 \end{proof}
 
-\begin{Lem}
+\begin{Lem}\label{lem:DFlocal}
     \[DF_{local}(v)=\{u\;|\;v\rightarrow u,\idomv{u}\not=v\}\]
 \end{Lem}
 
@@ -1384,7 +1384,7 @@ $u\ll v$ $\Leftrightarrow$ $v=\idomv{u}$を証明する．
     $\Leftrightarrow$の対偶をとると，上記が成り立つ．
 \end{proof}
 
-\begin{Lem}
+\begin{Lem}\label{lem:DFup}
     頂点$v$と支配木における$v$の子頂点$w$に対して
     \[
         DF_{up}(w)=\{u\in DF(w)\;|\;\idomv{u}\not= v\}
@@ -1392,14 +1392,29 @@ $u\ll v$ $\Leftrightarrow$ $v=\idomv{u}$を証明する．
 \end{Lem}
 
 \begin{proof}
-    (作成中)
+    $v$の(支配木における)子頂点$w$に対して$u\in DF(w)$ならば
+    $(u\ll v)\Leftrightarrow (\idomv{u}=v)$ を証明する．
+    \begin{trivlist}
+    \item[($\Leftarrow$)] 支配関係の定義より明らか．
+    \item[($\Rightarrow$)] $v$が真に$u$を支配するならば，
+    $u$を支配する$v$の子頂点$x$が存在する．($x\domll u$)
+    $u$の先行頂点$y$で，$y\domll w$となる$y$を選ぶ．すると，
+    $x$は開始頂点から$u$への路のすべてに出現し，$y$もすべての
+    路に出現する．すると$x$が$u$を支配するか，$u=x$である．
+    $u=x$であれば，$\idomv{x}=\idomv{u}=v$である．
+    $u\not=x$であれば，$x$が$u$を支配する．とすると$u$を支配
+    できる$v$の子頂点は唯一である．（唯一でなければ，$x$が$u$を
+    支配することはできない．)つまり，$x=w$となり，これは，
+    $u\in DF(w)$に反する．
+    \end{trivlist}
 \end{proof}
 
 \begin{Thm}
     アルゴリズム\ref{alg:dominanceFrontier}は$DF(v)$を正しく計算する．
 \end{Thm}
 \begin{proof}
-    (作成中)
+    補題\ref{lem:DFlocal}, 補題\ref{lem:DFup}より明らか．
+    アルゴリズムの前半が補題\ref{lem:DFlocal}，後半が補題\ref{lem:DFup}にそのまま当てはまる．
 \end{proof}
 
 \subsection*{[付録] 定理\ref{thm:DFlimit}の証明}
