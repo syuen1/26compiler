@@ -1,0 +1,72 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\hoffset=-25mm \voffset=-25mm
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{24cm}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\usepackage{fancyvrb}
+\usepackage{tabularx}
+\usepackage{multirow}
+\newcounter{coffee}
+\newcounter{bean}
+\input{mymacros}
+\begin{document}
+\begin{flushright}
+\verb|2026/11/6|
+\end{flushright}
+\begin{center}{\bf\Large
+  2026年度 コンパイラ演習課題(6)
+}\end{center}
+\begin{itemize}
+  \item TACTの課題の添付ファイルとしてPDFファイルで提出すること．
+  \item 手書きレポートをPDFとして提出する方法は講義webサイトを
+  参照\footnote{\url{https://sites.google.com/sqlab.jp/26compiler/how-to-make-report}}すること．
+  \item 提出期限: {11月13日（金）23:55}
+\end{itemize}
+
+\vspace*{1cm}
+
+\begin{list}{{\bf [\,\arabic{coffee}\,]}}{\usecounter{coffee}}
+\item
+以下の属性文法$G_1$の規則を考える．ここで$N,L,B$は非終端記号，$0,1,\texttt{.}$は終端記号である．
+$N$が開始記号である．
+(これは２進数固定小数点の値を与える)
+
+\[
+\begin{array}{lll}
+  N\rightarrow L^{(1)}\;\texttt{.}\;L^{(2)} & \{N.val=L^{(1)}.val+L^{(2)}.val, & L^{(1)}.s=0,\\
+  & & L^{(2)}.s=-L^{(2)}.d\}\\
+  L\rightarrow L^{(1)}\;B & \{L.val = L^{(1)}.val+B.val, & L^{(1)}.s=L.s+1,\\
+    & \phantom{\{}L.d=L^{(1)}.d+1, & B.s=L.s\}\\
+  L\rightarrow B & \{L.val=B.val, & B.s=L.s,\\
+    & \phantom{\{}L.d=1\} & \\
+  B\rightarrow 0 & \{B.val=0\}\\
+  B\rightarrow 1 & \{B.val=2^{B.s}\}
+\end{array}\]
+
+\begin{list}{(\alph{bean})}{\usecounter{bean}}
+  \item $X.val$, $X.s$, $X.d$のうち，どれが合成属性であるか示せ．ここで，$X\in\{N,L,B\}$とする．
+  \item \texttt{101.011}に対する$N.val$の値を求めよ．
+\end{list}
+\item 以下の文法$G_2$の生成規則と意味規則を考える．
+\[
+\begin{array}{ll}
+  E\rightarrow TE' & \{E'.a=T.val,\ E.val=E'.b\}\\
+  E'\rightarrow +TE'^{(1)} & \{{E'^{(1)}.a=E'.a+T.val},\ E'.b=E'^{(1)}.b\}\\
+  E'\rightarrow\varepsilon & \{E'.b=E'.a\}\\
+  T\rightarrow FT' & \{T'.a=F.val,\ T.val=T'.b\}\\
+  T'\rightarrow \ast FT'^{(1)} & \{T'^{(1)}.a=T'.a\times F.val,\ T'.b=T'^{(1)}.b\}\\
+  T'\rightarrow\varepsilon & \{T'.b=T'.a\}\\
+  F\rightarrow (E) & \{F.val=E.val\}\\
+  F\rightarrow\mathsf{NUM} & \{F.val=\mathsf{NUM}.val\}
+\end{array}
+\]
+  \begin{list}{(\alph{bean})}{\usecounter{bean}}
+    \item $X.val$, $X.a$, $X.b$のうち，どれが合成属性であるか示せ．ここで，$X\in\{E,E',T,T',F\}$とする．
+    \item $4+6\ast 7$に対する$E.val$の値を上記の意味規則によって評価せよ．
+    \item $(4+6)\ast 7$に対する$E.val$の値を上記の意味規則によって評価せよ．
+  \end{list}
+\end{list}
+\end{document}
