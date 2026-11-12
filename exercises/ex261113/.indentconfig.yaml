@@ -1,0 +1,4 @@
+defaultIndent: "  "
+verbatimEnvironments:
+  Verbatim: 1
+  verbatim: 1

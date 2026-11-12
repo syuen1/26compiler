@@ -1,0 +1,9 @@
+int a[1000];
+void sort(int i,int n) {
+        int j;
+        if(i<n) {
+                for(j=i+1;j<n;j++)
+                if(a[i]>a[j]) {int t=a[i]; a[i]=a[j]; a[j]=t;}
+                sort(i+1,n);
+            }
+    }
