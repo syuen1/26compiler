@@ -1,0 +1,23 @@
+\documentclass[dvipdfmx]{jarticle}
+\pagestyle{empty}
+\usepackage{tikz}
+\usetikzlibrary{shapes,calc}
+\newcommand{\tta}{\texttt{a}}
+\newcommand{\ttb}{\texttt{b}}
+\newcommand{\ttc}{\texttt{c}}
+\newcommand{\ttd}{\texttt{d}}
+\newcommand{\tte}{\texttt{e}}
+\begin{document}
+\begin{tikzpicture}
+\node[draw,circle,fill=yellow!50] (Na) at (0,0) {$\tta$};
+\node[draw,circle,fill=blue!50] (Nd) at (2,0) {$\ttd$};
+\node[draw,circle,fill=red!50] (Ne) at (1,-1) {$\tte$};
+\node[draw,circle,fill=blue!50] (Nb) at (0,-2) {$\ttb$};
+\node[draw,circle,fill=yellow!50] (Nc) at (2,-2) {$\ttc$};
+\path[-] (Na) edge (Nd) (Na) edge (Nb) (Na) edge (Ne);
+\path[-] (Nb) edge (Ne) (Ne) edge (Nd);
+\path[-] (Nb) edge (Nc) (Nd) edge (Nc);
+\path[-] (Ne) edge (Nc);
+\node[anchor=west] at (3,0) {Color1=赤,Color2=黄,Color3=青};
+\end{tikzpicture}
+\end{document}

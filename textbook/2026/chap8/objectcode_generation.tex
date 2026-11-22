@@ -133,7 +133,43 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
 
 レジスタ干渉グラフは，生存期間の重なりを無向グラフによって表現したものである．無向グラフの頂点に変数を割り当ててその生存期間が重なる場合には，その頂点間に辺をつける．互いに生存期間が重ならない変数については対応する頂点は辺を持たない．従って，$(u,v)\notin E$のとき，$u$に割り当てられた変数と$v$に割り当てられた変数は同じレジスタに割り当てることができる．
 
-\begin{Exmp}
+\newcommand{\tta}{\texttt{a}}
+\newcommand{\ttb}{\texttt{b}}
+\newcommand{\ttc}{\texttt{c}}
+\newcommand{\ttd}{\texttt{d}}
+\newcommand{\tte}{\texttt{e}}
+
+\begin{Exmp}\label{exmp:livenessAndInterfareGraph}
+
+    図\ref{fig:livenessAndIntGraph}に変数の生存期間と干渉グラフの例を示す．(a)の基本ブロックの入力と出力時点で$\ttc$, $\ttd$, $\tte$がliveであるとする．３番地コードにおいて，基本ブロック内で右辺で参照される変数はliveでなければならない．レジスタ干渉グラフは同時に参照される可能性のある変数間に辺を持つ．
+    \begin{figure}[H]
+\begin{tabularx}{\textwidth}{m{0.333\textwidth}m{0.333\textwidth}m{0.333\textwidth}}
+    \vspace*{-30pt}
+    \begin{tabular}{rl}
+    $\ell_1$: & $\tta\tteq\ttc\,\ttpl\,\ttd$\\
+    $\ell_2$: & $\ttb\tteq\ttd\,\ttmu\,\tta$\\
+    $\ell_3$: & $\ttc\tteq\tta\,\ttmu\,\ttb$\\
+    $\ell_4$: & $\ttd\tteq\ttb\,\ttpl\,\ttc$\\
+    $\ell_5$: & $\tte\tteq\tte\,\ttsb\,1$\\
+    $\ell_6$: & \verb|if e>0 goto l|
+
+    \end{tabular}
+    &
+    \vspace*{-30pt}
+    \begin{tabular}{l}
+        $\{\ttc,\ttd,\tte\}$\\
+        $\{\tta,\ttd,\tte\}$\\
+        $\{\tta,\ttb,\tte\}$\\
+        $\{\ttb,\ttc,\tte\}$\\
+        $\{\ttc,\ttd,\tte\}$
+    \end{tabular}
+    &
+    \vspace*{20pt}
+    \includegraphics{figures/interfare-graph-crop.pdf}\\
+    (a) 基本ブロック & (b) 生存変数集合 & (c)レジスタ干渉グラフ
+\end{tabularx}
+    \caption{変数の生存期間とレジスタ干渉グラフ}\label{fig:livenessAndIntGraph}
+\end{figure}
 
 \end{Exmp}
 
@@ -194,9 +230,54 @@ $k$種類の色によって塗り分けが可能かどうかを判定する問�
 
 彩色ができた場合に，各干渉グラフのノードが$i$番目の色に彩色されたとき，その変数にレジスタ$i$を割り当てる．
 
+\begin{Exmp}
+図\ref{fig:livenessAndIntGraph}(c)のレジスタ干渉グラフ$G$にアルゴリズム\ref{alg:graphColoring}を$Color(G,3)$として適用する．
+\begin{list}{{\bf Step \arabic{coffee}}:}{\usecounter{coffee}}
+\item すべての頂点の次数が3以上であるので，7行目から適用される．頂点$\tta$を選ぶと，その隣接頂点$\{\ttb,\tte,\ttd\}$に対して独立集合を計算すると，
+$\{\ttb,\ttd\},\{\tte\}$となり，最大は$\{\ttb,\ttd\}$である．
+$\ttb$,$\ttd$に色3を割り当てる．
+$G_1=G\backslash\{\ttb,\ttd\}$は以下のようになる．
+\begin{center}
+\begin{tikzpicture}
+\node at (-1,-1) {$G_1$};
+\node[draw,circle] (Na) at (0,0) {$\tta$};
+\node[draw,circle] (Ne) at (1,-1) {$\tte$};
+\node[draw,circle] (Nc) at (2,-2) {$\ttc$};
+\path[-] (Na) edge (Ne) (Ne) edge (Nc);
+\end{tikzpicture}
+\end{center}
+\item\label{stepiii} $Color(G_1,2)$:
+$\tta$の次数が1で(2-1)以下なので，$v$を頂点$\tta$として3行目の条件が適用され，$Color(G_2,2)$を実行
+\begin{center}
+\begin{tikzpicture}
+    \node at (0,-1.5) {$G_2$};
+\node[draw,circle] (Ne) at (1,-1) {$\tte$};
+\node[draw,circle] (Nc) at (2,-2) {$\ttc$};
+\path[-] (Ne) edge (Nc);
+\end{tikzpicture}
+\end{center}
+\item\label{stepii} $Color(G_2,2)$: $\ttc$の次数が1なので，$v$を頂点$\ttc$として3行目の条件が適用され，$Color(G_3,2)$を実行
+\begin{center}
+\begin{tikzpicture}
+\node at (0,-1) {$G_3$};
+\node[draw,circle] (Ne) at (1,-1) {$\tte$};
+\end{tikzpicture}
+\end{center}
+\item\label{stepi} $Color(G_3,2)$: $\tte$の次数が0なので，$v$を頂点$\tte$として3行目の条件が適用され，$Color(\emptyset,2)$を実行．
+\item $Color(\emptyset,2)$: 何もせずreturn
+\item Step \ref{stepi} の後の５行目で$\tte$に色１を割り当てて return
+\item Step \ref{stepii} の後の５行目で$\ttc$に色２を割り当てて return
+\item Step \ref{stepiii} の後の5行目で$\ttc$と同じ色2を割り当てて return
+\item 手続き終了
+\end{list}
+\begin{center}
+\includegraphics{figures/interfare-graph-color-crop.pdf}
+\end{center}
+\end{Exmp}
+
 \subsection{SSAに対するレジスタ割当}
 
-$\varphi$関数を消去して得られるSSA形式からは，比較的容易にレジスタ割り当てを導くことが知られている．SSA形式では，最適化後において支配関係が保存されている．従って，各変数の生存期間は定義において新たな添字をもつ変数が定義されてから，次の添字を持つ変数が定義されるまでの間となる．各変数に対して生存期間に対応する頂点を抽出し，その頂点から構成される支配木の部分木を構成する．その部分木の交差グラフを構成するとレジスタ干渉グラフが構成できる．
+SSA形式からは，比較的容易にレジスタ割り当てを導くことが知られている．SSA形式では，最適化後において支配関係が保存されている．従って，各変数の生存期間は定義において新たな添字をもつ変数が定義されてから，次の添字を持つ変数が定義されるまでの間となる．各変数に対して生存期間に対応する頂点を抽出し，その頂点から構成される支配木の部分木を構成する．その部分木の交差グラフを構成するとレジスタ干渉グラフが構成できる．
 
 \begin{Lem}
     SSA形式から支配木の部分木から構成された交差グラフによる干渉グラフは弦グラフである．
