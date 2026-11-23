@@ -1,0 +1,12 @@
+\documentclass{jarticle}
+\pagestyle{empty}
+\usepackage{fancyvrb}
+\begin{document}
+\verb|A-(B+C)|
+\begin{Verbatim}
+  Load r2,B
+  +    r2,C
+  Load r1,A
+  -    r1,r2
+\end{Verbatim}
+\end{document}

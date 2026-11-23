@@ -1,0 +1,50 @@
+This is upBibTeX, Version 0.99d-j0.36-u2.00 (utf8.euc) (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: 2026textbook.aux
+The style file: jplain.bst
+Database file #1: comp-ref.bib
+Warning--I didn't find a database entry for "DBLP:books/cu/Appel2002"
+Warning--I didn't find a database entry for "TigerBook"
+You've used 3 entries,
+            2620 wiz_defined-function locations,
+            623 strings with 5571 characters,
+and the built_in function-call counts, 1854 in all, are:
+= -- 163
+> -- 83
+< -- 8
++ -- 33
+- -- 30
+* -- 131
+:= -- 254
+add.period$ -- 10
+call.type$ -- 3
+change.case$ -- 23
+chr.to.int$ -- 0
+cite$ -- 3
+duplicate$ -- 86
+empty$ -- 130
+format.name$ -- 46
+if$ -- 423
+int.to.chr$ -- 0
+int.to.str$ -- 3
+missing$ -- 3
+newline$ -- 18
+num.names$ -- 8
+pop$ -- 27
+preamble$ -- 1
+purify$ -- 20
+quote$ -- 0
+skip$ -- 83
+stack$ -- 0
+substring$ -- 103
+swap$ -- 35
+text.length$ -- 8
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 12
+warning$ -- 0
+while$ -- 16
+width$ -- 4
+write$ -- 37
+is.kanji.str$ -- 50
+(There were 2 warnings)

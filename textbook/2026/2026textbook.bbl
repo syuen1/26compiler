@@ -1,0 +1,18 @@
+\begin{thebibliography}{1}
+
+\bibitem{DBLP:journals/cl/ChaitinACCHM81}
+Gregory~J. Chaitin, Marc~A. Auslander, Ashok~K. Chandra, John Cocke, Martin~E. Hopkins, and Peter~W. Markstein.
+\newblock Register allocation via coloring.
+\newblock {\em Comput. Lang.}, Vol.~6, No.~1, pp. 47--57, 1981.
+
+\bibitem{DBLP:journals/toplas/CytronFRWZ91}
+Ron Cytron, Jeanne Ferrante, Barry~K. Rosen, Mark~N. Wegman, and F.~Kenneth Zadeck.
+\newblock Efficiently computing static single assignment form and the control dependence graph.
+\newblock {\em {ACM} Trans. Program. Lang. Syst.}, Vol.~13, No.~4, pp. 451--490, 1991.
+
+\bibitem{DBLP:conf/cc/HackGG06}
+Sebastian Hack, Daniel Grund, and Gerhard Goos.
+\newblock Register allocation for programs in ssa-form.
+\newblock In Alan Mycroft and Andreas Zeller, editors, {\em Compiler Construction, 15th International Conference, {CC} 2006, Held as Part of the Joint European Conferences on Theory and Practice of Software, {ETAPS} 2006, Vienna, Austria, March 30-31, 2006, Proceedings}, Vol. 3923 of {\em Lecture Notes in Computer Science}, pp. 247--262. Springer, 2006.
+
+\end{thebibliography}

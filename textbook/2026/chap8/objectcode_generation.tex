@@ -165,7 +165,7 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
     \end{tabular}
     &
     \vspace*{20pt}
-    \includegraphics{figures/interfare-graph-crop.pdf}\\
+    \includegraphics{interfare-graph-crop.pdf}\\
     (a) 基本ブロック & (b) 生存変数集合 & (c)レジスタ干渉グラフ
 \end{tabularx}
     \caption{変数の生存期間とレジスタ干渉グラフ}\label{fig:livenessAndIntGraph}
@@ -271,7 +271,7 @@ $\tta$の次数が1で(2-1)以下なので，$v$を頂点$\tta$として3行目�
 \item 手続き終了
 \end{list}
 \begin{center}
-\includegraphics{figures/interfare-graph-color-crop.pdf}
+\includegraphics{interfare-graph-color-crop.pdf}
 \end{center}
 
 黄色にレジスタ1(R1),青色にレジスタ2(R2),赤色にレジスタ3(R3)を割り当てると図\ref{exmp:livenessAndInterfareGraph}(a)の基本ブロックは以下のようにより機械語に近い命令に変換できる．
@@ -488,9 +488,62 @@ $t(S_i)$とすると，$S_i$と交差する$S_j$と$S_k$は$t(S_i)$を共有す�
 
 \subsubsection{$\phi$関数の消去とレジスタ割当て}
 
-上記は$\phi$関数は消去されていないSSA形式について成り立つ．しかし，$\phi$関数の消去を行う代入を挿入すると干渉グラフが弦グラフとはならない．従って，弦グラフを用いたレジスタ割当は，$\varphi$関数を消去する前に行う必要がある．
+上記は$\phi$関数は消去されていないSSA形式について成り立つ．しかし，$\phi$関数の消去を行う代入を挿入すると干渉グラフが弦グラフとなるとは限らない．従って，弦グラフを用いたレジスタ割当は，$\varphi$関数を消去する前に行う必要がある．
 
-$\chi(G)$が増加してしまうことがある．
+図~\ref{fig:SSAandInterfare}に$\varphi$関数を含むSSA形式，各変数の生存期間および干渉グラフを示す．$i_2$, $j_2$については，ループによって参照が支配木の根方向に発生するが，必ず$\varphi$関数の引数が参照となる．$B_1$内では生存期間が発生せず，辺上のみに生存期間があるとする．
+
+\begin{figure}[H]
+\begin{center}
+\begin{tabularx}{\linewidth}{m{.5\linewidth}m{.5\linewidth}}
+    \includegraphics[scale=0.75]{SSA-regalloc-1-crop.pdf}
+    &
+    \includegraphics[scale=0.75]{SSA-live-1-crop.pdf}\\
+    \multicolumn{1}{c}{(a) SSA形式プログラム}
+    & \multicolumn{1}{c}{(b) 各変数の生存期間}\\[10pt]
+    \multicolumn{1}{c}{
+        \includegraphics{interfare-graph-1-crop.pdf}
+    } & \includegraphics[scale=0.75]{SSA-regalloc-1-res-crop.pdf}\\
+    \multicolumn{1}{c}{(c) 干渉グラフ} & 
+    \multicolumn{1}{c}{(d) レジスタ割当結果}
+    \\
+\end{tabularx}
+\end{center}
+\caption{SSA形式プログラムと干渉グラフ}\label{fig:SSAandInterfare}
+\end{figure}
+
+図~\ref{fig:SSAandInterfare}(c)は弦グラフであり，２色で彩色できる．
+従って$R_1$として，$\{i_1,i_2,j_3\}$, $R_2$として，$\{j_1,j_2,i_3\}$とすると，図~\ref{fig:SSAandInterfare}(d)のような割当となる．
+
+ここで，
+\[\begin{array}{ll}
+    \ell_3: & R_2\leftarrow\varphi(R_1,R_2)\\
+    \ell_4: & R_1\leftarrow\varphi(R_2,R_1)
+\end{array}\]
+$B_2$への1番目のフローを$R_2$へ2番目のフローを$R_1$に割り当てることを意味する．これは，レジスタを交換する命令 $\texttt{swap}\ R_1,R_2$で実現される．
+
+これに対して，$\varphi$関数をフローごとに代入を挿入する方法で消去すると図~\ref{fig:SSAphiEliminated}(a)のようになる．これに対して，変数の生存期間は図~\ref{fig:SSAphiEliminated}(b)のようになり，生存期間が支配木上の連結部分木とならない($i_3$)．ただし，この場合は干渉グラフを作成するとたまたま弦グラフとなる．クリークの最大サイズは３となるので，彩色数は３となる．
+
+\begin{figure}[H]
+    \centering
+    \begin{tabularx}{\linewidth}{m{.5\linewidth}m{.5\linewidth}}
+        \includegraphics[scale=0.75]{SSA-regalloc-2-crop.pdf}
+        & 
+        \includegraphics[scale=0.75]{SSA-live-2-crop.pdf}\\
+        \multicolumn{1}{c}{(a) $\varphi$関数の消去} & 
+        \multicolumn{1}{c}{(b) 変数の生存期間}\\
+        \multicolumn{1}{c}{
+        \includegraphics{interfare-graph-2-crop.pdf}
+        } & 
+        \includegraphics[scale=0.75]{SSA-regalloc-2-res-crop.pdf}
+        \\
+        \multicolumn{1}{c}{(c) 干渉グラフ} & 
+        \multicolumn{1}{c}{(d) レジスタ割当結果}\\
+    \end{tabularx}
+    \caption{$\varphi$関数をあらかじめ消去した場合}\label{fig:SSAphiEliminated}
+\end{figure}
+
+一般にSSA形式の干渉グラフの弦性を利用してレジスタ割当をする場合には，$\varphi$関数を消去する前にレジスタ割当を行い，$\varphi$関数の消去はレジスタの入れ替えによって実現する方法が取られる\footnote{レジスタの入れ替え命令がない場合には適用できない．}．干渉グラフが弦グラフとならない場合には，アルゴリズム\ref{alg:graphColoring}を用いれば彩色ができる．
+この手法の詳細は\cite{DBLP:conf/cc/HackGG06}を参照のこと．
 
 % 図~\ref{fig:phiChromatic}に対して$\varphi$関数を消去した場合，彩色数は3である．
 

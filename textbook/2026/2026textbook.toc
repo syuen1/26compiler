@@ -133,17 +133,7 @@
 \contentsline {section}{\numberline {8.1}算術式のコード生成}{129}{}%
 \contentsline {section}{\numberline {8.2}グラフ彩色によるレジスタ割当}{130}{}%
 \contentsline {subsection}{\numberline {8.2.1}レジスタ干渉グラフ}{132}{}%
-\contentsline {subsection}{\numberline {8.2.2}SSAに対するレジスタ割当}{132}{}%
-\contentsline {chapter}{\numberline {付 録A }VMコードの仕様}{135}{}%
-\contentsline {paragraph}{1. Load literal}{135}{}%
-\contentsline {paragraph}{2. Load}{135}{}%
-\contentsline {paragraph}{3. Store}{135}{}%
-\contentsline {paragraph}{4. Move to index register}{135}{}%
-\contentsline {paragraph}{5. Arithmetic operation}{136}{}%
-\contentsline {paragraph}{6. Unconditional Jump}{136}{}%
-\contentsline {paragraph}{7. Jump on condition}{136}{}%
-\contentsline {paragraph}{8. Read data}{136}{}%
-\contentsline {paragraph}{9. Write data}{136}{}%
-\contentsline {paragraph}{10. Increment stack top}{136}{}%
-\contentsline {paragraph}{11. Procedure call}{137}{}%
-\contentsline {paragraph}{12. Return}{137}{}%
+\contentsline {subsection}{\numberline {8.2.2}SSAに対するレジスタ割当}{135}{}%
+\contentsline {subsubsection}{弦グラフの彩色}{135}{}%
+\contentsline {subsubsection}{SSA形式のレジスタ干渉グラフ}{136}{}%
+\contentsline {subsubsection}{$\phi $関数の消去とレジスタ割当て}{137}{}%
