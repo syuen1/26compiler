@@ -1,0 +1,92 @@
+\documentclass[dvipdfmx,a4j]{jarticle}
+\setlength{\textheight}{23.5cm}
+\usepackage{tikz}
+\usepackage{multirow}
+\usetikzlibrary{automata,calc,shapes,math}
+\pagestyle{empty}
+\newcounter{coffee}
+\newcounter{bean}
+\newcommand{\ttpl}{\texttt{+}}
+\newcommand{\ttmu}{\texttt{*}}
+\newcommand{\tta}{\texttt{a}}
+\newcommand{\ttx}{\texttt{x}}
+\newcommand{\tteq}{\texttt{=}}
+\newcommand{\ttlt}{\texttt{<}}
+\newcommand{\ttsb}{\texttt{-}}
+\newcommand{\eof}{\texttt{\#}}
+\newcommand{\actrec}[3]{
+  \coordinate (framebase) at #1;
+  \draw (framebase) rectangle +(2,1);
+  \node at ($(framebase)+(0.5,+0.25)$) {rv};
+  \node at ($(framebase)+(0.5,+0.75)$) {\ttx};
+  \node at ($(framebase)+(1.5,+0.25)$) {#2};
+  \node at ($(framebase)+(1.5,+0.75)$) {#3};  
+}
+\newcommand{\actbase}[1]{
+  \coordinate (actbase) at #1;
+  \node at ($(actbase)+(0.5,-0.25)$) {\tta};
+  \node at ($(actbase)+(1.5,-0.25)$) {3};
+  \draw (actbase) rectangle +(2,-0.5);
+}
+\newcommand{\temprv}[2]{
+  \coordinate (tempbase) at #1;
+  \draw #1 rectangle +(2,0.5);
+  \draw ($#1+(1,0)$) + (0,0.5);
+  \node at ($#1+(0.5,0.25)$) {};
+  \node at ($#1+(1.5,0.25)$) {#2};
+}
+\newcommand{\calltrans}[2]{
+  \coordinate (callbase) at #1;
+  \path[->] ($(callbase)+(0.25,0)$) edge [above] node {#2} +(1.5,0);
+}
+\newcommand{\tmpv}[1]{\texttt{t}_{#1}}
+\begin{document}
+% \begin{flushright}
+% \end{flushright}
+\begin{center}
+    {\bf\Large コンパイラ演習課題(4)(解答例)}
+\end{center}
+
+\begin{list}{[\arabic{coffee}]}{\usecounter{coffee}}
+  \item\ \\
+  \begin{tabular}{ccc}
+    
+  \begin{tabular}{|c|c|c|}
+    \multicolumn{3}{c}{プログラム1行目終わり}\\\hline
+    記号 & 値/番地 & 種別\\\hline\hline
+    \texttt{x} & 0 & 大域変数\\
+    \texttt{y} & 1 & 大域変数\\
+    \texttt{z} & 2 & 大域変数\\\hline
+  \end{tabular} & &
+  
+  \multirow{2}{*}{
+    \begin{tabular}{|c|c|c|}
+      \multicolumn{3}{c}{プログラム3行目終わり}\\\hline
+      記号 & 値/番地 & 種別\\\hline\hline
+      \texttt{x} & 0 & 大域変数\\
+      \texttt{y} & 1 & 大域変数\\
+      \texttt{z} & 2 & 大域変数\\
+      \texttt{exp} & $a_{\texttt{exp}}$ & 関数\\
+      \texttt{x} & 0 & 仮引数\\
+      \texttt{y} & 1 & 仮引数\\
+      \texttt{rv} & 2 & 局所変数\\\hline
+    \end{tabular}
+  }\\
+  \\[10pt]
+  
+  \begin{tabular}{|c|c|c|}
+    \multicolumn{3}{c}{プログラム8行目の終わり}\\\hline
+    記号 & 値/番地 & 種別\\\hline\hline
+    \texttt{x} & 0 & 大域変数\\
+    \texttt{y} & 1 & 大域変数\\
+    \texttt{z} & 2 & 大域変数\\
+    \texttt{exp} & $a_{\texttt{exp}}$ & 関数\\\hline
+  \end{tabular}
+  \end{tabular}
+  \item 
+  \begin{list}{(\arabic{coffee}-\arabic{bean})}{\usecounter{bean}}
+  \item (a) (1+2)+3*4=15 (b) (1*2+3)*4=20
+  \item (c) 15 (d) 20
+  \end{list}
+\end{list}
+\end{document}

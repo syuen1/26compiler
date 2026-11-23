@@ -1,0 +1,56 @@
+\documentclass[dvipdfmx]{jarticle}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes}
+\pagestyle{empty}
+\begin{document}
+\begin{tikzpicture}
+\node (R) at (0,0) {$E$};
+\node (T1) at ($(R)+(-1,-1.5)$) {$T$};
+\node (E'1) at ($(R)+(2,-1.5)$) {$E'$};
+\node (F1) at ($(T1)+(-1,-1.5)$) {$F$};
+\node (T'1) at ($(T1)+(0.5,-1.5)$) {$T'$};
+\node (T2) at ($(E'1)+(0,-1.5)$) {$T$};
+\node (E'2) at ($(E'1)+(2,-1.5)$) {$E'$};
+\node (F2) at ($(T2)+(-1,-1.5)$) {$F$};
+\node (T'2) at ($(T2)+(1,-1.5)$) {$T'$};
+\node (F3) at ($(T'2)+(-0.5,-1.5)$) {$F$};
+\node (T'3) at ($(T'2)+(0.5,-1.5)$) {$T'$};
+\node (N1) at ($(F1)+(0,-6)$) {$\mathsf{NUM}$};
+\node (N2) at ($(F2) +(0,-2.5)$) {$\mathsf{NUM}$};
+\node (N3) at ($(F3)+(0,-1)$) {$\mathsf{NUM}$};
+\node (w1) at ($(N1)+(0,-1)$) {$4$};
+\node (w2) at ($(N2)+(0,-1)$) {$6$};
+\node (w3) at ($(N3)+(0,-1)$) {$7$};
+\node (w6) at ($(w1)+(2,0)$) {$+$};
+\node (w5) at ($(w2)+(0.75,0)$) {$\ast$};
+\node (e1) at ($(T'1)+(0,-1)$) {$\varepsilon$};
+\node (e2) at ($(E'2)+(0,-1)$) {$\varepsilon$};
+\node (e3) at ($(T'3)+(0,-1)$) {$\varepsilon$};
+\path[-] (R) edge (T1) (R) edge (E'1);
+\path[-] (T1) edge (F1) (T1) edge (T'1);
+\path[-] (E'1) edge (T2) (E'1) edge (E'2);
+\path[-] (F1) edge (N1);
+\path[-] (T'1) edge (e1) (E'2) edge (e2) (T'3) edge (e3);;
+\path[-] (T2) edge (F2) (T2) edge (T'2);
+\path[-] (F2) edge (N2) (F3) edge (N3);
+\path[-] (T'2) edge (F3) (T'2) edge (T'3);
+\path[-] (N1) edge (w1) (N2) edge (w2) (N3) edge (w3);
+\path[-] (E'1) [out=225,in=90] edge (w6);
+\path[-] (T'2) [out=225,in=90] edge (w5);
+
+\node at ($(N1)+(0.5,0.3)$) {\scriptsize (4,-,-)};
+\node at ($(N2)+(0.5,0.3)$) {\scriptsize (6,-,-)};
+\node at ($(N3)+(0.5,0.3)$) {\scriptsize (7,-,-)};
+\node at ($(F1)+(0.5,0.3)$) {\scriptsize (4,-,-)};
+\node at ($(F2)+(0.5,0.3)$) {\scriptsize (6,-,-)};
+\node at ($(F3)+(0.5,0.3)$) {\scriptsize (7,-,-)};
+\node at ($(T'3)+(0.5,0.3)$) {\scriptsize (-,42,42)};
+\node at ($(T'2)+(0.5,0.3)$) {\scriptsize (-,6,42)};
+\node at ($(T2)+(0.5,0.3)$) {\scriptsize (42,-,-)};
+\node at ($(T'1)+(0.5,0.3)$) {\scriptsize (-,4,4)};
+\node at ($(T1)+(0.5,0.3)$) {\scriptsize (4,-,-)};
+\node at ($(E'2)+(0.5,0.3)$) {\scriptsize (-,46,46)};
+\node at ($(E'1)+(0.5,0.3)$) {\scriptsize (46,-,-)};
+\node at ($(R)+(0.5,0.3)$) {\scriptsize (46,-,-)};
+\end{tikzpicture}
+\end{document}

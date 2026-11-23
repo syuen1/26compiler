@@ -234,7 +234,7 @@ $k$種類の色によって塗り分けが可能かどうかを判定する問�
 図\ref{fig:livenessAndIntGraph}(c)のレジスタ干渉グラフ$G$にアルゴリズム\ref{alg:graphColoring}を$Color(G,3)$として適用する．
 \begin{list}{{\bf Step \arabic{coffee}}:}{\usecounter{coffee}}
 \item すべての頂点の次数が3以上であるので，7行目から適用される．頂点$\tta$を選ぶと，その隣接頂点$\{\ttb,\tte,\ttd\}$に対して独立集合を計算すると，
-$\{\ttb,\ttd\},\{\tte\}$となり，最大は$\{\ttb,\ttd\}$である．
+$\{\{\ttb,\ttd\},\{\tte\}\}$となり，最大は$\{\ttb,\ttd\}$である．
 $\ttb$,$\ttd$に色3を割り当てる．
 $G_1=G\backslash\{\ttb,\ttd\}$は以下のようになる．
 \begin{center}
@@ -273,20 +273,228 @@ $\tta$の次数が1で(2-1)以下なので，$v$を頂点$\tta$として3行目�
 \begin{center}
 \includegraphics{figures/interfare-graph-color-crop.pdf}
 \end{center}
+
+黄色にレジスタ1(R1),青色にレジスタ2(R2),赤色にレジスタ3(R3)を割り当てると図\ref{exmp:livenessAndInterfareGraph}(a)の基本ブロックは以下のようにより機械語に近い命令に変換できる．
+\begin{center}
+\begin{tabular}{lcl}
+    $R1\ \leftarrow\ R1+R2$ & \qquad & \verb|ADD R1,R2|\\
+    $R2\ \leftarrow\ R2\ast R1$ & & \verb|MUL R2,R1|\\
+    $R1\ \leftarrow\ R1\ast R2$ & & \verb|MUL R1,R2|\\
+    $R2\ \leftarrow\ R2+R1$ & & \verb|ADD R2,R1|\\
+    $R3\ \leftarrow\ R3-1$ & & \verb|SUBI R3,-1|\\
+    $if\ R3>0\ goto\ L$ & & \verb|CMP R3,0|\\
+    & & \verb|BGT L|
+\end{tabular}
+\end{center}
+ここで，\verb|ADD|, \verb|MUL|は，１番目のレジスタに２番めのレジスタの値を引数として演算を適用して，結果を１番目のレジスタに保存するとする．\verb|SUBI|は引数として即値をとる減算とする．
+\verb|CMP|は比較命令，\verb|BGT|は，直前の比較命令でGreaterThanフラグが立っていればブランチする命令とする．
 \end{Exmp}
 
 \subsection{SSAに対するレジスタ割当}
 
-SSA形式からは，比較的容易にレジスタ割り当てを導くことが知られている．SSA形式では，最適化後において支配関係が保存されている．従って，各変数の生存期間は定義において新たな添字をもつ変数が定義されてから，次の添字を持つ変数が定義されるまでの間となる．各変数に対して生存期間に対応する頂点を抽出し，その頂点から構成される支配木の部分木を構成する．その部分木の交差グラフを構成するとレジスタ干渉グラフが構成できる．
+SSA形式からは，比較的容易にレジスタ割り当てを導く手法が知られている．SSA形式では，最適化後においても支配関係が保存されていることが仮定できるため，各変数の生存期間は新たな添字をもつ変数が定義されてから，次の添字を持つ変数が定義されるまでの間となる．各変数に対して生存期間に対応する頂点を抽出し，その頂点から構成される支配木の部分木を構成する．その部分木の交差グラフを構成するとレジスタ干渉グラフが構成でき，レジスタ干渉グラフは弦グラフとなる．弦グラフは，完全消去順序(PEO)に基づいて彩色することができる．
+
+\subsubsection{弦グラフの彩色}
+
+1章において，無向グラフの4以上の閉路に対して少なくとも１つの弦を持つグラフを{\bf 弦グラフ}として導入した．グラフ$G$の彩色数(Chromatic number)を$\chi(G)$，$\omega(G)$を$G$が含むクリーク(clique)の最大のサイズとする．
+
+\begin{Prop}
+弦グラフ$G$に対して$\chi(G)=\omega(G)$
+\end{Prop}
+
+弦グラフにおいては，部分グラフとして含むクリークの最大数で彩色が可能である\footnote{このような性質を持つグラフは一般に完全グラフ(perfect graph)と呼ばれる．}．弦グラフ$(V,E)$の頂点$V$に対しては，完全消去順序(PEO)が存在する．これは，弦グラフの頂点を取り除くとき，必ず部分グラフとしてクリークが存在するため，頂点を取り除いたとしてもFill-in辺を加える必要がないことを示している．
+
+\begin{Exmp}
+1章であげた以下の弦グラフについて考える．
+\begin{center}
+    \begin{tikzpicture}[
+        node/.style={circle, draw=black, fill=blue!10, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node] (v1) at (0,0) {$v_1$};
+      \node[node] (v2) at (2,0) {$v_2$};
+      \node[node] (v3) at (4,0) {$v_3$};
+      \node[node] (v4) at (1,2) {$v_4$};
+      \node[node] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture}
+\end{center}
+
+頂点$\{v_1,\cdots,v_5\}$に対してPEO: $v_3>v_5>v_4>v_1>v_2$が存在する．このグラフについて，クリークの最大サイズは3であるので，このグラフは3色で彩色可能である．
+
+具体的な彩色方法としては，PEOの小さいものから色を割り当てていく．
+
+$v_2$に色１を割り当てると，$v_1$は$v_2$に隣接しているので，別の色２を割り当てる．次に$v_4$は，$v_1$,$v_2$に隣接しているので，色3を割り当てる．$v_5$は，$v_4$,$v_2$と隣接しているが，$v_1$とは隣接していないので，色２を割り当てる．最後に$v_3$は，$v_2$, $v_5$と隣接しているため，$v_4$とは隣接していないので色3を割り当てることで３色で彩色可能である．
+
+\begin{tabularx}{.8\textwidth}{m{.05\textwidth}m{.35\textwidth}m{.05\textwidth}m{.35\textwidth}}
+   & \begin{tikzpicture}[
+        node/.style={circle, draw=black, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node] (v1) at (0,0) {$v_1$};
+      \node[node,fill=red!50] (v2) at (2,0) {$v_2$};
+      \node[node] (v3) at (4,0) {$v_3$};
+      \node[node] (v4) at (1,2) {$v_4$};
+      \node[node] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture}
+& $\Rightarrow$ &
+        \begin{tikzpicture}[
+        node/.style={circle, draw=black, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node,fill=yellow!50] (v1) at (0,0) {$v_1$};
+      \node[node,fill=red!50] (v2) at (2,0) {$v_2$};
+      \node[node] (v3) at (4,0) {$v_3$};
+      \node[node] (v4) at (1,2) {$v_4$};
+      \node[node] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture}\\
+$\Rightarrow$ &
+        \begin{tikzpicture}[
+        node/.style={circle, draw=black, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node,fill=yellow!50] (v1) at (0,0) {$v_1$};
+      \node[node,fill=red!50] (v2) at (2,0) {$v_2$};
+      \node[node] (v3) at (4,0) {$v_3$};
+      \node[node,fill=blue!50] (v4) at (1,2) {$v_4$};
+      \node[node] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture} &
+$\Rightarrow$ &
+
+        \begin{tikzpicture}[
+        node/.style={circle, draw=black, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node,fill=yellow!50] (v1) at (0,0) {$v_1$};
+      \node[node,fill=red!50] (v2) at (2,0) {$v_2$};
+      \node[node] (v3) at (4,0) {$v_3$};
+      \node[node,fill=blue!50] (v4) at (1,2) {$v_4$};
+      \node[node,fill=yellow!50] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture}\\
+$\Rightarrow$ &
+
+            \begin{tikzpicture}[
+        node/.style={circle, draw=black, minimum size=8mm, font=\sffamily\large},
+        edge/.style={-, >=stealth, thick}
+      ]
+      \node[node,fill=yellow!50] (v1) at (0,0) {$v_1$};
+      \node[node,fill=red!50] (v2) at (2,0) {$v_2$};
+      \node[node,fill=blue!50] (v3) at (4,0) {$v_3$};
+      \node[node,fill=blue!50] (v4) at (1,2) {$v_4$};
+      \node[node,fill=yellow!50] (v5) at (3,2) {$v_5$};
+
+      \draw[edge] (v1) -> (v2);
+      \draw[edge] (v2) -> (v3);
+      \draw[edge] (v3) -> (v5);
+      \draw[edge] (v4) -> (v2); % サイクル
+      \draw[edge] (v2) -> (v5);
+      \draw[edge] (v4) -> (v5);
+      \draw[edge] (v1) -> (v4);
+    \end{tikzpicture}\\
+\end{tabularx}
+\end{Exmp}
+
+弦グラフ$(V,E)$の完全消去順序は，$\mathcal{O}(|V|+|E|)$で求められることから以下が成り立つ．
+
+\begin{Prop}
+無向弦グラフ$G=(V,E)$に対して$\chi(G)$は，$\mathcal{O}(|V|+|E|)$で求められる．
+\end{Prop}
+
+\subsubsection{SSA形式のレジスタ干渉グラフ}
+
+以下ではレジスタ割り当てを考えるため，
+フローグラフの各頂点として個々の命令
+$y\leftarrow\tau(\tilde{x})$を考える．
+ここで，$\tau$は演算，$\tilde{x}$は演算の引数となる変数である．
+% 基本ブロックのフローを表す一つの命令
+% \[(y_1,\ldots,y_m)\leftarrow\tau(x_1,\ldots,x_n)\]
+% が割り当てられているとする．これは，基本ブロックに$x_1,\ldots,x_n$
+% が流入して，$y_1,\ldots,y_m$という変数から出力されることを表す．
+% SSAなので，$y_1,\ldots,y_m$はプログラム中ですべてユニークであり，
+% $D_{y_i}$でこの基本ブロックを参照することにする．
+
+% ここでは，$\varphi$関数の消去によって新たに加えられた代入については
+% 元からあったブロックと結合せず，分離したブロックとして扱うことにする．
+
+SSAにおいて，変数$v_i$が$D_{v_i}$で定義されると，
+次の同じ変数に対する新たな定義$v_{i+1}$が定義されるまで生存する．
+
+\begin{Prop}
+SSAにおける変数$v$の生存範囲は，支配木における連結部分木である．
+\end{Prop}
+
+支配関係の定義から，ある変数$v$が参照されるノード$p$は$D_v$に支配される．
+$D_v$から$p$に至るすべての支配木上のノードも$D_v$に支配されることから，
+次に$v$が上書きされるまで連結した部分木として$v$は生存する．
+
+干渉グラフは，各変数の生存が重複する可能性のある場合，すなわち，支配木における部分木の交差グラフ（１章において導入した）として構成される．
 
 \begin{Lem}
     SSA形式から支配木の部分木から構成された交差グラフによる干渉グラフは弦グラフである．
 \end{Lem}
 
-弦グラフの頂点に対しては，完全消去順序が存在する．完全消去順序の逆順で彩色をすると最小の数の色でグラフを彩色することができる．SSA形式による干渉グラフの頂点数を$n$, 辺数を$m$とするとグラフ構築後の最適彩色は$O(m+n)$で構成できる．
+\begin{proof}
+4つの変数の生存範囲を示す部分木$S_1$, $S_2$, $S_3$, $S_4$があり，$S_i$と$S_{i+1}$および$S_1$と$S_4$が交差するとすると，干渉グラフでは，４の長さの閉路となる．
+個々の部分木$S$のなかで最も根に近い頂点$t(S)$と書くことにする．
+$t(S_1),\ldots,t(S_4)$の中で最も支配木の根からのパスが遠いものを
+$t(S_i)$とすると，$S_i$と交差する$S_j$と$S_k$は$t(S_i)$を共有するので，$S_j\cap S_k\not=\emptyset$となり，$S_j$と$S_k$の交差グラフには
+辺が存在するため，4以上の閉路に必ず弦が存在する．
+\end{proof}
 
-ここでは，SSAから構成される干渉グラフの大きさに対して線形時間で最小の色数で彩色できる．
+一般のグラフ彩色問題がNP完全であることからすれば，SSA形式については$\chi(G)$よりも多くのレジスタがある場合にはそれほど時間がかからないことが示される．
+
+以上のことから，SSAから構成される干渉グラフの大きさに対して線形時間で最小の色数で彩色できる．
 ただし，最初から色数を指定して彩色する問題ではないため，レジスタ溢れについての問題を
-解いたわけではないことに注意する．SSA形式からのレジスタ割り当ては，生存解析が容易になることによって効率的で最適な割り当て手法を与える．レジスタ数が少ない場合のレジスタ溢れといった問題は，依然，計算量の大きい問題として残ることに注意しよう．
+解いたわけではないことに注意する．SSA形式からのレジスタ割り当ては，生存解析が容易になることによって効率的で最適な割り当て手法を与える．レジスタ数が少ない場合のレジスタ溢れの最適化問題(どの変数をメモリに待避させるか)は，依然，計算量の大きいNP完全問題として残るため，レジスタ割り当て問題全体としての計算複雑さが線形問題になるわけではない．
+
+\subsubsection{$\phi$関数の消去とレジスタ割当て}
+
+上記は$\phi$関数は消去されていないSSA形式について成り立つ．しかし，$\phi$関数の消去を行う代入を挿入すると干渉グラフが弦グラフとはならない．従って，弦グラフを用いたレジスタ割当は，$\varphi$関数を消去する前に行う必要がある．
+
+$\chi(G)$が増加してしまうことがある．
+
+% 図~\ref{fig:phiChromatic}に対して$\varphi$関数を消去した場合，彩色数は3である．
+
+
+
 
 \end{document}
