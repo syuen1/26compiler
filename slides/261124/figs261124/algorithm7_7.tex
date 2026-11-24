@@ -5,19 +5,19 @@
 \usepackage{amssymb}
 \begin{document}
 \begin{tikzpicture}
-    \node[draw,ellipse] (B0) at (0,0) {$\mathsf{color}(G,k)$};
+    \node[draw,ellipse] (B0) at (0,0) {$\mathsf{Color}(G,k)$};
     \node[draw,diamond,aspect=3] (B1) at ($(B0)+(0,-1.5)$) {$G=\varnothing$};
     \node[draw,ellipse] (B2) at ($(B1)+(3,0)$) {Return};
     \node[draw,diamond,aspect=4] (B3) at ($(B1)+(0,-2)$) {$\exists v.deg(v)\leq k-1$};
     \node[draw,diamond,aspect=4,inner sep=0pt] (B4) at ($(B3)+(0,-2)$) {\small $\begin{array}{l}
         \exists v.I=\mathsf{maxidp}(G\uparrow\mathsf{adj}(v))\\
-        |I|\geq m-k+2,k\geq 2
+        |I|\geq deg(v)-k+2,k\geq 2
     \end{array}$};
     \node[draw] (B5) at ($(B4)+(0,-2)$) {$Spill\leftarrow Spill\cup \{v\}$};
     \node[draw] (B6) at ($(B5)+(0,-1.25)$) {$\mathsf{Color}(G\backslash\{v\},k)$};
     \node[draw,ellipse] (B7) at ($(B6)+(0,-1.25)$) {Return};
     \node[draw] (B8) at ($(B3)+(4.5,-3)$) {$\mathsf{Color}(G\backslash\{v\},k)$};
-    \node[draw] (B9) at ($(B8)+(0,-1.5)$) {\parbox{10em}{$V$に隣接頂点と異なる最小の色を割り当て}};
+    \node[draw] (B9) at ($(B8)+(0,-1.5)$) {\parbox{10em}{$v$に隣接頂点と異なる最小の色を割り当て}};
     \node[draw] (B10) at ($(B4)+(-4,-1.5)$) {\parbox{10em}{$I$のすべての頂点に$k$を割り当てる}};
     \node[draw] (B11) at ($(B10)+(0,-1.5)$) {$\mathsf{Color}(G\backslash I,k-1)$};
 
