@@ -47,7 +47,7 @@
 
 例えば，算術式$A\ttpl B\ttsb C$のコードは以下のようになる．
 
-\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.4\textwidth}}
+\begin{tabular}{m{.28\textwidth}m{.38\textwidth}}
     \begin{tabbing}
         \quad\qquad\=\qquad\=\\\kill
         \loadinst{r1}{A}\\
@@ -55,12 +55,12 @@
         \oprinst{-}{r1}{C}\\
     \end{tabbing} &
     \includegraphics[scale=0.75]{AST-RN1-crop.pdf}
-\end{tabularx}
+\end{tabular}
 
 以上の制約のもとでは，レジスタは１個で計算が可能である．
 これに対して，$A\ttsb\ttlp B\ttpl C\ttrp$の場合は以下のような命令系列になる．
 
-\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.4\textwidth}}
+\begin{tabular}{m{.28\textwidth}m{.38\textwidth}}
     \begin{minipage}{.3\linewidth}
         \begin{tabbing}
             \quad\qquad\=\qquad\=\\\kill
@@ -71,11 +71,11 @@
         \end{tabbing}
     \end{minipage} &
     \includegraphics[scale=0.75]{AST-RN2-crop.pdf}
-\end{tabularx}
+\end{tabular}
 
 この算術式の計算に必要なレジスタ数は２である．$A\ttmu\ttlp B\ttpl C\ttrp$については，
 
-\begin{tabularx}{.7\textwidth}{m{.3\textwidth}m{.4\textwidth}}
+\begin{tabular}{m{.28\textwidth}m{.38\textwidth}}
     \begin{minipage}{.3\linewidth}
         \begin{tabbing}
             \quad\qquad\=\qquad\=\\\kill
@@ -85,9 +85,9 @@
         \end{tabbing}
     \end{minipage}
      & \includegraphics[scale=0.75]{AST-RN3-crop.pdf}
-\end{tabularx}
+\end{tabular}
 
-とすればよいので必要なレジスタは１つである．これは，$\ttsb$が可換でなく，$\ttmu$が可換であるため２番めの項をまず評価して１番目の項を適用することができるためである．算術式を表す抽象構文木$T$に対して，その計算に必要なレジスタ数を$RN(T)$と書く．
+とすればよいので必要なレジスタは１つである．これは，$\ttsb$が可換でなく，$\ttmu$が可換であるため２番目の項をまず評価して１番目の項を適用することができるためである．算術式を表す抽象構文木$T$に対して，その計算に必要なレジスタ数を$RN(T)$と書く．
 $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
 
 \begin{algorithm}
@@ -98,12 +98,12 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
         \Return 0 \Comment{$T$が葉}
         \Else
         \State $T_1=\mathsf{Left}(T)$ \Comment{$T_1$は左部分木}
-        \State $T_2=\mathsf{Right}(T)$　\Comment{$T_2$は右部分木}
+        \State $T_2=\mathsf{Right}(T)$ \Comment{$T_2$は右部分木}
         \If{$RN(T_1)=0$ かつ $RN(T_2)=0$}
         \Return 1 \Comment{左右とも葉なのでレジスタ１つ}
         \Else
         \If{$RN(T_1)=0$ かつ $RN(T_2)>0$}
-        \If{$root(T)$が可換演算子}\
+        \If{$\mathsf{root}(T)$が可換演算子}\
         \Return $RN(T_2)$ \Comment{後ろから適用する}
         \Else\
         \Return $\mathsf{max}(2,RN(T_2))$ \Comment{最大２つ必要}
@@ -127,7 +127,7 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
 
 \section{グラフ彩色によるレジスタ割当}
 
-３番地コードの基本ブロックに対して計算に用いられる変数をできる限り多くレジスタに割り当てる方法について紹介する．基本的なアイデアとして変数の生存期間，すなわち，変数が定義された時点からその定義最後に使われるまでの期間，が重ならない２つの変数は同じレジスタに割り当てることができるという性質を利用する．
+３番地コードの基本ブロックに対して計算に用いられる変数をできる限り多くレジスタに割り当てる方法について紹介する．基本的なアイデアとして変数の生存期間，すなわち，変数が定義された時点からその定義が最後に使われるまでの期間，が重ならない２つの変数は同じレジスタに割り当てることができるという性質を利用する．
 
 \subsection{レジスタ干渉グラフ}
 
@@ -143,7 +143,7 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
 
     図\ref{fig:livenessAndIntGraph}に変数の生存期間と干渉グラフの例を示す．(a)の基本ブロックの入力と出力時点で$\ttc$, $\ttd$, $\tte$がliveであるとする．３番地コードにおいて，基本ブロック内で右辺で参照される変数はliveでなければならない．レジスタ干渉グラフは同時に参照される可能性のある変数間に辺を持つ．
     \begin{figure}[H]
-\begin{tabularx}{\textwidth}{m{0.333\textwidth}m{0.333\textwidth}m{0.333\textwidth}}
+\begin{tabular}{m{0.3\textwidth}m{0.28\textwidth}m{0.3\textwidth}}
     \vspace*{-30pt}
     \begin{tabular}{rl}
     $\ell_1$: & $\tta\tteq\ttc\,\ttpl\,\ttd$\\
@@ -151,7 +151,7 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
     $\ell_3$: & $\ttc\tteq\tta\,\ttmu\,\ttb$\\
     $\ell_4$: & $\ttd\tteq\ttb\,\ttpl\,\ttc$\\
     $\ell_5$: & $\tte\tteq\tte\,\ttsb\,1$\\
-    $\ell_6$: & \verb|if e>0 goto l|
+    $\ell_6$: & \texttt{if e>0 goto L}
 
     \end{tabular}
     &
@@ -161,13 +161,14 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
         $\{\tta,\ttd,\tte\}$\\
         $\{\tta,\ttb,\tte\}$\\
         $\{\ttb,\ttc,\tte\}$\\
+        $\{\ttc,\ttd,\tte\}$\\
         $\{\ttc,\ttd,\tte\}$
     \end{tabular}
     &
     \vspace*{20pt}
     \includegraphics{interfare-graph-crop.pdf}\\
     (a) 基本ブロック & (b) 生存変数集合 & (c)レジスタ干渉グラフ
-\end{tabularx}
+\end{tabular}
     \caption{変数の生存期間とレジスタ干渉グラフ}\label{fig:livenessAndIntGraph}
 \end{figure}
 
@@ -177,7 +178,7 @@ $RN(T)$はアルゴリズム\ref{alg:regNum}で求められる．
 $k$種類の色によって塗り分けが可能かどうかを判定する問題である．
 
 \begin{Def}
-    無向グラフ$(V,E)$に対する$k$-彩色問題とは，すべての辺$(u,v)\in E$にたいして，$f(u)\not=f(v)$となる関数$f$:$V\rightarrow\{1,\ldots,k\}$が存在するとき，YES, 存在しないときNOと答える問題である．
+    無向グラフ$(V,E)$に対する$k$-彩色問題とは，すべての辺$(u,v)\in E$に対して，$f(u)\not=f(v)$となる関数$f$:$V\rightarrow\{1,\ldots,k\}$が存在するとき，YES, 存在しないときNOと答える問題である．
 \end{Def}
 
 レジスタ干渉グラフを構成すると$k$彩色問題でYESとなる関数$f$は，レジスタ割り当てそのものである．グラフの彩色問題はNP完全な問題であり，一般に最適なレジスタ割り当てを求めることはコンパイラの構成として実際的ではない．
@@ -188,7 +189,7 @@ $k$種類の色によって塗り分けが可能かどうかを判定する問�
     無向グラフ$(V,E)$の任意の頂点の次数が$k-1$以下ならば$k$-彩色可能である．ここで，$k\geq 1$とする．
 \end{Thm}
 
-この定理を利用して，レジスタ干渉グラフに対するk-彩色アルゴリズム\ref{alg:graphColoring}を構成する．ここで，$G=(V,E)$おいて，$G\backslash\{v\}$は，頂点$v$を削除して，$v$を含む辺を削除して得られるグラフである．さらに，独立集合$I$に対して$G\backslash I$は，$I$に含まれる頂点をすべて削除し，$I$に含まれる頂点を含む辺をすべて削除して得られるグラフを表す．このアルゴリズムを呼び出すときには，集合$Spill$は空集合とする．
+この定理を利用して，レジスタ干渉グラフに対する$k$-彩色アルゴリズム\ref{alg:graphColoring}を構成する．ここで，$G=(V,E)$において，$G\backslash\{v\}$は，頂点$v$を削除して，$v$を含む辺を削除して得られるグラフである．さらに，独立集合$I$に対して$G\backslash I$は，$I$に含まれる頂点をすべて削除し，$I$に含まれる頂点を含む辺をすべて削除して得られるグラフを表す．このアルゴリズムを呼び出すときには，集合$Spill$は空集合とする．
 
 \begin{algorithm}
     \caption{レジスタ割り当ての彩色アルゴリズム}\label{alg:graphColoring}
@@ -201,7 +202,7 @@ $k$種類の色によって塗り分けが可能かどうかを判定する問�
         \Else
         \State $v_r\leftarrow\bot$
         \For{each $v\in V$}
-        \If{$\neg found$}
+        \If{$v_r=\bot$}
         \State $v$に隣接している頂点集合の中から要素数最大の独立集合$I$を求める
         \If{$|I|\geq deg(v)-(k-2)$}
         \State $v_r\leftarrow v$
@@ -222,7 +223,7 @@ $k$種類の色によって塗り分けが可能かどうかを判定する問�
     \end{algorithmic}
 \end{algorithm}
 
-３行目の条件が成り立つときには，定理\ref{thm:kindexGraph}を利用する．7行目から，15行目で，隣接頂点集合の集合から独立集合の集合を求め，そのうちでの要素数最大のものを$I$とする．$I$は互いに辺で結ばれていないことが保証されるので，同じ色に塗ることができる．その大きさによって3行目と同様の条件がなりたつならば，彩色が可能である．そのような頂点がみつからなかった場合($v_r=\bot$)のときは，彩色を諦めてノードを一つ選んで$Spill$に登録し，削除した上で彩色を試みる．(20,21行目)
+３行目の条件が成り立つときには，定理\ref{thm:kindexGraph}を利用する．6行目から，14行目で，隣接頂点集合の集合から独立集合の集合を求め，そのうちでの要素数最大のものを$I$とする．$I$は互いに辺で結ばれていないことが保証されるので，同じ色に塗ることができる．その大きさによって3行目と同様の条件が成り立つならば，彩色が可能である．そのような頂点が見つからなかった場合($v_r=\bot$)のときは，彩色を諦めてノードを一つ選んで$Spill$に登録し，削除した上で彩色を試みる．(18,19行目)
 
 このアルゴリズムにおいて，定理\ref{thm:kindexGraph}の条件が成り立たない時，要素数最大の独立集合を求める必要がある．要素数最大の独立集合を求める問題はNP完全問題である．
 
@@ -267,26 +268,26 @@ $\tta$の次数が1で(2-1)以下なので，$v$を頂点$\tta$として3行目�
 \item $Color(\emptyset,2)$: 何もせずreturn
 \item Step \ref{stepi} の後の５行目で$\tte$に色１を割り当てて return
 \item Step \ref{stepii} の後の５行目で$\ttc$に色２を割り当てて return
-\item Step \ref{stepiii} の後の5行目で$\ttc$と同じ色2を割り当てて return
+\item Step \ref{stepiii} の後の5行目で$\tta$に$\ttc$と同じ色2を割り当てて return
 \item 手続き終了
 \end{list}
 \begin{center}
 \includegraphics{interfare-graph-color-crop.pdf}
 \end{center}
 
-黄色にレジスタ1(R1),青色にレジスタ2(R2),赤色にレジスタ3(R3)を割り当てると図\ref{exmp:livenessAndInterfareGraph}(a)の基本ブロックは以下のようにより機械語に近い命令に変換できる．
+黄色にレジスタ1(R1),青色にレジスタ2(R2),赤色にレジスタ3(R3)を割り当てると図\ref{fig:livenessAndIntGraph}(a)の基本ブロックは以下のようにより機械語に近い命令に変換できる．
 \begin{center}
 \begin{tabular}{lcl}
     $R1\ \leftarrow\ R1+R2$ & \qquad & \verb|ADD R1,R2|\\
     $R2\ \leftarrow\ R2\ast R1$ & & \verb|MUL R2,R1|\\
     $R1\ \leftarrow\ R1\ast R2$ & & \verb|MUL R1,R2|\\
     $R2\ \leftarrow\ R2+R1$ & & \verb|ADD R2,R1|\\
-    $R3\ \leftarrow\ R3-1$ & & \verb|SUBI R3,-1|\\
+    $R3\ \leftarrow\ R3-1$ & & \verb|SUBI R3,1|\\
     $if\ R3>0\ goto\ L$ & & \verb|CMP R3,0|\\
     & & \verb|BGT L|
 \end{tabular}
 \end{center}
-ここで，\verb|ADD|, \verb|MUL|は，１番目のレジスタに２番めのレジスタの値を引数として演算を適用して，結果を１番目のレジスタに保存するとする．\verb|SUBI|は引数として即値をとる減算とする．
+ここで，\verb|ADD|, \verb|MUL|は，１番目のレジスタに２番目のレジスタの値を引数として演算を適用して，結果を１番目のレジスタに保存するとする．\verb|SUBI|は引数として即値をとる減算とする．
 \verb|CMP|は比較命令，\verb|BGT|は，直前の比較命令でGreaterThanフラグが立っていればブランチする命令とする．
 \end{Exmp}
 
@@ -333,7 +334,7 @@ SSA形式からは，比較的容易にレジスタ割り当てを導く手法�
 
 $v_2$に色１を割り当てると，$v_1$は$v_2$に隣接しているので，別の色２を割り当てる．次に$v_4$は，$v_1$,$v_2$に隣接しているので，色3を割り当てる．$v_5$は，$v_4$,$v_2$と隣接しているが，$v_1$とは隣接していないので，色２を割り当てる．最後に$v_3$は，$v_2$, $v_5$と隣接しているため，$v_4$とは隣接していないので色3を割り当てることで３色で彩色可能である．
 
-\begin{tabularx}{.8\textwidth}{m{.05\textwidth}m{.35\textwidth}m{.05\textwidth}m{.35\textwidth}}
+\begin{tabular}{m{.05\textwidth}m{.35\textwidth}m{.05\textwidth}m{.35\textwidth}}
    & \begin{tikzpicture}[
         node/.style={circle, draw=black, minimum size=8mm, font=\sffamily\large},
         edge/.style={-, >=stealth, thick}
@@ -430,7 +431,7 @@ $\Rightarrow$ &
       \draw[edge] (v4) -> (v5);
       \draw[edge] (v1) -> (v4);
     \end{tikzpicture}\\
-\end{tabularx}
+\end{tabular}
 \end{Exmp}
 
 弦グラフ$(V,E)$の完全消去順序は，$\mathcal{O}(|V|+|E|)$で求められることから以下が成り立つ．
@@ -473,8 +474,8 @@ $D_v$から$p$に至るすべての支配木上のノードも$D_v$に支配さ�
 \end{Lem}
 
 \begin{proof}
-4つの変数の生存範囲を示す部分木$S_1$, $S_2$, $S_3$, $S_4$があり，$S_i$と$S_{i+1}$および$S_1$と$S_4$が交差するとすると，干渉グラフでは，４の長さの閉路となる．
-個々の部分木$S$のなかで最も根に近い頂点$t(S)$と書くことにする．
+4つの変数の生存範囲を示す部分木$S_1$, $S_2$, $S_3$, $S_4$があり，$S_i$と$S_{i+1}$ ($1\leq i\leq 3$)および$S_1$と$S_4$が交差するとすると，干渉グラフでは，４の長さの閉路となる．
+個々の部分木$S$のなかで最も根に近い頂点を$t(S)$と書くことにする．
 $t(S_1),\ldots,t(S_4)$の中で最も支配木の根からのパスが遠いものを
 $t(S_i)$とすると，$S_i$と交差する$S_j$と$S_k$は$t(S_i)$を共有するので，$S_j\cap S_k\not=\emptyset$となり，$S_j$と$S_k$の交差グラフには
 辺が存在するため，4以上の閉路に必ず弦が存在する．
@@ -486,15 +487,15 @@ $t(S_i)$とすると，$S_i$と交差する$S_j$と$S_k$は$t(S_i)$を共有す�
 ただし，最初から色数を指定して彩色する問題ではないため，レジスタ溢れについての問題を
 解いたわけではないことに注意する．SSA形式からのレジスタ割り当ては，生存解析が容易になることによって効率的で最適な割り当て手法を与える．レジスタ数が少ない場合のレジスタ溢れの最適化問題(どの変数をメモリに待避させるか)は，依然，計算量の大きいNP完全問題として残るため，レジスタ割り当て問題全体としての計算複雑さが線形問題になるわけではない．
 
-\subsubsection{$\phi$関数の消去とレジスタ割当て}
+\subsubsection{$\varphi$関数の消去とレジスタ割当て}
 
-上記は$\phi$関数は消去されていないSSA形式について成り立つ．しかし，$\phi$関数の消去を行う代入を挿入すると干渉グラフが弦グラフとなるとは限らない．従って，弦グラフを用いたレジスタ割当は，$\varphi$関数を消去する前に行う必要がある．
+上記は$\varphi$関数は消去されていないSSA形式について成り立つ．しかし，$\varphi$関数の消去を行う代入を挿入すると干渉グラフが弦グラフとなるとは限らない．従って，弦グラフを用いたレジスタ割当は，$\varphi$関数を消去する前に行う必要がある．
 
 図~\ref{fig:SSAandInterfare}に$\varphi$関数を含むSSA形式，各変数の生存期間および干渉グラフを示す．$i_2$, $j_2$については，ループによって参照が支配木の根方向に発生するが，必ず$\varphi$関数の引数が参照となる．$B_1$内では生存期間が発生せず，辺上のみに生存期間があるとする．
 
 \begin{figure}[H]
 \begin{center}
-\begin{tabularx}{\linewidth}{m{.5\linewidth}m{.5\linewidth}}
+\begin{tabular}{m{.46\linewidth}m{.46\linewidth}}
     \includegraphics[scale=0.75]{SSA-regalloc-1-crop.pdf}
     &
     \includegraphics[scale=0.75]{SSA-live-1-crop.pdf}\\
@@ -506,7 +507,7 @@ $t(S_i)$とすると，$S_i$と交差する$S_j$と$S_k$は$t(S_i)$を共有す�
     \multicolumn{1}{c}{(c) 干渉グラフ} & 
     \multicolumn{1}{c}{(d) レジスタ割当結果}
     \\
-\end{tabularx}
+\end{tabular}
 \end{center}
 \caption{SSA形式プログラムと干渉グラフ}\label{fig:SSAandInterfare}
 \end{figure}
@@ -516,16 +517,16 @@ $t(S_i)$とすると，$S_i$と交差する$S_j$と$S_k$は$t(S_i)$を共有す�
 
 ここで，
 \[\begin{array}{ll}
-    \ell_3: & R_2\leftarrow\varphi(R_1,R_2)\\
-    \ell_4: & R_1\leftarrow\varphi(R_2,R_1)
+    \ell_3: & R_2\leftarrow\varphi(R_1,R_1)\\
+    \ell_4: & R_1\leftarrow\varphi(R_2,R_2)
 \end{array}\]
-$B_2$への1番目のフローを$R_2$へ2番目のフローを$R_1$に割り当てることを意味する．これは，レジスタを交換する命令 $\texttt{swap}\ R_1,R_2$で実現される．
+$B_1$へのいずれのフローにおいても$\ell_3$で$R_1$を$R_2$へ，$\ell_4$で$R_2$を$R_1$に割り当てることを意味する．これは，レジスタを交換する命令 $\texttt{swap}\ R_1,R_2$で実現される．
 
 これに対して，$\varphi$関数をフローごとに代入を挿入する方法で消去すると図~\ref{fig:SSAphiEliminated}(a)のようになる．これに対して，変数の生存期間は図~\ref{fig:SSAphiEliminated}(b)のようになり，生存期間が支配木上の連結部分木とならない($i_3$)．ただし，この場合は干渉グラフを作成するとたまたま弦グラフとなる．クリークの最大サイズは３となるので，彩色数は３となる．
 
 \begin{figure}[H]
     \centering
-    \begin{tabularx}{\linewidth}{m{.5\linewidth}m{.5\linewidth}}
+    \begin{tabular}{m{.46\linewidth}m{.46\linewidth}}
         \includegraphics[scale=0.75]{SSA-regalloc-2-crop.pdf}
         & 
         \includegraphics[scale=0.75]{SSA-live-2-crop.pdf}\\
@@ -538,7 +539,7 @@ $B_2$への1番目のフローを$R_2$へ2番目のフローを$R_1$に割り当
         \\
         \multicolumn{1}{c}{(c) 干渉グラフ} & 
         \multicolumn{1}{c}{(d) レジスタ割当結果}\\
-    \end{tabularx}
+    \end{tabular}
     \caption{$\varphi$関数をあらかじめ消去した場合}\label{fig:SSAphiEliminated}
 \end{figure}
 
