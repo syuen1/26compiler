@@ -1,0 +1,313 @@
+%\documentclass[ckj,dvipdfmx]{beamer}
+\documentclass[ckj,dvipdfmx]{beamer}
+\usepackage{etex}
+%\usetheme{Warsaw}
+\usetheme{Malmoe}
+%\usetheme{AnnArbor}
+%\usetheme{Hannover}
+%\usetheme{Bergen}
+%\usetheme{Berlin}
+%\usetheme{Singapore}
+%\usetheme{Montpellier}
+%\usetheme{Pittsburgh}
+\usepackage{graphicx}
+\usepackage{latexsym,amssymb}
+\usepackage{amsthm}
+%\usepackage{epsbox}
+%\usepackage{multirow}
+%\usepackage{fancybox}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{fancyvrb}
+%\usepackage{listings}
+\usepackage{tabularx}
+%\usepackage{pstricks,pst-node,pst-tree}
+%\usepackage{multimedia}
+%\usepackage{pstricks,pst-node,pst-tree}
+%\usepackage{pst-all}
+%\include{prooftree}
+%\lstloadlanguages{pascal}
+\usepackage{mathrsfs}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\renewcommand{\familydefault}{\sfdefault}
+
+\include{mymacros}
+%\include{cmacros}
+
+%\newcommand{\greentext}[1]{{\color[rgb]{0,0.5,0}{#1}}}
+%\newcommand{\redtext}[1]{{\color[rgb]{0.8,0,0}{#1}}}
+
+\newcommand{\lecturedate}{2026/11/24}
+
+%\cornersize{0.25}
+\graphicspath{{figs261124/}}
+
+\setbeamertemplate{frametitle}[default][center]
+\setbeamertemplate{footline}{\hfill
+コンパイラ\quad\lecturedate
+\hfill\insertframenumber/\inserttotalframenumber\hspace*{1zw}}
+\newcounter{coffee}
+\setbeamercovered{transparent=10}
+\title{コンパイラ(14)}
+\date{\lecturedate}
+\begin{document}
+\frame{\titlepage}
+\section{レジスタ割当}
+\subsection{弦グラフの彩色}
+\begin{frame}
+    \frametitle{弦グラフ}
+    \begin{Def}
+        無向グラフにおいて，長さ４以上の閉路に対して，弦となる辺が存在する．
+        弦：閉路上で隣接しない頂点を結ぶ辺
+    \end{Def}
+    \vspace*{10pt}
+    \begin{center}
+        \begin{tabularx}{.6\linewidth}{XX}
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=1pt,fill=black] (N0) at (0,0) {};
+                \node[draw,circle,inner sep=1pt,fill=black] (N1) at (1,0.5) {};
+                \node[draw,circle,inner sep=1pt,fill=black] (N2) at (1,-0.5) {};
+                \node[draw,circle,inner sep=1pt,fill=black] (N3) at (2,0) {};
+                \path[-] (N0) edge (N1) (N1) edge (N3) (N0) edge (N2) (N2) edge (N3);
+            \end{tikzpicture}
+                    &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=1pt,fill=black] (N0) at (0,0) {};
+                \node[draw,circle,inner sep=1pt,fill=black] (N1) at (1,0.5) {};
+                \node[draw,circle,inner sep=1pt,fill=black] (N2) at (1,-0.5) {};
+                \node[draw,circle,inner sep=1pt,fill=black] (N3) at (2,0) {};
+                \path[-] (N0) edge (N1) (N1) edge (N3) (N0) edge (N2) (N2) edge (N3) (N1) edge (N2);
+            \end{tikzpicture} \\
+            弦グラフでない & 弦グラフ
+        \end{tabularx}
+    \end{center}
+
+    頂点消去：隣接頂点との辺をすべて消去し，隣接頂点間が互いに隣接になるように辺を加える．(Fill-in辺)
+
+    \vspace*{10pt}
+
+    \greentext{弦グラフ：Fill-in辺が必要ないように頂点を消去することが可能}
+
+    \vspace*{10pt}
+
+    Fill-in辺なく消去する頂点の順番＝完全消去順序(PEO)\\
+    計算量：$\mathcal{O}(|V|+|E|)$
+\end{frame}
+
+\begin{frame}
+    \frametitle{完全消去順序(PEO)}
+\only<1>{
+\begin{center}
+        \begin{tabular}{cccc}
+            & \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V2) edge (V3) (V1) edge (V4) (V4) edge (V2)
+                (V4) edge (V5) (V2) edge (V5) (V5) edge (V3);
+            \end{tikzpicture}
+            & $v_3$を消去$\Rightarrow$ &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V1) edge (V4) (V4) edge (V2)
+                (V4) edge (V5) (V2) edge (V5);
+            \end{tikzpicture}                                                                            \\[10pt]
+            $v_5$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V1) edge (V4) (V4) edge (V2);
+            \end{tikzpicture} &
+            $v_4$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2);
+            \end{tikzpicture}\\[10pt]
+            $v_1$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V5) at (1.5,1) {$v_5$};
+            \end{tikzpicture} &
+            $v_2$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V5) at (1.5,1) {$v_5$};
+            \end{tikzpicture}
+        \end{tabular}\\[20pt]
+        $v_3\rightarrow v_5\rightarrow v_4\rightarrow v_1\rightarrow v_2$は$PEO$
+\end{center}
+}
+\only<2>{
+\begin{center}
+        \begin{tabular}{cccc}
+            & \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V2) edge (V3) (V1) edge (V4) (V4) edge (V2)
+                (V4) edge (V5) (V2) edge (V5) (V5) edge (V3);
+            \end{tikzpicture}
+            & $v_2$を消去$\Rightarrow$ &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V4) (V4) edge (V5) (V5) edge (V3);
+                \path[-,thick,color=red] (V1) edge [bend left] (V3);
+            \end{tikzpicture}                                                                            \\[10pt]
+            $v_3$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V4) (V4) edge (V5);
+                \path[-,thick,color=red] (V1) edge (V5);
+            \end{tikzpicture} &
+            $v_1$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V4) edge (V5);
+            \end{tikzpicture}\\[10pt]
+            $v_5$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V5) at (1.5,1) {$v_5$};
+            \end{tikzpicture} &
+            $v_4$を消去$\Rightarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=gray!50] (V5) at (1.5,1) {$v_5$};
+            \end{tikzpicture}
+        \end{tabular}\\[20pt]
+        $v_2\rightarrow v_3\rightarrow v_1\rightarrow v_5\rightarrow v_4$は$PEO$でない (Fill-in辺が必要)
+\end{center}
+}
+\end{frame}
+\begin{frame}
+    \frametitle{PEOによる彩色}
+\begin{center}
+        \begin{tabular}{cccc}
+            & \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=blue!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=red!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt,fill=yellow!50] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=yellow!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=blue!50] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V2) edge (V3) (V1) edge (V4) (V4) edge (V2)
+                (V4) edge (V5) (V2) edge (V5) (V5) edge (V3);
+            \end{tikzpicture}
+            & $v_3$を彩色$\Leftarrow$ &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=blue!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=red!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=yellow!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt,fill=blue!50] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V1) edge (V4) (V4) edge (V2)
+                (V4) edge (V5) (V2) edge (V5);
+            \end{tikzpicture}                                                                            \\[10pt]
+            $v_5$を彩色$\Leftarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=blue!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=red!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt,fill=yellow!50] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2) (V1) edge (V4) (V4) edge (V2);
+            \end{tikzpicture} &
+            $v_4$を彩色$\Leftarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt,fill=blue!50] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=red!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+                \path[-] (V1) edge (V2);
+            \end{tikzpicture}\\[10pt]
+            $v_1$を彩色$\Leftarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt,fill=red!50] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+            \end{tikzpicture} &
+            $v_2$を彩色$\Leftarrow$                                                 &
+            \begin{tikzpicture}
+                \node[draw,circle,inner sep=0pt] (V1) at (0,0) {$v_1$};
+                \node[draw,circle,inner sep=0pt] (V2) at (1,0) {$v_2$};
+                \node[draw,circle,inner sep=0pt] (V3) at (2,0) {$v_3$};
+                \node[draw,circle,inner sep=0pt] (V4) at (0.5,1) {$v_4$};
+                \node[draw,circle,inner sep=0pt] (V5) at (1.5,1) {$v_5$};
+            \end{tikzpicture}
+        \end{tabular}\\[20pt]
+        $v_2\rightarrow v_1\rightarrow v4\rightarrow v_5\rightarrow v_3$の順に彩色する
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{弦グラフの彩色数}
+
+グラフ$G=(V,E)$
+\begin{list}{}{}
+\item クリークのサイズ:$\omega(G)$
+\item 彩色数(chromatic number):$\chi(G)$ \greentext{何色で彩色可能か？}
+\end{list}
+\begin{Prop}
+$G$が弦グラフであるとき，$\omega(G)=\chi(G)$
+\end{Prop}
+
+\begin{Prop}
+弦グラフ$G$は$\mathcal{O}(|V|+|E|)$で彩色可能である．
+\end{Prop}
+\end{frame}
+
+\subsection{干渉グラフ}
+
+\begin{frame}
+\frametitle{SSA形式に対する変数の干渉グラフ}
+$\varphi$関数を消去する前の$SSA$形式に対して
+\begin{Prop}
+SSA形式における変数$v$の生存範囲は，支配木における連結部分木である．
+\end{Prop}
+\end{frame}
+
+\begin{frame}
+\frametitle{干渉グラフの弦性}
+\end{frame}
+\end{document}
